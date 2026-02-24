@@ -1225,10 +1225,10 @@ const BOSS_BATTLES = {
         narrative: `<p>The Ghost conjures a ledger: <em>"The Crowned Stag tracked average nightly spend per guest (gold coins) and overall satisfaction score (0–100) across 45 consecutive weekends. Management wants to know: is there a relationship between how much guests spend and how satisfied they are?"</em></p>
         <p>The Ghost whispers: <span style="color:var(--blood)">"What statistical test is appropriate for two continuous variables?"</span></p>`,
         choices: [
-          { text: 'Chi-Square test of independence', correct: false, feedback: 'Chi-Square is for categorical variables. Both variables here — spend and satisfaction — are continuous measurements.' },
-          { text: "Pearson's correlation coefficient", correct: true, feedback: "Correct! Two continuous variables, testing for a linear relationship — Pearson's r is the right tool. The Ghost flickers." },
-          { text: 'Independent samples t-test', correct: false, feedback: "T-tests compare group means. Here there's no grouping variable — just two continuous measurements per weekend." },
-          { text: 'One-way ANOVA', correct: false, feedback: 'ANOVA compares means across discrete groups. We want to quantify the association between two continuous variables.' }
+          { text: "Chi-Square test of independence — it compares observed vs expected counts across categories to detect association between two variables.", correct: false, feedback: "Chi-Square works with categorical count data, not continuous measurements. Both spend and satisfaction are measured on continuous scales, so Chi-Square is not appropriate here." },
+          { text: "Pearson's correlation coefficient — it quantifies the strength and direction of a linear relationship between two continuous variables.", correct: true, feedback: "Correct. Two continuous variables, one relationship to quantify — Pearson's r is exactly the right tool. The Ghost flickers and recoils." },
+          { text: "Independent samples t-test — it determines whether the mean of one continuous variable differs significantly between two distinct groups.", correct: false, feedback: "A t-test requires a grouping variable and a continuous outcome. Here there are no groups — just two continuous measurements recorded per weekend across time." },
+          { text: "One-way ANOVA — it tests whether a continuous outcome variable differs in its mean across three or more defined groups simultaneously.", correct: false, feedback: "ANOVA requires discrete group membership. We have two continuous measurements with no grouping variable, so the question is about association, not group mean differences." }
         ]
       },
       {
@@ -1236,10 +1236,10 @@ const BOSS_BATTLES = {
         narrative: `<p>The scatter plot of spend vs satisfaction appears. The relationship looks roughly linear — a gentle upward slope across most of the data, with a few high-spending, low-satisfaction outliers.</p>
         <p><span style="color:var(--blood)">"What is the critical assumption you must verify before computing Pearson's r?"</span></p>`,
         choices: [
-          { text: 'That spend and satisfaction are measured in the same units', correct: false, feedback: "Pearson's r is scale-invariant — the variables don't need to share units. Linearity is what matters." },
-          { text: 'That the scatter plot shows an approximately linear (straight-line) relationship', correct: true, feedback: "Exactly. Pearson's r captures linear co-variation only. A curved relationship would require Spearman's rank correlation instead. The Ghost recoils." },
-          { text: 'That the sample size exceeds 40', correct: false, feedback: "Sample size affects statistical power, not the validity of Pearson's r. Linearity must be visually confirmed." },
-          { text: 'That both variables were collected on the same day', correct: false, feedback: "Temporal matching is a study design concern — it doesn't affect which correlation to use. The shape of the scatter is what determines the test." }
+          { text: "That both variables are recorded in the same units of measurement, so that their scales are directly comparable when computing the correlation.", correct: false, feedback: "Pearson's r is fully scale-invariant — it standardises both variables internally, so matching units is irrelevant. The shape of the scatter, not the scale, is what determines whether Pearson's r is valid." },
+          { text: "That the scatter plot shows an approximately linear (straight-line) relationship between the two variables, not a curve or plateau.", correct: true, feedback: "Exactly right. Pearson's r only captures linear co-variation. A curved or non-monotonic relationship can produce r ≈ 0 even when a strong pattern exists. The Ghost recoils from your precision." },
+          { text: "That the total sample size is large enough — at least 40 observations — to produce a reliable and stable correlation estimate.", correct: false, feedback: "Sample size governs statistical power and the width of confidence intervals, not the validity of Pearson's r itself. Even with n = 15, if the scatter is linear, Pearson's r is appropriate to compute." },
+          { text: "That both variables were measured during the same time window, ensuring the data points represent matched, contemporaneous observations.", correct: false, feedback: "Temporal matching is a data collection design concern, not a statistical assumption of Pearson's r. The critical check is always the shape of the scatter — linear or not." }
         ]
       },
       {
@@ -1248,10 +1248,10 @@ const BOSS_BATTLES = {
         <div class="box box-gold" style="margin:0.8rem 0"><span class="box-title">Output</span><strong>r = 0.58, p = 0.0001, 95% CI [0.34, 0.75]</strong>, n = 45</div>
         <p><span style="color:var(--blood)">"The owner sees r = 0.58 and p &lt; 0.001. She announces: 'Higher spend CAUSES higher satisfaction — we should push upselling harder.' What do you tell her?"</span></p>`,
         choices: [
-          { text: "She's right — r = 0.58 is significant, so higher spend causes higher satisfaction. Upselling is justified.", correct: false, feedback: "A significant r never establishes causation. The relationship could be reversed (satisfied guests spend more), or both could be driven by a third variable like group type." },
-          { text: "r = 0.58 is a moderate-to-strong positive linear association, statistically significant. But correlation cannot establish causation — both variables could be influenced by guest type (e.g. corporate vs leisure). We cannot conclude that pushing upselling will increase satisfaction.", correct: true, feedback: "Perfect. Strong, significant association — correctly interpreted without causal overreach. The Ghost dissolves into the ledger." },
-          { text: 'r = 0.58 means spend explains 58% of the variance in satisfaction.', correct: false, feedback: "r² = 0.58² = 0.34 is the proportion of shared variance. r itself is not the variance explained — that's r², the coefficient of determination." },
-          { text: "p < 0.001 means the probability of this being a real effect is 99.9%.", correct: false, feedback: "p-values describe the probability of the data under H₀ — not the probability that the effect is real. p = 0.0001 means: very unlikely to see r = 0.58 if the true correlation is zero." }
+          { text: "She is right — r = 0.58 is statistically significant, which confirms that increasing spend directly produces higher satisfaction scores across the guest population.", correct: false, feedback: "Statistical significance never establishes causation. The relationship could run in reverse (satisfied guests spend more freely), or both could reflect a third variable such as guest type or trip purpose." },
+          { text: "r = 0.58 shows a significant moderate-to-strong association, but correlation cannot establish causation. A third variable — guest type, for instance — could drive both, so we cannot conclude upselling will raise satisfaction.", correct: true, feedback: "Perfectly stated. Strong, significant association — interpreted honestly, without causal overreach. The Ghost dissolves back into the ledger pages." },
+          { text: "r = 0.58 means that spend directly explains 58% of the total variance observed in guest satisfaction scores across these 45 weekends.", correct: false, feedback: "r is not the variance explained — r² is. Here r² = 0.34, meaning about 34% of satisfaction variance is associated with spend. Confusing r with r² is a common and consequential error." },
+          { text: "p < 0.001 means there is a 99.9% probability that this is a real, meaningful effect rather than a chance finding in this sample.", correct: false, feedback: "p-values do not represent the probability of a real effect. p = 0.0001 means: if the true correlation were zero, observing r = 0.58 in a sample of 45 would be extremely unlikely — that is all it means." }
         ]
       }
     ]
@@ -1268,10 +1268,10 @@ const BOSS_BATTLES = {
         narrative: `<p>The Wraith conjures a scenario: <em>"A hotel surveyed 180 guests about their room type preference (Standard / Deluxe / Suite) and their booking channel (Direct website / OTA / Travel agent). Management wants to know: does booking channel predict room type preference?"</em></p>
         <p><span style="color:var(--blood)">"Both variables are categorical. What test is appropriate?"</span></p>`,
         choices: [
-          { text: 'Independent samples t-test', correct: false, feedback: 'T-tests compare continuous means between groups. Both variables here — room type and booking channel — are categorical.' },
-          { text: "Pearson's correlation", correct: false, feedback: 'Correlation requires two continuous variables. Room type and booking channel are both categorical.' },
-          { text: 'Chi-Square test of independence', correct: true, feedback: "Correct! Two categorical variables — Chi-Square tests whether room type preference is distributed independently of booking channel. The Wraith shrieks." },
-          { text: 'Paired t-test', correct: false, feedback: 'Paired t-test requires continuous data and matched pairs. Neither applies here.' }
+          { text: "Independent samples t-test — comparing the mean of a continuous outcome variable across two or more distinct, non-overlapping groups.", correct: false, feedback: "A t-test requires at least one continuous variable as the outcome. Both room type and booking channel are categorical — there is no continuous measurement to compare here." },
+          { text: "Pearson's correlation — measuring the strength and direction of a linear relationship between two variables measured on continuous scales.", correct: false, feedback: "Pearson's r requires two continuous variables. Room type (Standard/Deluxe/Suite) and booking channel (Direct/OTA/Travel agent) are both categorical with no numeric ordering." },
+          { text: "Chi-Square test of independence — testing whether the distribution of one categorical variable differs systematically across levels of another categorical variable.", correct: true, feedback: "Correct. Two categorical variables, testing for association — Chi-Square is exactly the right tool. It tests whether room type preference is independent of booking channel. The Wraith shrieks." },
+          { text: "Paired t-test — comparing two continuous measurements taken from the same individuals under two different conditions or time points.", correct: false, feedback: "Paired t-tests require continuous data and matched observations from the same person. Neither condition holds here — both variables are categorical and recorded once per guest." }
         ]
       },
       {
@@ -1279,10 +1279,10 @@ const BOSS_BATTLES = {
         narrative: `<p>You calculate the 3×3 contingency table's expected counts. The smallest expected count is 4.1 — in the Suite × Travel Agent cell.</p>
         <p><span style="color:var(--blood)">"Can you proceed with Chi-Square? If not, what should you use?"</span></p>`,
         choices: [
-          { text: "Yes — a grand total of 180 is large enough to override cell size concerns.", correct: false, feedback: "Grand total size doesn't rescue individual cells. The approximation breaks down at the cell level, regardless of overall n." },
-          { text: "No — an expected count of 4.1 violates the rule that all expected counts must be ≥ 5. Use Fisher's Exact Test.", correct: true, feedback: "Exactly right. One cell below 5 is enough to invalidate Chi-Square's approximation. Fisher's Exact Test calculates exact probabilities and is the correct alternative. The Wraith staggers." },
-          { text: "Yes — the ≥5 rule applies to observed counts, not expected counts.", correct: false, feedback: "The rule applies to EXPECTED counts (E), not observed (O). Expected counts represent the theoretical cell values under H₀ — they must all be ≥ 5." },
-          { text: "Collapse the Standard and Deluxe categories to increase cell sizes, then run Chi-Square.", correct: false, feedback: "Collapsing categories can work as a workaround but risks losing meaningful distinctions. Fisher's Exact Test is the principled, recommended solution." }
+          { text: "Yes — a grand total of 180 guests is large enough that the Chi-Square approximation will be reliable, regardless of individual cell sizes.", correct: false, feedback: "Overall sample size does not protect against small expected counts in individual cells. The Chi-Square approximation breaks down at the cell level — a single cell below 5 is enough to invalidate it." },
+          { text: "No — an expected count of 4.1 violates the rule that all expected cell counts must be ≥ 5. Switch to Fisher's Exact Test, which calculates exact probabilities without this approximation.", correct: true, feedback: "Exactly right. One cell below 5 invalidates the Chi-Square approximation entirely. Fisher's Exact Test is the principled solution — it works correctly regardless of cell sizes. The Wraith staggers." },
+          { text: "Yes — the ≥ 5 rule applies to the observed cell counts in the data, not to the expected counts calculated under the null hypothesis.", correct: false, feedback: "The rule applies specifically to EXPECTED counts, not observed ones. Expected counts (E = row total × column total / grand total) represent the null hypothesis baseline — they must all be ≥ 5 for Chi-Square to be valid." },
+          { text: "No — the correct solution is to collapse the Standard and Deluxe room categories into one combined category, which will raise the problematic cell's expected count above 5.", correct: false, feedback: "Collapsing categories is a possible workaround, but it discards potentially meaningful distinctions between room types. Fisher's Exact Test is the statistically principled solution — it handles small cells without any category merging." }
         ]
       },
       {
@@ -1291,10 +1291,10 @@ const BOSS_BATTLES = {
         <div class="box box-gold" style="margin:0.8rem 0"><span class="box-title">Output</span><strong>Fisher's Exact p = 0.042</strong></div>
         <p><span style="color:var(--blood)">"What does p = 0.042 tell management about booking channel and room type?"</span></p>`,
         choices: [
-          { text: "Room type preference is significantly associated with booking channel (p = 0.042 < 0.05). The pattern of preferences across room types differs depending on how guests booked, beyond what random chance would produce.", correct: true, feedback: "Perfect. The overall association is non-random. To see which specific cells drive it, examine standardised residuals. The Wraith dissolves into the archive." },
-          { text: "OTA guests significantly prefer Deluxe rooms over Direct website guests.", correct: false, feedback: "Fisher's Exact Test only establishes the overall association. Specific cell comparisons require standardised residuals or post-hoc pairwise tests." },
-          { text: "There is a 4.2% chance that booking channel causes room type preferences.", correct: false, feedback: "p-values are not probabilities of causation. p = 0.042 is the probability of observing this contingency table if booking channel and room type were truly independent." },
-          { text: "Since p > 0.01, we should report this as non-significant.", correct: false, feedback: "The conventional alpha is 0.05 unless pre-specified otherwise. p = 0.042 < 0.05 — this is a significant result at the standard threshold." }
+          { text: "Room type preference is significantly associated with booking channel (p &lt; 0.05) — the distribution of preferences differs across channels more than chance alone would produce, though the test does not specify which cells drive this.", correct: true, feedback: "Perfectly stated. The overall association is non-random. To identify which specific channel-room combinations are driving it, examine standardised residuals next. The Wraith dissolves." },
+          { text: "OTA guests prefer Deluxe rooms significantly more than Direct website guests do — p = 0.042 identifies this specific cell pairing as the source of the overall significant result.", correct: false, feedback: "Fisher's Exact Test — like Chi-Square — is an omnibus test. It establishes overall association only. Identifying which specific cells drive the result requires standardised residuals or corrected pairwise comparisons." },
+          { text: "There is a 4.2% probability that booking channel causally determines room type preference — meaning channel choice directly influences what guests want to book.", correct: false, feedback: "p-values express the probability of observing this data pattern if the two variables were truly independent — not the probability of a causal relationship. p = 0.042 says nothing about causation." },
+          { text: "The result is not significant because p = 0.042 exceeds the more rigorous threshold of p &lt; 0.01 that should be applied to avoid false positives in commercial research.", correct: false, feedback: "The conventional significance threshold is α = 0.05 unless a stricter level was pre-specified. p = 0.042 is below 0.05, making this a statistically significant result by standard criteria." }
         ]
       }
     ]
@@ -1311,10 +1311,10 @@ const BOSS_BATTLES = {
         narrative: `<p>The first head rears up: <em>"A luxury hotel's spa tracked guests' stress scores (0–100) BEFORE and AFTER a 90-minute treatment session. The same 24 guests were measured both times. Management wants to know if the treatment reduces stress."</em></p>
         <p><span style="color:var(--blood)">"Which t-test?"</span></p>`,
         choices: [
-          { text: 'Independent samples t-test — comparing before scores to after scores', correct: false, feedback: "The scores are not independent — the same 24 guests were measured twice. Using an independent t-test ignores the within-person correlation, dramatically reducing power." },
-          { text: 'One-sample t-test — comparing the after scores to a known benchmark', correct: false, feedback: "There's no known population benchmark here. The comparison is between each person's before and after score." },
-          { text: 'Paired t-test — the same guests measured before and after', correct: true, feedback: "Correct. Same 24 guests, measured twice. Paired t-test uses each person's difference score, removing individual baseline differences. The first head falls." },
-          { text: "Welch's t-test — for independent groups with unequal variance", correct: false, feedback: "Welch's applies to independent groups. Here the measurements are paired (same people). Study design determines the test, not variance." }
+          { text: "Independent samples t-test — treating the before and after scores as two separate groups of measurements with no connection between them.", correct: false, feedback: "The two sets of scores are not independent — they come from the same 24 guests. Ignoring this within-person link discards the most important information in the data and dramatically reduces statistical power." },
+          { text: "One-sample t-test — comparing the post-treatment scores against a known population benchmark or theoretical standard for acceptable stress levels.", correct: false, feedback: "A one-sample t-test requires a pre-existing benchmark to compare against. The research question here is about change within each person, not whether the post scores meet some external standard." },
+          { text: "Paired t-test — using each guest's difference score (after minus before) to test whether the mean change across all 24 guests differs significantly from zero.", correct: true, feedback: "Correct. Same 24 guests measured twice — the paired t-test uses each person's difference score, cancelling out individual baseline variation and dramatically increasing sensitivity. First head falls." },
+          { text: "Welch's t-test — comparing two independent groups when the variance of scores may differ between the before condition and the after condition.", correct: false, feedback: "Welch's t-test is for independent groups with potentially unequal variance. These measurements are paired — the same person appears in both conditions — so Welch's is not appropriate regardless of variance." }
         ]
       },
       {
@@ -1322,10 +1322,10 @@ const BOSS_BATTLES = {
         narrative: `<p>Second head: <em>"Two restaurants in the same hotel chain — the Garden Room and the Rooftop Terrace — each had 30 different diners rate their meal experience (0–100). Management wants to compare the two venues. Levene's test result: F(1, 58) = 0.61, p = 0.44."</em></p>
         <p><span style="color:var(--blood)">"Which t-test and why?"</span></p>`,
         choices: [
-          { text: "Welch's t-test — always safest regardless of Levene's result", correct: false, feedback: "Welch's is often the safer default, but the question asks you to reason from Levene's result. p = 0.44 means equal variances — Student's is appropriate and slightly more powerful here." },
-          { text: "Student's t-test — Levene's p = 0.44 means we fail to reject equal variances", correct: true, feedback: "Correct. Levene's p = 0.44 > 0.05: no evidence of unequal variances. Student's t-test assumption holds. Use it — slightly more powerful than Welch's when variances truly are equal. Second head falls." },
-          { text: "We cannot run a t-test until Levene's test is significant", correct: false, feedback: "Backwards. A significant Levene's is the problem. A non-significant Levene's is what lets you proceed with Student's t-test." },
-          { text: 'Paired t-test — match diners by reservation time to create pairs', correct: false, feedback: "These are 30 completely different diners at two different venues. Pairing requires the same individual measured in both conditions." }
+          { text: "Welch's t-test — it is the safest default for any two-group comparison because it performs well whether or not the group variances are equal.", correct: false, feedback: "Welch's is a reasonable default, but with Levene's p = 0.44 there is clear evidence of equal variances. Student's t-test is slightly more powerful in this situation and its assumption is met." },
+          { text: "Student's t-test — Levene's p = 0.44 is well above 0.05, so we fail to reject equal variances and the pooled-variance assumption is justified.", correct: true, feedback: "Correct. Levene's p = 0.44 gives no reason to doubt equal variances. Student's t-test is appropriate and marginally more powerful than Welch's when the equal variance assumption genuinely holds. Second head falls." },
+          { text: "Neither t-test can be used yet — a significant Levene's result is a prerequisite before any t-test comparison can proceed.", correct: false, feedback: "This reverses the logic entirely. A significant Levene's result is the problem that forces you to switch from Student's to Welch's. A non-significant result, as here, is what allows Student's t-test to proceed." },
+          { text: "Paired t-test — if diners are matched by reservation time across the two venues, the within-pair correlation will increase power and reduce noise in the comparison.", correct: false, feedback: "These are 30 entirely different diners at two separate venues. Pairing requires the same individual measured in both conditions, which is impossible here since no guest visited both restaurants for this study." }
         ]
       },
       {
@@ -1333,10 +1333,10 @@ const BOSS_BATTLES = {
         narrative: `<p>Third head: <em>"An independent t-test comparing front-of-house staff tips at two hotel branches gives t(58) = 1.98, p (two-tailed) = 0.052. After seeing the results, the manager says: 'Our hypothesis was always that Branch A gets higher tips — let's report one-tailed p = 0.026 to show significance!'"</em></p>
         <p><span style="color:var(--blood)">"Is switching to one-tailed legitimate here?"</span></p>`,
         choices: [
-          { text: 'Yes — the directional hypothesis is clear in hindsight, so one-tailed is appropriate.', correct: false, feedback: '"Clear in hindsight" is precisely the problem. The directional hypothesis must be stated and documented before any data collection, not after seeing the result.' },
-          { text: 'Yes — one-tailed tests are more powerful and are preferred in management research.', correct: false, feedback: 'One-tailed tests gain power in one direction by doubling the false-positive rate. They are only appropriate when the hypothesis was genuinely directional from the outset.' },
-          { text: 'No — switching to one-tailed after seeing the data direction is p-hacking. The decision must be made before data collection.', correct: true, feedback: "Exactly. The p-value of 0.052 is very close to 0.05 — making a post-hoc directional switch to achieve significance is textbook p-hacking. Keep two-tailed. All three heads fall!" },
-          { text: 'No — one-tailed tests are never appropriate in hospitality research.', correct: false, feedback: "One-tailed tests are valid when there is a genuine, pre-registered directional hypothesis. The issue is timing, not the method." }
+          { text: "Yes — the directional prediction that Branch A earns higher tips is clear and reasonable, making one-tailed testing scientifically justified even if confirmed after the data was examined.", correct: false, feedback: "Directional clarity does not make post-hoc one-tailed testing legitimate. The hypothesis must be committed to in writing before any data is collected or examined — not confirmed by looking at which way the result went." },
+          { text: "Yes — one-tailed tests are more statistically powerful and are therefore the preferred choice when you have any reasonable expectation about the direction of the effect.", correct: false, feedback: "One-tailed tests gain power in one direction by quietly doubling the false-positive rate in that direction. Their use is only justified by a genuine, pre-registered directional hypothesis — not by a post-hoc preference for power." },
+          { text: "No — the direction was chosen after seeing the data, making this p-hacking. One-tailed testing is only valid when the directional hypothesis was fully committed to before data collection began.", correct: true, feedback: "Exactly. Switching to one-tailed because the result nearly reached significance two-tailed is a textbook example of p-hacking — it inflates the false-positive rate while appearing methodologically reasonable. All three heads fall." },
+          { text: "No — one-tailed testing is never statistically valid in applied hospitality or business research and should always be replaced with two-tailed tests regardless of the hypothesis.", correct: false, feedback: "One-tailed tests are valid in hospitality research when there is a documented a priori directional hypothesis — for instance, testing whether a new training programme can only improve, never worsen, service scores. The issue here is timing, not the method itself." }
         ]
       }
     ]
@@ -1353,10 +1353,10 @@ const BOSS_BATTLES = {
         narrative: `<p>The Concierge blocks the entrance: <em>"A regional hotel chain compared RevPAR across four properties: City Centre, Airport, Seaside, and Countryside. N = 25 guests per property. Levene's test: F(3, 96) = 4.9, p = 0.003."</em></p>
         <p><span style="color:var(--blood)">"Which ANOVA and which post-hoc test?"</span></p>`,
         choices: [
-          { text: "Fisher's (standard) ANOVA → Tukey HSD post-hoc", correct: false, feedback: "Levene's p = 0.003 — the equal variance assumption is clearly violated. Fisher's ANOVA is inappropriate. Tukey HSD also assumes equal variances." },
-          { text: "Welch's ANOVA → Games-Howell post-hoc", correct: true, feedback: "Correct! Levene's p = 0.003 < 0.05: unequal variances across properties. Welch's ANOVA handles this. Games-Howell is its matching post-hoc test — it also doesn't assume equal variances. The door begins to open." },
-          { text: "Fisher's ANOVA → Games-Howell post-hoc", correct: false, feedback: "Games-Howell is the right post-hoc choice, but Fisher's ANOVA still assumes equal variances for the omnibus test. With Levene's significant, the overall test must also be Welch's." },
-          { text: "Welch's ANOVA → Tukey HSD post-hoc", correct: false, feedback: "Welch's ANOVA is correct, but Tukey HSD assumes equal variances. Mixing them is an assumption violation. Use Games-Howell to match the Welch's framework." }
+          { text: "Fisher's (standard) ANOVA → Tukey HSD post-hoc: pools all group variances into one estimate, then uses Tukey's studentised range to compare all pairs.", correct: false, feedback: "Levene's p = 0.003 means unequal variances — Fisher's ANOVA assumes a common variance across groups, so this assumption is violated. Tukey HSD also assumes equal variance, making both choices wrong here." },
+          { text: "Welch's ANOVA → Games-Howell post-hoc: both adjust for unequal group variances and neither requires the pooled-variance assumption Fisher's method depends on.", correct: true, feedback: "Correct. Levene's p = 0.003 signals unequal variances across properties. Welch's ANOVA adjusts for this at the omnibus level; Games-Howell does so for every pairwise comparison. They must be used together. The door begins to open." },
+          { text: "Fisher's ANOVA → Games-Howell post-hoc: use the standard omnibus test for overall significance, then the variance-robust post-hoc for individual pair comparisons.", correct: false, feedback: "Games-Howell is the right post-hoc, but Fisher's ANOVA for the omnibus test still assumes equal variances — which Levene's has shown to be false. The overall test and post-hoc must both be variance-robust when Levene's is significant." },
+          { text: "Welch's ANOVA → Tukey HSD post-hoc: use the variance-robust omnibus test, then Tukey's widely-accepted range test for the pairwise comparisons that follow.", correct: false, feedback: "Welch's ANOVA is correct, but Tukey HSD assumes equal variances for its calculations. Pairing a variance-robust omnibus test with a post-hoc that assumes equal variance is internally inconsistent — use Games-Howell instead." }
         ]
       },
       {
@@ -1365,10 +1365,10 @@ const BOSS_BATTLES = {
         <div class="box box-gold" style="margin:0.8rem 0"><span class="box-title">Output</span><strong>F(3, 46.2) = 7.1, p = 0.0005</strong></div>
         <p><span style="color:var(--blood)">"The CEO sees p = 0.0005 and announces: 'The City Centre property is confirmed as significantly better than all others — the ANOVA says so!' What is wrong with this?"</span></p>`,
         choices: [
-          { text: "Nothing — p < 0.001 means all properties differ from the City Centre.", correct: false, feedback: "The F-test is an omnibus test. It tells you 'at least one property differs from at least one other' — nothing more. It makes no specific pairwise claims." },
-          { text: "The CEO is correct — the highest mean property is confirmed as the best by the significant F.", correct: false, feedback: "A significant F does not confirm which specific properties differ. The City Centre could have the highest mean but still be statistically indistinguishable from the Seaside property, for example." },
-          { text: "The significant F only tells us that not all properties have equal RevPAR. We need Games-Howell post-hoc tests to determine which specific properties differ from which.", correct: true, feedback: "Exactly. The omnibus F protects overall Type I error but tells you nothing about specific pairs. Games-Howell post-hoc tests will reveal the actual structure of differences. The Concierge nods." },
-          { text: "The result is uninterpretable without an effect size like η².", correct: false, feedback: "Reporting η² is good practice, but its absence doesn't make the F-test uninterpretable. The omnibus conclusion stands: at least one property differs." }
+          { text: "Nothing is wrong — p = 0.0005 is highly significant, which confirms that the City Centre's mean RevPAR is statistically distinguishable from every other property in the chain.", correct: false, feedback: "The F-test is omnibus — it tests whether all four means are equal, not whether one specific property differs from all others. p = 0.0005 says at least one pair differs somewhere, but identifies no specific pair." },
+          { text: "The CEO is correct that City Centre is the best, since having the highest observed mean combined with a significant overall F-test logically confirms its superiority over the others.", correct: false, feedback: "A significant F combined with the highest mean does not confirm superiority. City Centre's mean could be statistically indistinguishable from Seaside, for instance — only post-hoc tests can reveal which specific differences are real." },
+          { text: "The significant F tells us only that not all four properties perform equally — it does not identify which specific properties differ, which requires Games-Howell post-hoc tests.", correct: true, feedback: "Exactly right. The omnibus F controls Type I error for the family of comparisons but reveals nothing about specific pairs. Games-Howell post-hoc tests are required to map the actual structure of differences. The Concierge nods slowly." },
+          { text: "The result cannot be properly interpreted because no effect size measure such as η² or ω² was reported alongside the F-statistic and p-value.", correct: false, feedback: "Effect sizes are important for practical interpretation, but their absence doesn't make the F-test uninterpretable. The omnibus conclusion — at least one property differs — stands without them. The CEO's error is about specificity, not effect size." }
         ]
       },
       {
@@ -1376,10 +1376,10 @@ const BOSS_BATTLES = {
         narrative: `<p>The Concierge's final challenge: <em>"A hotel group's analyst suggests running 6 separate Bonferroni-corrected t-tests instead of Games-Howell, arguing it gives more flexibility. The Director argues: just look at the means after ANOVA, no post-hoc needed. Who is right?"</em></p>
         <p><span style="color:var(--blood)">"What is the principled approach for this specific dataset?"</span></p>`,
         choices: [
-          { text: "Use Welch's ANOVA for the overall test, then Games-Howell post-hoc for pairwise comparisons — the correct matched workflow given unequal variances.", correct: true, feedback: "This is the complete, correct workflow. Welch's ANOVA + Games-Howell respects the unequal variance structure throughout. The Concierge steps aside — the Council doors open!" },
-          { text: "Bonferroni-corrected t-tests are equivalent and flexible.", correct: false, feedback: "Bonferroni is valid but assumes equal variances, making it less appropriate here. Games-Howell is better matched to the unequal variance structure revealed by Levene's." },
-          { text: "Just look at means after ANOVA — post-hoc tests over-complicate the analysis.", correct: false, feedback: "Without post-hoc tests, you cannot know which mean differences exceed what chance variation alone would produce." },
-          { text: "Run the analysis twice and report whichever gives more significant results.", correct: false, feedback: "This is outcome-driven analysis and p-hacking. The analytical approach must be determined before seeing results, not chosen based on them." }
+          { text: "Welch's ANOVA for the omnibus test, then Games-Howell for all pairwise comparisons — the only workflow that respects the unequal variance structure at both the overall and individual pair level.", correct: true, feedback: "This is the complete and correct answer. Welch's ANOVA + Games-Howell is internally consistent: both handle unequal variances, and both are required when Levene's test is significant. The Concierge steps aside — the Council doors open." },
+          { text: "Six Bonferroni-corrected t-tests, since Bonferroni is a well-established and flexible correction for multiple comparisons that controls family-wise error rate just as rigorously as Games-Howell.", correct: false, feedback: "Bonferroni-corrected t-tests assume equal variances, making them less appropriate when Levene's test is significant. Games-Howell is specifically designed for unequal variances and is the better-matched solution for this dataset." },
+          { text: "No post-hoc tests are needed — a significant omnibus ANOVA combined with visual inspection of the group means is sufficient to identify which properties are meaningfully different from each other.", correct: false, feedback: "Visual mean differences tell you nothing about statistical reliability. Without post-hoc tests, you cannot distinguish real differences from sampling noise — especially with only 25 guests per property and unequal variances across groups." },
+          { text: "Run the analysis with both Games-Howell and Bonferroni, then report the version whose results are more significant, since this gives the most complete picture of which pairs actually differ.", correct: false, feedback: "Choosing between methods based on which yields more significant results is a form of p-hacking. The analytical approach must be selected on methodological grounds before results are examined, not chosen to maximise significant findings." }
         ]
       }
     ]
@@ -1534,7 +1534,88 @@ function restartQuest() {
 // ══════════════════════════════════════════════════════
 // SCREENS
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// SORTING ADVENTURE
+// Each choice maps to a class: wizard=📊, healer=🌿, rogue=🗝️
+// After 5 scenes the most-chosen class wins.
+// ══════════════════════════════════════════════════════
+const SORTING_SCENES = [
+  {
+    icon: '🌅',
+    chapter: 'The Initiation · Scene 1 of 5',
+    title: 'First Morning in the Archive',
+    narrative: `<p>You arrive on your first morning at the Grand Archive. The Archive Master — a small woman with ink-stained fingers and an unsettling number of keys — drops an envelope on your desk.</p>
+    <p class="npc-speech">"A hotel owner posted us three months of guest records. No covering note, no question. Just this."</p>
+    <p>You sit down with the pages and a cup of tea that is already going cold. Where do you start?</p>`,
+    choices: [
+      { text: "Start flicking through — who are these guests, what was recorded, does anything seem weird or surprising? You like to get a feel for things before getting systematic.", cls: 'rogue' },
+      { text: "Lay everything out and get organised first — what are the columns, what do the numbers actually mean, is there a pattern to how it was put together?", cls: 'wizard' },
+      { text: "Check whether the records look consistent before anything else — same format throughout, no obvious gaps, no sign that someone changed how they wrote things down mid-way.", cls: 'healer' }
+    ]
+  },
+  {
+    icon: '☕',
+    chapter: 'The Initiation · Scene 2 of 5',
+    title: 'The Breakfast Argument',
+    narrative: `<p>Two senior members of the Order are bickering. Marcus waves a sheet of paper: <em>"Revenue is up 14% on last summer — the new spa package is clearly working."</em></p>
+    <p>Priya doesn't look up from her toast. <em>"It goes up every summer, Marcus. That's just the season."</em></p>
+    <p>They both look at you. The toast is getting cold.</p>`,
+    choices: [
+      { text: "Priya probably has a point — if revenue always rises in summer, one good summer doesn't prove much. You'd want to see a few years before saying anything with confidence.", cls: 'healer' },
+      { text: "Could you see last year's numbers for the same period? If 14% is bigger than the usual summer bump, that's interesting. If not, it isn't. Either way, you'd rather look.", cls: 'wizard' },
+      { text: "Maybe both things are true — the spa helps AND the season helps. The more interesting question is who's actually booking the spa and whether those guests are spending more overall.", cls: 'rogue' }
+    ]
+  },
+  {
+    icon: '📝',
+    chapter: 'The Initiation · Scene 3 of 5',
+    title: 'The Glowing Score',
+    narrative: `<p>A hotel ran a guest satisfaction survey and got 8.4 out of 10. The manager is thrilled and wants it in a press release by end of day.</p>
+    <p>You notice, in the small print, that it was only sent to loyalty programme members — roughly one in five guests.</p>
+    <p class="npc-speech">"So we can use this, right?" she asks.</p>`,
+    choices: [
+      { text: "Yes, but word it carefully — something like 'among our regular guests' rather than just 'guests.' It's still real, just specific, and being honest about that actually builds more trust.", cls: 'rogue' },
+      { text: "It's tricky — loyalty members are probably your happiest guests almost by definition. You'd want to flag that pretty clearly before putting it in print, or it could backfire.", cls: 'healer' },
+      { text: "You'd want to think about how different loyalty members actually are before deciding. If they're not much happier than average guests, 8.4 is probably fine. If they're way happier, the number is misleading.", cls: 'wizard' }
+    ]
+  },
+  {
+    icon: '🌧️',
+    chapter: 'The Initiation · Scene 4 of 5',
+    title: 'The Terrace Theory',
+    narrative: `<p>You're looking at whether a hotel's rooftop terrace café affects guest satisfaction. The terrace is only open on sunny days — so all the low satisfaction scores happen to come from rainy weekends when it's shut.</p>
+    <p>A junior colleague bounces over: <em>"The terrace must be the key to everything — look how strong the pattern is!"</em></p>`,
+    choices: [
+      { text: "It's a neat pattern but probably too simple — rainy weekends affect loads of things besides the terrace. The weather itself might just be making guests miserable regardless of what the hotel does.", cls: 'healer' },
+      { text: "Worth investigating properly — you'd want some rainy days when the terrace was open, or sunny days when it wasn't, to really separate the two effects. Otherwise you can't tell them apart.", cls: 'wizard' },
+      { text: "The terrace might matter, but there's a more interesting question — guests who use it probably have more positive interactions with staff too. Maybe it's less about the terrace and more about what it enables.", cls: 'rogue' }
+    ]
+  },
+  {
+    icon: '🕯️',
+    chapter: 'The Initiation · Scene 5 of 5',
+    title: 'Gone Eleven',
+    narrative: `<p>It's gone 11pm. The candles in the Archive are burning low. You've been here since breakfast.</p>
+    <p>Tomorrow a hotel owner is coming to hear whether her new check-in process improved satisfaction. Your analysis says it probably did — but you've just noticed she rolled it out in summer, when scores are always higher anyway. You haven't had time to untangle the two effects.</p>
+    <p>What do you do?</p>`,
+    choices: [
+      { text: "Present the positive finding, and mention at the end that the summer timing makes certainty hard — you'd suggest running it through a quieter season too before banking on it.", cls: 'rogue' },
+      { text: "Stay up and try to account for the seasonal effect properly. It won't be perfect, but presenting something incomplete without saying so doesn't sit right with you.", cls: 'healer' },
+      { text: "Write a clear note into the presentation — the improvement looks real, but here's exactly why you're uncertain, and here's what a proper follow-up would look like.", cls: 'wizard' }
+    ]
+  }
+];
+
+// Tally of class votes during sorting
+let _sortingTally = { wizard: 0, healer: 0, rogue: 0 };
+let _sortingStep = 0;
+// Store current sorting choices by index (same pattern as scene choices)
+let _sortingChoices = [];
+
 function showTitle() {
+  _sortingTally = { wizard: 0, healer: 0, rogue: 0 };
+  _sortingStep = 0;
+
   const el = document.getElementById('main-content');
   el.innerHTML = `
     <div id="title-screen">
@@ -1546,28 +1627,109 @@ function showTitle() {
       <div class="card-rune-tl">✦</div>
       <div class="card-rune-br">✦</div>
       <p style="font-size:clamp(0.95rem,2vw,1.1rem); line-height:1.9; margin-bottom:1.5rem">
-        You are a rising hospitality manager in the <em>Order of the Significant P</em> — an ancient guild of 
-        analysts who bring rigour to an industry drowning in gut feelings. Across four perilous quests, 
-        you will face the real challenges of hotel management: <strong>pricing strategy, guest satisfaction, 
-        staff training, and property rankings</strong>. Every decision must be grounded in data — not instinct.
+        You are a new recruit at the <em>Order of the Significant P</em> — an ancient guild of analysts who bring rigour to a hospitality industry drowning in gut feelings. Across four quests you will face the real challenges of hotel management: <strong>pricing strategy, guest satisfaction, staff training, and property rankings</strong>.
       </p>
       <p style="font-size:0.95rem; color:var(--text-dim); font-style:italic; margin-bottom:1.8rem">
-        Wrong answers drain your HP. Die and the quest resets. Face each boss in a timed battle. 
-        Choose your role — it determines your starting health and the hints available to you.
+        But first — the Archive Master must determine where you belong. Answer five questions honestly. Your role will find you.
       </p>
-      <div class="rune-divider">✦ ✦ ✦</div>
-      <p style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.12em; color:var(--gold); text-transform:uppercase; margin-bottom:1rem">Choose Your Role</p>
-      <div class="class-grid">
-        ${Object.entries(CLASSES).map(([key, cls]) => `
-          <div class="class-card" style="--class-color:${cls.color}" onclick="selectClass('${key}')">
-            <span class="class-icon">${cls.icon}</span>
-            <div class="class-name">${cls.name}</div>
-            <div class="class-perk">${cls.desc}</div>
-            <div class="class-hp">❤ ${cls.hp} HP</div>
-          </div>
-        `).join('')}
+      <div style="text-align:center">
+        <button class="btn btn-primary" onclick="showSortingScene(0)">Begin the Initiation ›</button>
       </div>
     </div>`;
+}
+
+function showSortingScene(step) {
+  _sortingStep = step;
+  const scene = SORTING_SCENES[step];
+  _sortingChoices = scene.choices;
+
+  const progress = step + 1;
+  const el = document.getElementById('main-content');
+  el.innerHTML = `
+    <div class="card scene-wrap">
+      <div class="card-rune-tl">✦</div>
+      <div class="card-rune-br">✦</div>
+      <div class="scene-header">
+        <div class="scene-icon-lg">${scene.icon}</div>
+        <div>
+          <div class="scene-chapter">${scene.chapter}</div>
+          <div class="scene-title">${scene.title}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem">
+        <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px">
+          ${SORTING_SCENES.map((_,i) => `
+            <div style="flex:1; height:4px; border-radius:2px; background:${i < progress ? 'var(--gold)' : i === step ? 'var(--ember)' : 'var(--border-bright)'}; transition:background 0.3s"></div>
+          `).join('')}
+        </div>
+        <div style="font-family:'Cinzel',serif; font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase">Initiation progress</div>
+      </div>
+      <div class="narrative">${scene.narrative}</div>
+      <div class="choices-wrap">
+        <div class="choices-label">— How do you respond? —</div>
+        <div class="choices">
+          ${scene.choices.map((c,i) => `
+            <button class="choice-btn scroll-item" style="animation-delay:${i*0.08}s" data-sort-index="${i}">
+              ${c.text}
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  el.querySelectorAll('[data-sort-index]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-sort-index'), 10);
+      handleSortingChoice(_sortingChoices[idx]);
+    });
+  });
+
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function handleSortingChoice(choice) {
+  _sortingTally[choice.cls]++;
+  const next = _sortingStep + 1;
+  if (next < SORTING_SCENES.length) {
+    showSortingScene(next);
+  } else {
+    showSortingResult();
+  }
+}
+
+function showSortingResult() {
+  // Determine winning class
+  const winner = Object.entries(_sortingTally).sort((a,b) => b[1]-a[1])[0][0];
+  const cls = CLASSES[winner];
+
+  const descriptions = {
+    wizard: 'Your instinct is always to go deeper into the numbers. You map data structures before asking questions, flag methodology in your reports, and will rerun an analysis at midnight rather than present something technically wrong. The Order needs people who live in the details.',
+    healer: 'Your first question is always about process and integrity. Before any number means anything, you check how it was collected, whether the assumptions hold, and whether the method was decided before the data was seen. The Order needs people who protect the validity of the work.',
+    rogue: 'You read the human story before you read the numbers. You reframe problems, find the insight in the limitation, and know that a result only matters if the right person understands it at the right moment. The Order needs people who make data land.'
+  };
+
+  const el = document.getElementById('main-content');
+  el.innerHTML = `
+    <div class="card scene-wrap">
+      <div class="card-rune-tl">✦</div>
+      <div class="card-rune-br">✦</div>
+      <div style="text-align:center; padding: 1.5rem 0 1rem">
+        <div style="font-size:4rem; margin-bottom:0.8rem; animation: pulseGlow 3s ease-in-out infinite">${cls.icon}</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.2em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.4rem">The Archive Master has spoken</div>
+        <div style="font-family:'Cinzel Decorative', serif; font-size:clamp(1.2rem,4vw,1.8rem); color:var(--gold-bright); margin-bottom:0.3rem">${cls.name}</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.75rem; color:var(--rune-bright); letter-spacing:0.1em">❤ ${cls.hp} HP · ${cls.hintLabel}</div>
+      </div>
+      <div class="rune-divider">✦ ✦ ✦</div>
+      <div class="narrative" style="margin-top:1rem">
+        <p>${descriptions[winner]}</p>
+        <p><em>Your hints in battle will illuminate ${winner === 'wizard' ? 'the formulae and numerical logic' : winner === 'healer' ? 'assumption checks and process integrity' : 'interpretation and practical meaning'} behind each decision.</em></p>
+      </div>
+      <div style="text-align:center; margin-top:1.5rem; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="selectClass('${winner}')">Accept Your Role ›</button>
+        <button class="btn btn-ghost" onclick="showTitle()">Retake the Initiation</button>
+      </div>
+    </div>`;
+
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function selectClass(classKey) {
@@ -1622,7 +1784,7 @@ function showMap() {
         }).join('')}
       </div>
       <div style="margin-top:1.5rem; text-align:center">
-        <button class="btn btn-ghost" onclick="showTitle()">↩ Change Class</button>
+        <button class="btn btn-ghost" onclick="showTitle()">↩ Retake Initiation</button>
       </div>
     </div>`;
   updateHUD();
