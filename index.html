@@ -839,10 +839,172 @@ h1.game-title {
 }
 .hud-save-tooltip.show { display: block; animation: fadeIn 0.15s ease; }
 
+
+/* ══════════════════════════════════════════════════════
+   THE ORACLE — Spirit Guide Panel
+══════════════════════════════════════════════════════ */
+#oracle-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 300;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--rune-bright), #4a1a8a);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 18px rgba(139,92,246,0.5), 0 2px 8px rgba(0,0,0,0.5);
+  cursor: pointer;
+  font-size: 1.4rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#oracle-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 28px rgba(139,92,246,0.7), 0 2px 8px rgba(0,0,0,0.5);
+}
+#oracle-toggle.visible { display: flex; }
+
+#oracle-panel {
+  position: fixed;
+  bottom: 82px;
+  right: 20px;
+  z-index: 299;
+  width: 310px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: rgba(12, 8, 18, 0.97);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 0 30px rgba(139,92,246,0.3), 0 8px 32px rgba(0,0,0,0.6);
+  display: none;
+  flex-direction: column;
+  animation: slideUp 0.2s ease;
+}
+#oracle-panel.open { display: flex; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.oracle-header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border-bright);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.oracle-avatar {
+  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(139,92,246,0.3), transparent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.oracle-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--gold-bright);
+  text-transform: uppercase;
+}
+.oracle-title {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.oracle-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.oracle-tab {
+  flex: 1;
+  padding: 7px 4px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  text-align: center;
+}
+.oracle-tab:hover { color: var(--text-dim); }
+.oracle-tab.active {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold);
+}
+
+.oracle-body {
+  padding: 12px 14px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+  flex: 1;
+}
+.oracle-body h4 {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--rune-bright);
+  text-transform: uppercase;
+  margin: 10px 0 5px;
+}
+.oracle-body h4:first-child { margin-top: 0; }
+.oracle-tip {
+  background: rgba(139,92,246,0.08);
+  border-left: 2px solid var(--rune);
+  padding: 6px 8px;
+  margin: 6px 0;
+  border-radius: 0 3px 3px 0;
+  font-size: 0.84rem;
+}
+.oracle-tip.gold {
+  background: rgba(212,168,32,0.08);
+  border-left-color: var(--gold);
+}
+.oracle-tip.danger {
+  background: rgba(200,40,40,0.08);
+  border-left-color: var(--blood);
+}
+
 </style>
 </head>
 <body>
 <div id="bg-layer"></div>
+
+<button id="oracle-toggle" onclick="toggleOracle()" title="Open the Oracle — MC Strategy Guide">🔮</button>
+<div id="oracle-panel">
+  <div class="oracle-header">
+    <div class="oracle-avatar">🔮</div>
+    <div>
+      <div class="oracle-name">The Oracle</div>
+      <div class="oracle-title">Spirit Guide &amp; Strategist</div>
+    </div>
+  </div>
+  <div class="oracle-tabs">
+    <button class="oracle-tab active" onclick="oracleTab(this,'mc')">MC Strategy</button>
+    <button class="oracle-tab" onclick="oracleTab(this,'traps')">Traps</button>
+    <button class="oracle-tab" onclick="oracleTab(this,'stats')">Stats Quick Ref</button>
+  </div>
+  <div class="oracle-body" id="oracle-body"></div>
+</div>
+
 <div id="app">
   <div id="hud">
     <div class="hud-class">⚔ <span id="hud-class-name">—</span></div>
@@ -1017,7 +1179,9 @@ const SCENES = {
     },
     choices: [
       { text: 'The average of 1.8 is fine — numbers are numbers. If the categories have labels 1, 2, 3 then arithmetic on them is valid and the board can interpret the result sensibly.', next: 'q0_levels_wrong', damage: 15, bad: true },
-      { text: 'Room types 1, 2, 3 are just labels — nominal data. You can count how many guests chose each type, but averaging the labels produces a number that means nothing. The manager has been reporting nonsense.', next: 'q0_levels', xp: 10 }
+      { text: 'Room types 1, 2, 3 are just labels — nominal data. You can count how many guests chose each type, but averaging the labels produces a number that means nothing. The manager has been reporting nonsense.', next: 'q0_levels', xp: 10 },
+      { text: 'The variable is ordinal — room type has a natural order from Standard to Suite — so calculating a mean is acceptable as long as the board understands the scale.', next: 'q0_levels_wrong', damage: 15, bad: true },
+      { text: 'The problem is not the mean itself, but the sample size. With a larger guest database the average room type would become more meaningful and stable.', next: 'q0_levels_wrong', damage: 15, bad: true }
     ]
   },
 
@@ -1047,7 +1211,9 @@ const SCENES = {
     },
     choices: [
       { text: 'Yes — the satisfaction scale 1-2-3 has a clear order and the gaps feel equal enough. Treating it as interval for the purposes of a t-test is standard practice in hospitality research.', next: 'q0_levels_debate', xp: 5 },
-      { text: 'Technically no — satisfaction ratings are ordinal, not interval. The gap between Dissatisfied and Neutral may not equal the gap between Neutral and Satisfied. A t-test on these scores is questionable.', next: 'q0_levels_debate', xp: 10 }
+      { text: 'Technically no — satisfaction ratings are ordinal, not interval. The gap between Dissatisfied and Neutral may not equal the gap between Neutral and Satisfied. A t-test on these scores is questionable.', next: 'q0_levels_debate', xp: 10 },
+      { text: 'Yes, and it is entirely uncontroversial. As long as the scale has a logical direction (1 = low, 3 = high), a t-test is always appropriate regardless of how many scale points there are.', next: 'q0_levels_wrong', damage: 10, bad: true },
+      { text: 'No, and you should never use means or t-tests on any scale with fewer than 7 response options. Only scales of 7 or more points can be treated as interval.', next: 'q0_levels_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1080,7 +1246,9 @@ const SCENES = {
     },
     choices: [
       { text: 'Pie charts are versatile — as long as the data is divided into sensible price bands, a pie chart of spending is a legitimate way to show the proportions in each band.', next: 'q0_charts_wrong', damage: 10, bad: true },
-      { text: 'Nightly spend is continuous data. A pie chart cannot show the shape of the distribution — where most guests cluster, whether it is skewed, whether there are outliers. He needs a histogram.', next: 'q0_hypothesis', xp: 10 }
+      { text: 'Nightly spend is continuous data. A pie chart cannot show the shape of the distribution — where most guests cluster, whether it is skewed, whether there are outliers. He needs a histogram.', next: 'q0_hypothesis', xp: 10 },
+      { text: 'A bar chart would be better than a pie chart here, since bar charts work well with both categorical and continuous data and are easier to read.', next: 'q0_charts_wrong', damage: 10, bad: true },
+      { text: 'A scatterplot would be the correct choice, since nightly spend involves two variables: the amount and the date it was recorded.', next: 'q0_charts_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1105,7 +1273,9 @@ const SCENES = {
     },
     choices: [
       { text: 'The hypothesis is fine — it is specific and directional, which is better than a vague two-sided hypothesis. Specificity improves the power of the test.', next: 'q0_hyp_wrong', damage: 15, bad: true },
-      { text: 'The hypothesis was written after seeing the data — it describes what she found rather than predicting what she expected. A valid hypothesis must be committed to before data collection, not derived from it.', next: 'q0_pvalue', xp: 10 }
+      { text: 'The hypothesis was written after seeing the data — it describes what she found rather than predicting what she expected. A valid hypothesis must be committed to before data collection, not derived from it.', next: 'q0_pvalue', xp: 10 },
+      { text: 'The hypothesis is missing a null hypothesis. You cannot sign off until she adds H₀: there is no difference in response times between branches.', next: 'q0_hyp_wrong', damage: 10, bad: true },
+      { text: 'The hypothesis uses μ instead of π. Since response time is a continuous variable we should be comparing proportions, so π is the correct notation.', next: 'q0_hyp_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1131,7 +1301,9 @@ const SCENES = {
     },
     choices: [
       { text: 'He is close enough — p = 0.03 means the result is unlikely to be due to chance, and "97% certain" is a reasonable way to communicate this to a non-technical audience.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
-      { text: 'p = 0.03 means: if the package had no effect, we would see a result this large only 3% of the time. It is not a 97% probability that the package works — it is a statement about the data under H₀, not about how likely H₁ is.', next: 'q0_errors', xp: 10 }
+      { text: 'p = 0.03 means: if the package had no effect, we would only see a result this large 3% of the time by chance. That is not the same as "97% certain the package works" — p is about the data under H₀, not the probability H₁ is true.', next: 'q0_errors', xp: 10 },
+      { text: 'p = 0.03 is below 0.05 so H₁ is proven true. The director is right to recommend rollout — the confidence interval confirms the package increases satisfaction.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'The director is wrong because p = 0.03 is too close to the borderline. Only p < 0.01 provides genuine statistical confidence — a result this marginal should be treated as inconclusive.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
     ]
   },
 
@@ -1160,7 +1332,9 @@ const SCENES = {
     },
     choices: [
       { text: 'The original study made a Type II error — it failed to detect a real effect because the sample was too small, which is why the replication also found nothing.', next: 'q0_errors_wrong', damage: 10, bad: true },
-      { text: 'The original study made a Type I error — it found a significant result that was not real. With p = 0.04 and α = 0.05, there was a 4% chance of this happening even if the training had no effect at all.', next: 'q0_validity', xp: 10 }
+      { text: 'The original study made a Type I error — it found a significant result that was not real. With p = 0.04 and α = 0.05, there was a 4% chance of this happening even if the training had no effect at all.', next: 'q0_validity', xp: 10 },
+      { text: 'The original study made a Type III error — it used the right statistical test but the wrong research question, measuring behaviour immediately after training rather than on-the-job performance months later.', next: 'q0_errors_wrong', damage: 10, bad: true },
+      { text: 'Both studies are equally flawed — the replication made a Type II error by failing to find the real effect the first study correctly identified, because it used a smaller sample.', next: 'q0_errors_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1186,7 +1360,9 @@ const SCENES = {
     },
     choices: [
       { text: 'Problem A violates reliability — the questionnaire gives inconsistent results. Problem B violates validity — the loyalty score doesn\'t actually measure loyalty.', next: 'q0_validity_wrong', damage: 10, bad: true },
-      { text: 'Problem A violates validity — specifically construct validity, because the items measure satisfaction not loyalty. Problem B violates reliability — the scores are inconsistent across administrations with no real change.', next: 'q0_sampling', xp: 10 }
+      { text: 'Problem A violates validity — specifically construct validity, because the items measure satisfaction not loyalty. Problem B violates reliability — the scores are inconsistent across administrations with no real change.', next: 'q0_sampling', xp: 10 },
+      { text: 'Problem A violates external validity — the questionnaire results cannot be generalised beyond this specific hotel. Problem B violates face validity — the questionnaire does not appear credible to respondents.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Both problems violate reliability. Problem A gives inconsistent item content and Problem B gives inconsistent scores over time — both are forms of measurement inconsistency.', next: 'q0_validity_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1215,7 +1391,9 @@ const SCENES = {
     },
     choices: [
       { text: 'A = Convenience, B = Snowball, C = Stratified, D = Systematic. The probability methods are B and D.', next: 'q0_sampling_wrong', damage: 10, bad: true },
-      { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. The probability methods are A and C — both give every guest a known chance of selection.', next: 'q0_boss_intro', xp: 15 }
+      { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. The probability methods are A and C — both give every guest a known chance of selection.', next: 'q0_boss_intro', xp: 15 },
+      { text: 'A = Systematic, B = Quota, C = Stratified, D = Convenience. The probability methods are A and C, but B is quota rather than snowball because it involves passing surveys to other guests.', next: 'q0_sampling_wrong', damage: 10, bad: true },
+      { text: 'A = Cluster, B = Snowball, C = Quota, D = Convenience. None of the four methods are true probability sampling since none involve a fully randomised draw from the complete guest list.', next: 'q0_sampling_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1252,7 +1430,9 @@ const SCENES = {
     },
     choices: [
       { text: "Trust your instincts — you've worked in hospitality for years. Give Margaux your gut feeling and move on.", next: 'q1_bad_guess', damage: 20, bad: true },
-      { text: "Plot the data first. Draw a scatter plot of room rate vs occupancy before deciding on any statistical test.", next: 'q1_plot', xp: 10 }
+      { text: "Plot the data first. Draw a scatter plot of room rate vs occupancy before deciding on any statistical test — you need to see the shape before choosing a method.", next: 'q1_plot', xp: 10 },
+      { text: "Run Pearson's r immediately — both variables are continuous, which is the only requirement. A scatter plot is an optional extra step.", next: 'q1_bad_guess', damage: 20, bad: true },
+      { text: "Run a t-test comparing occupancy between high-price and low-price periods — this tests whether rate affects occupancy more directly than correlation.", next: 'q1_bad_guess', damage: 20, bad: true },
     ]
   },
 
@@ -1280,7 +1460,9 @@ const SCENES = {
     },
     choices: [
       { text: "The temperature-occupancy curve isn't suitable for Pearson's r. But rate-occupancy looks linear — I'll run Pearson's r on that relationship.", next: 'q1_linearity', xp: 15 },
-      { text: "The curves are minor — Pearson's r is robust enough for both plots. Run it on all relationships at once.", next: 'q1_bad_curve', damage: 20, bad: true }
+      { text: "The curves are minor — Pearson's r is robust enough for both plots. Run it on all relationships at once.", next: 'q1_bad_curve', damage: 20, bad: true },
+      { text: "Both plots show non-linear patterns, so neither is suitable for any correlation test. Report that no statistical relationship can be tested from this data.", next: 'q1_bad_curve', damage: 20, bad: true },
+      { text: "Temperature-occupancy has a curve, which means the relationship is stronger than a linear model suggests. Use Pearson's r on temperature-occupancy specifically to capture this stronger pattern.", next: 'q1_bad_curve', damage: 20, bad: true }
     ]
   },
 
@@ -1305,7 +1487,9 @@ const SCENES = {
     },
     choices: [
       { text: "r = −0.74 is a strong negative correlation. p < 0.05 confirms it. Lower prices cause higher occupancy — cut rates.", next: 'q1_bad_causation', damage: 25, bad: true },
-      { text: "r = −0.74 shows a strong negative linear association — statistically significant. But correlation cannot establish causation. Both could reflect seasonal patterns: low season brings lower prices AND lower demand regardless.", next: 'q1_pearson', xp: 20 }
+      { text: "r = −0.74 shows a strong negative linear association — statistically significant. But this cannot establish causation: direction could run either way, or a third variable like season could drive both.", next: 'q1_interpret', xp: 15 },
+      { text: "r = −0.74 means 74% of the variance in occupancy is explained by room rate. Margaux can use this figure directly in her revenue forecast.", next: 'q1_bad_causation', damage: 20, bad: true },
+      { text: "r = −0.74 is suspicious — room rates and occupancy should be positively correlated in a healthy hotel. This likely reflects a data entry error rather than a real relationship.", next: 'q1_bad_causation', damage: 20, bad: true },
     ]
   },
 
@@ -1346,7 +1530,9 @@ const SCENES = {
     },
     choices: [
       { text: "Corporate shows 52% Excellent vs 38% for weddings — clearly different. The pattern is obvious. Declare it a real association.", next: 'q2_bad_eyeball', damage: 20, bad: true },
-      { text: "Calculate expected counts first — what the cells would look like if satisfaction were completely independent of event type — then compare to what we actually observed.", next: 'q2_expected', xp: 10 }
+      { text: "Calculate expected counts first — what the cells would look like if satisfaction were completely independent of event type. Chi-Square then tests whether the observed pattern exceeds what chance would produce.", next: 'q2_expected', xp: 10 },
+      { text: "Run a t-test comparing mean satisfaction scores between corporate and wedding events — two groups and one continuous outcome is exactly the independent t-test scenario.", next: 'q2_bad_eyeball', damage: 20, bad: true },
+      { text: "Use Pearson's r to correlate event type number with satisfaction rating — both are recorded as numbers so a correlation will quantify the strength of the relationship.", next: 'q2_bad_eyeball', damage: 20, bad: true },
     ]
   },
 
@@ -1377,7 +1563,9 @@ const SCENES = {
     },
     choices: [
       { text: "Grand total is 200 — large enough to trust the approximation. Cell sizes only matter in tiny studies.", next: 'q2_bad_rule', damage: 20, bad: true },
-      { text: "Every expected count must be ≥ 5. The smallest here is 17.5 — we're safely above the threshold. Chi-Square is valid.", next: 'q2_assumption', xp: 15 }
+      { text: "Every expected count must be ≥ 5. The smallest here is 17.5 — we're safely above the threshold. Chi-Square is valid and we can proceed.", next: 'q2_assumption', xp: 10 },
+      { text: "The ≥ 5 rule applies to observed counts, not expected counts. All observed cells have at least 15 responses so Chi-Square is valid regardless of the expected count formula.", next: 'q2_bad_rule', damage: 20, bad: true },
+      { text: "Expected counts must all be ≥ 10 for Chi-Square to be reliable — the ≥ 5 threshold is outdated and too lenient by current standards.", next: 'q2_bad_rule', damage: 20, bad: true },
     ]
   },
 
@@ -1402,7 +1590,9 @@ const SCENES = {
     },
     choices: [
       { text: "Yes — significant Chi-Square identifies which specific event type gets which specific satisfaction rating more often.", next: 'q2_bad_interpret', damage: 25, bad: true },
-      { text: "No — Chi-Square is an omnibus test. It says the overall association is non-random, but not which cells drive it. We need standardised residuals or post-hoc comparisons to pinpoint that.", next: 'q2_result', xp: 20 }
+      { text: "No — Chi-Square is an omnibus test. It says the overall association is non-random, but not which specific cells drive it. Standardised residuals are needed to identify the key cells.", next: 'q2_result', xp: 10 },
+      { text: "Yes — Cramer's V gives the direction of the association, so combined with the significant p-value we can report exactly which event types rate highest.", next: 'q2_bad_interpret', damage: 20, bad: true },
+      { text: "No — to compare specific event types we would need to run a separate Chi-Square test for each pair of event types after finding the omnibus result significant.", next: 'q2_bad_interpret', damage: 15, bad: true },
     ]
   },
 
@@ -1437,7 +1627,9 @@ const SCENES = {
     },
     choices: [
       { text: "The junior analyst has a point — they're all t-tests. Run a standard two-sample t-test on all three for consistency.", next: 'q3_bad_allsame', damage: 25, bad: true },
-      { text: "The designs are completely different. Study A = paired t-test. Study B = one-sample t-test. Study C = independent samples t-test.", next: 'q3_match', xp: 15 }
+      { text: "The designs are completely different. Study A = paired t-test. Study B = one-sample t-test. Study C = independent samples t-test. The right test depends on study design, not just the number of groups.", next: 'q3_match', xp: 10 },
+      { text: "Study A needs ANOVA since it involves repeated measurements across the same guests. Study B and C are both independent t-tests comparing two separate groups.", next: 'q3_bad_allsame', damage: 20, bad: true },
+      { text: "The specific t-test variant doesn't matter when sample sizes exceed 30 — all forms are robust to design differences at that scale. Choose whichever is easiest to run.", next: 'q3_bad_allsame', damage: 20, bad: true },
     ]
   },
 
@@ -1464,7 +1656,9 @@ const SCENES = {
     },
     choices: [
       { text: "p = 0.010 is marginal. Student's t-test is robust to slight variance differences — use the classic formula.", next: 'q3_bad_student', damage: 20, bad: true },
-      { text: "p = 0.010 < 0.05: we reject equal variances. Student's assumption is violated. Use Welch's t-test, which estimates the variances separately and adjusts degrees of freedom.", next: 'q3_levene', xp: 20 }
+      { text: "p = 0.010 < 0.05: we reject equal variances. Student's assumption is violated. Use Welch's t-test, which adjusts the degrees of freedom to account for unequal variances.", next: 'q3_levene', xp: 10 },
+      { text: "Levene's p = 0.010 means the normality assumption is violated — switch to Mann-Whitney U rather than any form of t-test.", next: 'q3_bad_student', damage: 20, bad: true },
+      { text: "Levene's p = 0.010 < 0.05 makes this analysis unreliable. Restart with a larger sample before drawing conclusions about wine ratings.", next: 'q3_bad_student', damage: 20, bad: true },
     ]
   },
 
@@ -1488,7 +1682,9 @@ const SCENES = {
     },
     choices: [
       { text: "We clearly predicted aged would outscore young — use one-tailed for a stronger, more focused test.", next: 'q3_bad_onetail', damage: 25, bad: true },
-      { text: "One-tailed is only legitimate if the directional hypothesis was pre-registered before data collection. Choosing it after seeing which direction the data went is p-hacking. Keep two-tailed.", next: 'q3_tail', xp: 20 }
+      { text: "One-tailed is only legitimate if the directional hypothesis was pre-registered before data collection. Choosing it after seeing the data trend is p-hacking — stay two-tailed.", next: 'q3_tail', xp: 10 },
+      { text: "Use one-tailed because wine expertise is obviously directional — there is no realistic scenario where aged wines score lower, so testing the other tail wastes statistical power.", next: 'q3_bad_onetail', damage: 20, bad: true },
+      { text: "Use two-tailed but divide the final p-value by 2 before reporting — one-tailed and two-tailed are mathematically equivalent and either is acceptable for publication.", next: 'q3_bad_onetail', damage: 20, bad: true },
     ]
   },
 
@@ -1520,7 +1716,9 @@ const SCENES = {
     },
     choices: [
       { text: "Ten t-tests is the only way to see all pairwise differences — run them.", next: 'q4_bad_multtest', damage: 20, bad: true },
-      { text: "Ten tests at α = 0.05 means a 40% chance of at least one spurious significant result. ANOVA tests all five hotels simultaneously, keeping the error rate at 5%.", next: 'q4_anova', xp: 15 }
+      { text: "Ten tests at α = 0.05 means roughly a 40% chance of at least one false positive. ANOVA tests all five hotels in a single omnibus test, keeping the family-wise error rate controlled.", next: 'q4_anova', xp: 10 },
+      { text: "Run one t-test comparing the best to the worst performer — this is the most efficient way to establish whether a meaningful performance gap exists across hotels.", next: 'q4_bad_multtest', damage: 20, bad: true },
+      { text: "Apply a Bonferroni correction to the ten t-tests — dividing α by the number of tests perfectly resolves multiple comparisons without needing ANOVA at all.", next: 'q4_bad_multtest', damage: 15, bad: true },
     ]
   },
 
@@ -1545,7 +1743,9 @@ const SCENES = {
     },
     choices: [
       { text: "ANOVA is robust to mild variance differences — use standard Fisher's ANOVA. The sample sizes are similar enough.", next: 'q4_bad_fisher', damage: 20, bad: true },
-      { text: "Levene's p = 0.007 < 0.05: equal variance assumption is violated. Use Welch's ANOVA, which adjusts for unequal variances across the five hotels.", next: 'q4_welch', xp: 20 }
+      { text: "Levene's p = 0.007 < 0.05: equal variance assumption is violated. Use Welch's ANOVA, which adjusts for unequal variances, then Games-Howell for post-hoc comparisons.", next: 'q4_welch', xp: 10 },
+      { text: "Levene's p = 0.007 means normality is violated — switch to Kruskal-Wallis, the non-parametric equivalent of ANOVA, which makes no assumptions about variance or distribution.", next: 'q4_bad_fisher', damage: 20, bad: true },
+      { text: "Levene's p = 0.007 is borderline — run both Fisher's and Welch's ANOVA and report whichever gives the more significant F-statistic to be comprehensive.", next: 'q4_bad_fisher', damage: 20, bad: true },
     ]
   },
 
@@ -1570,7 +1770,9 @@ const SCENES = {
     },
     choices: [
       { text: "The Ivory Tower has the highest mean and the F-test is significant — they are confirmed as the best hotel.", next: 'q4_bad_interpret', damage: 25, bad: true },
-      { text: "Significant F means at least one hotel differs from at least one other — not which ones. We need Games-Howell post-hoc tests (matched to Welch's ANOVA) to identify specific differences.", next: 'q4_posthoc', xp: 20 }
+      { text: "Significant F means at least one hotel differs from at least one other — not which specific pair. Games-Howell post-hoc tests will identify exactly which hotels differ significantly.", next: 'q4_posthoc', xp: 10 },
+      { text: "Use Tukey's HSD post-hoc test — it is the most widely used method and appropriate here because we used Welch's ANOVA for the omnibus test.", next: 'q4_bad_interpret', damage: 20, bad: true },
+      { text: "F is so significant (p < 0.001) that post-hoc tests are unnecessary — a result this strong clearly means all five hotels differ from each other.", next: 'q4_bad_interpret', damage: 20, bad: true },
     ]
   },
 
@@ -1772,7 +1974,9 @@ Object.assign(SCENES, {
     },
     choices: [
       { text: 'Agree with the junior analyst — two independent groups, continuous outcome, so a t-test is obviously correct. Run it and move on.', next: 'q3b_bad_skip', damage: 20, bad: true },
-      { text: 'Before any test, look at the shape of both distributions. Plot the histograms and see what you\'re actually dealing with.', next: 'q3b_hist', xp: 10 }
+      { text: 'Before any test, look at the shape of both distributions. Plot the histograms and see what you\'re actually dealing with.', next: 'q3b_hist', xp: 10 },
+      { text: 'Run Levene\'s test first — if the variances are equal use Student\'s t-test, if unequal use Welch\'s. Normality checks are optional when sample sizes exceed 30.', next: 'q3b_bad_skip', damage: 20, bad: true },
+      { text: 'Use Mann-Whitney U immediately — it is the safer non-parametric option for any comparison of guest satisfaction scores, regardless of what the data looks like.', next: 'q3b_bad_skip', damage: 15, bad: true }
     ]
   },
 
@@ -1799,7 +2003,9 @@ Object.assign(SCENES, {
     },
     choices: [
       { text: 'Group B\'s skew looks severe enough to matter. Before deciding on a test, confirm with Shapiro-Wilk — a formal normality test gives a defensible answer.', next: 'q3b_shapiro', xp: 15 },
-      { text: 'Both groups have n > 30, so the t-test is robust enough. The histogram is just a rough guide — proceed with the t-test.', next: 'q3b_bad_robust', damage: 20, bad: true }
+      { text: 'Both groups have n > 30, so the t-test is robust enough. The histogram is just a rough guide — proceed with the t-test.', next: 'q3b_bad_robust', damage: 20, bad: true },
+      { text: 'Group B looks right-skewed, which means a log transformation should be applied to make the data normal before running the t-test.', next: 'q3b_bad_robust', damage: 15, bad: true },
+      { text: 'Group A looks normal but Group B does not — this means the comparison is invalid regardless of which test you use. The study should be redesigned with a different outcome measure.', next: 'q3b_bad_robust', damage: 15, bad: true }
     ]
   },
 
@@ -1826,7 +2032,9 @@ Object.assign(SCENES, {
     },
     choices: [
       { text: 'The junior analyst has a point — n = 35 is a moderate sample and Shapiro-Wilk can be sensitive. With p = 0.004 being borderline, proceed with the t-test anyway.', next: 'q3b_bad_ignore_sw', damage: 25, bad: true },
-      { text: 'W = 0.891 with p = 0.004 is not a borderline result, and the histogram clearly shows severe skew. Both pieces of evidence point the same way. Use Mann-Whitney U instead of the t-test.', next: 'q3b_decision', xp: 20 }
+      { text: 'W = 0.891 with p = 0.004 is not a borderline result, and the histogram clearly shows severe skew. Both pieces of evidence point the same way. Use Mann-Whitney U instead of the t-test.', next: 'q3b_decision', xp: 20 },
+      { text: 'Shapiro-Wilk is significant for Group B only. Since Group A is normal, run a one-sample t-test comparing Group B against Group A\'s mean rather than a two-group comparison.', next: 'q3b_bad_ignore_sw', damage: 20, bad: true },
+      { text: 'W = 0.891 is close enough to 1.0 to treat as approximately normal. The Shapiro-Wilk p-value is significant only because the test has inflated power at n = 35 — the practical departure is negligible.', next: 'q3b_bad_ignore_sw', damage: 25, bad: true }
     ]
   },
 
@@ -2490,6 +2698,7 @@ function selectClass(classKey) {
 }
 
 function showMap() {
+  hideOracleButton();
   G.currentQuest = null;
   G.currentScene = null;
   const el = document.getElementById('main-content');
@@ -2556,6 +2765,7 @@ let _currentChoices = [];
 let _currentBossChoices = [];
 
 function showScene(sceneId) {
+  showOracleButton();
   G.currentScene = sceneId;
 
   if (sceneId.startsWith('BOSS_')) {
@@ -2799,6 +3009,7 @@ function bossVictory() {
 }
 
 function showQuestComplete(quest) {
+  hideOracleButton();
   const el = document.getElementById('main-content');
   const summaries = {
     q0: `<strong>Measurement levels:</strong> Nominal (labels) → Ordinal (ordered) → Interval (equal gaps) → Ratio (true zero). Level determines valid statistics.<br>
@@ -2837,6 +3048,113 @@ function showQuestComplete(quest) {
 }
 
 
+
+
+// ══════════════════════════════════════════════════════
+// THE ORACLE — Spirit Guide
+// ══════════════════════════════════════════════════════
+const ORACLE_CONTENT = {
+  mc: `
+    <h4>How to Read an MC Question</h4>
+    <div class="oracle-tip gold">
+      <strong>Step 1 — Find the real question.</strong> Read the stem twice. Underline the key verb: "which test", "what does this mean", "what is wrong with". The question is often buried after a long scenario.
+    </div>
+    <div class="oracle-tip gold">
+      <strong>Step 2 — Cover the options.</strong> Before reading A–D, form your own rough answer. Then find the closest match. This stops the options from hijacking your thinking before you've engaged with the question.
+    </div>
+    <div class="oracle-tip gold">
+      <strong>Step 3 — Eliminate first.</strong> Cross out anything you know is wrong. Eliminate 2 and you have a 50/50. Never leave a question blank — there is no penalty for guessing.
+    </div>
+    <div class="oracle-tip gold">
+      <strong>Step 4 — Watch for scope.</strong> Options that are statistically true but don't answer this specific question are classic traps. Ask: does this answer <em>what was asked</em>, not just <em>something correct</em>?
+    </div>
+    <h4>Strip the Scenario</h4>
+    <div class="oracle-tip">The hotel, the manager, the guest names — decoration. Strip them away and ask: what statistical concept is this question actually testing? Every question tests one thing.</div>
+    <h4>Pacing</h4>
+    <div class="oracle-tip">60 questions. ~1 minute each. Flag uncertain ones and return. Never spend 4 minutes on one question when you haven't seen the next three.</div>
+  `,
+
+  traps: `
+    <h4>The Most Common Traps in Stats MC</h4>
+    <div class="oracle-tip danger">
+      <strong>True-But-Irrelevant.</strong> An answer that is correct in general but wrong for this scenario. "Pearson's r measures linear association" is always true — but it's wrong if the data is non-linear and the question asks what to do next.
+    </div>
+    <div class="oracle-tip danger">
+      <strong>Concept Swaps.</strong> Examiners love to swap paired concepts: Levene's vs Shapiro-Wilk · Type I vs Type II · Fisher's vs Welch's · one-tailed vs two-tailed · validity vs reliability. Know these pairs cold.
+    </div>
+    <div class="oracle-tip danger">
+      <strong>Causation Creep.</strong> An option that correctly describes a correlation but adds "therefore X causes Y." Correlation never implies causation. Any option that makes this leap is wrong.
+    </div>
+    <div class="oracle-tip danger">
+      <strong>The p-value Inversion.</strong> "p = 0.03 means 97% certain" or "p = 0.03 proves H₁." Wrong. p is the probability of your data under H₀ — not the probability your hypothesis is true.
+    </div>
+    <div class="oracle-tip danger">
+      <strong>Omnibus Overreach.</strong> A significant ANOVA or Chi-Square tells you <em>something</em> differs — not <em>which</em> groups. Options claiming the omnibus test identifies specific pairs are traps.
+    </div>
+    <div class="oracle-tip danger">
+      <strong>Large N Saves Everything.</strong> Options claiming a big sample fixes non-normality, biased sampling, or a wrong test choice. It doesn't. Large N reduces sampling error — it doesn't fix methodological mistakes.
+    </div>
+    <div class="oracle-tip danger">
+      <strong>Levene's = Normality?</strong> No. Levene's tests equal variances. Shapiro-Wilk tests normality. Failing one says nothing about the other. Know which assumption each test checks.
+    </div>
+  `,
+
+  stats: `
+    <h4>Quick Test Selector</h4>
+    <div class="oracle-tip">2 categorical variables → <strong>Chi-Square</strong> (expected ≥ 5) or Fisher's Exact</div>
+    <div class="oracle-tip">2 continuous variables → <strong>Pearson's r</strong> (linear data only)</div>
+    <div class="oracle-tip">1 group vs known benchmark → <strong>One-sample t-test</strong></div>
+    <div class="oracle-tip">Same group before/after → <strong>Paired t-test</strong></div>
+    <div class="oracle-tip">2 independent groups, both normal:<br>Levene's passes → <strong>Student's t</strong> · Levene's fails → <strong>Welch's t</strong></div>
+    <div class="oracle-tip">Either group non-normal → <strong>Mann-Whitney U</strong></div>
+    <div class="oracle-tip">3+ groups, Levene's passes → <strong>Fisher's ANOVA → Tukey/Bonferroni</strong></div>
+    <div class="oracle-tip">3+ groups, Levene's fails → <strong>Welch's ANOVA → Games-Howell</strong></div>
+
+    <h4>Critical Thresholds</h4>
+    <div class="oracle-tip">p &lt; 0.05 → reject H₀ (at α = 0.05)</div>
+    <div class="oracle-tip">Chi-Square: all <em>expected</em> counts ≥ 5</div>
+    <div class="oracle-tip">Shapiro-Wilk: p &lt; 0.05 = non-normal · W near 1.0 = normal</div>
+    <div class="oracle-tip">Levene's: p &lt; 0.05 = unequal variances → Welch's</div>
+    <div class="oracle-tip">Pearson's r: −1 to +1 · Cramer's V: 0 to 1</div>
+
+    <h4>Hypothesis Rules</h4>
+    <div class="oracle-tip">Always written <em>before</em> data collection</div>
+    <div class="oracle-tip">Means → μ · Proportions → π</div>
+    <div class="oracle-tip">One-tailed only if pre-registered — never chosen after seeing the data</div>
+  `
+};
+
+let _oracleOpen = false;
+
+function toggleOracle() {
+  _oracleOpen = !_oracleOpen;
+  const panel = document.getElementById('oracle-panel');
+  const btn   = document.getElementById('oracle-toggle');
+  if (_oracleOpen) {
+    panel.classList.add('open');
+    btn.style.transform = 'scale(1.05)';
+    const body = document.getElementById('oracle-body');
+    if (!body.innerHTML.trim()) body.innerHTML = ORACLE_CONTENT.mc;
+  } else {
+    panel.classList.remove('open');
+    btn.style.transform = '';
+  }
+}
+
+function oracleTab(el, tab) {
+  document.querySelectorAll('.oracle-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('oracle-body').innerHTML = ORACLE_CONTENT[tab];
+}
+
+function showOracleButton() {
+  document.getElementById('oracle-toggle').classList.add('visible');
+}
+function hideOracleButton() {
+  document.getElementById('oracle-toggle').classList.remove('visible');
+  document.getElementById('oracle-panel').classList.remove('open');
+  _oracleOpen = false;
+}
 
 // ── SAVE TOGGLE ──────────────────────────────────────────────────────────────
 let _saveEnabled = true;
