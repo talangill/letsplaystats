@@ -590,6 +590,15 @@ h1.game-title {
 }
 .quest-node:hover:not(.locked) { border-color: var(--gold); transform: translateY(-3px); }
 .quest-node:hover:not(.locked)::before { opacity: 1; }
+
+.quest-node.suggested {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(212,168,32,0.25);
+}
+.quest-node.suggested .node-level {
+  color: var(--gold-bright);
+}
+
 .quest-node.locked { opacity: 0.4; cursor: not-allowed; }
 .quest-node.completed { border-color: var(--sage); }
 .quest-node.completed::after {
@@ -726,6 +735,110 @@ h1.game-title {
   .card { padding: 1.2rem; }
   .boss-body { padding: 1rem; }
 }
+
+/* ══════════════════════════════════════════════════════
+   JAMOVI OUTPUT STYLING
+══════════════════════════════════════════════════════ */
+.jmv-output {
+  background: #1a1a2e;
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  margin: 0.8rem 0;
+  font-family: 'Crimson Pro', serif;
+}
+.jmv-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--rune-bright);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-bright);
+}
+.jmv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.jmv-table th {
+  text-align: right;
+  padding: 0.25rem 0.7rem;
+  color: var(--text-dim);
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border-bright);
+  font-weight: 600;
+}
+.jmv-table th:first-child { text-align: left; }
+.jmv-table td {
+  text-align: right;
+  padding: 0.25rem 0.7rem;
+  color: var(--text);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.jmv-table .jmv-row-label {
+  text-align: left;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.jmv-table tr:last-child td { border-bottom: 2px solid var(--border-bright); }
+.jmv-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+  font-style: italic;
+}
+.sig { color: var(--sage-bright); font-weight: 600; }
+.nonsig { color: var(--text-dim); }
+
+
+.hud-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.hud-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid var(--border-bright);
+  background: transparent;
+  color: var(--text-dim);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.hud-btn:hover { border-color: var(--gold); color: var(--gold); }
+.hud-btn.danger:hover { border-color: var(--blood); color: var(--blood); }
+.hud-btn.save-on {
+  border-color: var(--sage-bright);
+  color: var(--sage-bright);
+}
+.hud-save-tooltip {
+  position: fixed;
+  top: 52px;
+  right: 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  color: var(--text);
+  z-index: 200;
+  max-width: 220px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  display: none;
+}
+.hud-save-tooltip.show { display: block; animation: fadeIn 0.15s ease; }
+
 </style>
 </head>
 <body>
@@ -742,7 +855,13 @@ h1.game-title {
       <div class="xp-track"><div class="xp-fill" id="hud-xp-fill" style="width:0%"></div></div>
     </div>
     <div class="hud-quest" id="hud-quest">—</div>
+    <div class="hud-controls">
+      <button class="hud-btn save-on" id="hud-save-btn" onclick="toggleSave()" title="Toggle progress saving">💾 Saving</button>
+      <button class="hud-btn" onclick="showMap()">🗺 Map</button>
+      <button class="hud-btn danger" onclick="confirmReset()">↺ Reset</button>
+    </div>
   </div>
+  <div class="hud-save-tooltip" id="save-tooltip"></div>
   <div id="main-content"></div>
 </div>
 
@@ -766,7 +885,7 @@ let pendingLevelUpCallback = null;
 const XP_PER_LEVEL = 100;
 
 // Quest order for sequential unlock logic
-const QUEST_ORDER = ['q1','q2','q3','q4'];
+const QUEST_ORDER = ['q0','q1','q2','q3','q3b','q4'];
 
 const CLASSES = {
   wizard: {
@@ -799,7 +918,16 @@ const CLASSES = {
 };
 
 const QUESTS = {
-  q1: {
+  q0: {
+    id: 'q0', name: "The Foundations", icon: '📜',
+    chapter: 'Prologue', topic: 'Research Fundamentals',
+    bossName: 'The Ghost of Bad Research Past',
+    bossIcon: '💀',
+    bossSub: 'It haunts the Archive with every methodological error ever published',
+    scenes: ['q0_intro','q0_levels','q0_charts','q0_hypothesis','q0_pvalue','q0_errors','q0_validity','q0_sampling','q0_boss_intro'],
+    boss: 'boss_q0'
+  },
+    q1: {
     id: 'q1', name: "The Innkeeper's Ledger", icon: '🏨',
     chapter: 'Chapter I', topic: 'Correlation',
     bossName: 'The Ghost of Spurious Reviews',
@@ -826,7 +954,16 @@ const QUESTS = {
     scenes: ['q3_intro','q3_match','q3_levene','q3_tail'],
     boss: 'boss_q3'
   },
-  q4: {
+  q3b: {
+    id: 'q3b', name: "The Cursed Distribution", icon: '📊',
+    chapter: 'Chapter III·B', topic: 'Normality & Mann-Whitney U',
+    bossName: 'The Shapiro-Wilk Wraith',
+    bossIcon: '🌀',
+    bossSub: 'It hides non-normality behind innocent-looking means',
+    scenes: ['q3b_intro','q3b_hist','q3b_shapiro','q3b_decision'],
+    boss: 'boss_q3b'
+  },
+    q4: {
     id: 'q4', name: "The Grand Hotel Ratings War", icon: '🏰',
     chapter: 'Chapter IV', topic: 'ANOVA',
     bossName: 'The Omnibus Concierge',
@@ -856,6 +993,250 @@ function isQuestLocked(questId) {
 // SCENES
 // ══════════════════════════════════════════════════════
 const SCENES = {
+
+
+  // ══════════════════════════════════════════════════════
+  // QUEST 0 — THE FOUNDATIONS
+  // Prologue quest covering research fundamentals:
+  // measurement levels, charts, hypotheses, p-values,
+  // type I/II errors, validity/reliability, sampling
+  // ══════════════════════════════════════════════════════
+
+  q0_intro: {
+    icon: '📜', chapter: 'Prologue · The Foundations',
+    title: 'Your First Day',
+    narrative: `<p>The Archive Master meets you at the door before you have even taken your coat off.</p>
+    <p class="npc-speech">"Before I let you near a single dataset, you need to prove you understand what data actually <em>is</em>. Half the errors in this Archive were made by people who ran straight to a statistical test without asking the most basic questions first."</p>
+    <p>She leads you to a room lined with filing cabinets. Each drawer is labelled with a different hotel's name. She pulls one open at random and drops a folder on the desk.</p>
+    <p><em>"A hotel manager sent us this. He recorded room type as 1, 2, and 3 — Standard, Deluxe, Suite — then calculated the average room type as 1.8. He's been reporting this to his board for two years."</em></p>
+    <p>She raises an eyebrow. What's the problem?</p>`,
+    hints: {
+      formula: 'Numbers used as labels are categorical — nominal level. You can count them, but arithmetic on them is meaningless. The "average room type" of 1.8 has no interpretation.',
+      assumption: 'Measurement level determines what statistics are valid. Using a mean requires interval or ratio data. Nominal data only allows frequencies and modes.',
+      interpretation: 'Room type 1, 2, 3 is a label — not a quantity. Saying the "average" is 1.8 is like averaging the numbers on football shirts and calling it a useful statistic.'
+    },
+    choices: [
+      { text: 'The average of 1.8 is fine — numbers are numbers. If the categories have labels 1, 2, 3 then arithmetic on them is valid and the board can interpret the result sensibly.', next: 'q0_levels_wrong', damage: 15, bad: true },
+      { text: 'Room types 1, 2, 3 are just labels — nominal data. You can count how many guests chose each type, but averaging the labels produces a number that means nothing. The manager has been reporting nonsense.', next: 'q0_levels', xp: 10 }
+    ]
+  },
+
+  q0_levels_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Meaningless Mean',
+    narrative: `<p>The Archive Master shakes her head slowly.</p>
+    <p class="npc-speech">"Room type 2.4. What does that mean? Somewhere between Deluxe and Suite? The numbers are labels — you could just as easily have called them A, B, C, and no one would average letters."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −15 HP</span>Measurement level determines which statistics are meaningful. <strong>Nominal</strong> data (labels, categories with no order or quantity) only supports counts and percentages. Calculating a mean requires at minimum <strong>interval</strong> level data — where the distances between values are genuinely equal.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_intro' }]
+  },
+
+  q0_levels: {
+    icon: '📐', chapter: 'Prologue · The Foundations',
+    title: 'The Four Levels',
+    narrative: `<p>Good. The Archive Master nods and pulls out a second folder.</p>
+    <p class="npc-speech">"A researcher coded guest satisfaction as: 1 = Dissatisfied, 2 = Neutral, 3 = Satisfied. She then calculated the mean satisfaction as 2.3 and reported a t-test comparing two hotels. Is this valid?"</p>
+    <div class="box box-lore"><span class="box-title">📜 The Four Measurement Levels</span>
+    <strong>Nominal</strong> — categories with no order (room type, nationality, gender). Only = and ≠.<br>
+    <strong>Ordinal</strong> — categories with order but unequal gaps (satisfaction ratings, star ratings). You can say &gt; and &lt; but not + and −.<br>
+    <strong>Interval</strong> — equal gaps, no true zero (temperature in °C, clock time). + and − valid, × and ÷ not.<br>
+    <strong>Ratio</strong> — equal gaps with a true zero (revenue, age, weight). All arithmetic valid.</div>`,
+    hints: {
+      formula: 'Ordinal data has order (1 < 2 < 3) but the gaps are not guaranteed equal. "Neutral to Satisfied" may not be the same psychological distance as "Dissatisfied to Neutral". A mean assumes equal intervals.',
+      assumption: 'The debate about using means on Likert/ordinal scales is real and ongoing. The safe position for this course: ordinal data officially requires non-parametric tests. Many researchers treat 5-7 point scales as interval in practice, but must justify this.',
+      interpretation: 'In practice, many hospitality researchers treat 5-point satisfaction scales as interval and use t-tests. The key word is "justify" — you need to acknowledge the assumption you are making.'
+    },
+    choices: [
+      { text: 'Yes — the satisfaction scale 1-2-3 has a clear order and the gaps feel equal enough. Treating it as interval for the purposes of a t-test is standard practice in hospitality research.', next: 'q0_levels_debate', xp: 5 },
+      { text: 'Technically no — satisfaction ratings are ordinal, not interval. The gap between Dissatisfied and Neutral may not equal the gap between Neutral and Satisfied. A t-test on these scores is questionable.', next: 'q0_levels_debate', xp: 10 }
+    ]
+  },
+
+  q0_levels_debate: {
+    icon: '⚖️', chapter: 'Prologue · The Foundations',
+    title: 'The Honest Answer',
+    narrative: `<p>The Archive Master smiles slightly — the first time today.</p>
+    <p class="npc-speech">"Both answers have merit, which is the honest position. This is one of the oldest debates in applied research. A strict methodologist says ordinal data needs non-parametric tests. Many hospitality researchers treat Likert scales as interval in practice — but they have to say so and justify it."</p>
+    <p class="npc-speech">"What you must never do is pretend the question doesn't exist. Know which level your variable is, know what that permits, and be transparent about any assumptions you make beyond that."</p>
+    <p>She moves to the next cabinet. <em>"Charts."</em></p>`,
+    choices: [{ text: 'Continue to the next lesson ›', next: 'q0_charts', xp: 5 }]
+  },
+
+  q0_charts: {
+    icon: '📊', chapter: 'Prologue · The Foundations',
+    title: 'The Wrong Chart',
+    narrative: `<p>A hotel manager slides a printed report across the desk. He has used a pie chart to show the distribution of guests' nightly spend — a continuous variable ranging from €45 to €420.</p>
+    <p>He looks very pleased with it. The Archive Master looks like she might be ill.</p>
+    <p class="npc-speech">"Tell him what's wrong."</p>
+    <div class="box box-lore"><span class="box-title">📜 Chart Selection Rules</span>
+    <strong>One categorical variable</strong> → Bar chart or pie chart<br>
+    <strong>Two categorical variables</strong> → Clustered or stacked bar chart<br>
+    <strong>One continuous variable</strong> → Histogram<br>
+    <strong>Two continuous variables</strong> → Scatterplot (or line graph over time)<br>
+    <strong>One categorical + one continuous</strong> → Bar chart, error bar plot, or box plot</div>`,
+    hints: {
+      formula: 'A pie chart divides a whole into proportional slices. It requires discrete, mutually exclusive categories that sum to 100%. Continuous data has no natural slices.',
+      assumption: 'A histogram groups continuous data into bins (ranges) and shows the frequency of each range. This reveals the shape of the distribution — which a pie chart cannot do.',
+      interpretation: 'The manager has likely grouped the data into arbitrary price brackets and treated them as categories. The result hides the actual distribution shape — you cannot see skew, outliers, or bimodality in a pie chart.'
+    },
+    choices: [
+      { text: 'Pie charts are versatile — as long as the data is divided into sensible price bands, a pie chart of spending is a legitimate way to show the proportions in each band.', next: 'q0_charts_wrong', damage: 10, bad: true },
+      { text: 'Nightly spend is continuous data. A pie chart cannot show the shape of the distribution — where most guests cluster, whether it is skewed, whether there are outliers. He needs a histogram.', next: 'q0_hypothesis', xp: 10 }
+    ]
+  },
+
+  q0_charts_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Pie That Lies',
+    narrative: `<p class="npc-speech">"Sensible price bands chosen by whom? On what basis? And what happens to the distribution shape — the skew, the outliers, the gap at €200 where no one seems to spend? All invisible."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span>A pie chart of continuous data grouped into arbitrary bands disguises the real distribution and forces the reader to trust whoever drew the bands. For one continuous variable, a <strong>histogram</strong> lets the data speak — the bin width is a choice, but the shape is real.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_charts' }]
+  },
+
+  q0_hypothesis: {
+    icon: '🔬', chapter: 'Prologue · The Foundations',
+    title: 'The Hypothesis Problem',
+    narrative: `<p>A junior researcher at a hotel chain ran a study comparing room service response times between two branches. After collecting the data, she looked at the results and wrote her hypothesis as: <em>"Branch A has faster response times than Branch B."</em></p>
+    <p>She's asking you to sign off on the report.</p>
+    <p class="npc-speech">"What is wrong with her hypothesis — and what should it have been?"</p>`,
+    hints: {
+      formula: 'H₀ (null hypothesis) = no difference, no effect — the default position. H₁ (alternative) = there is a difference or effect. Both must be written before data collection. One-sided H₁ states a direction (μA > μB). Two-sided states only a difference (μA ≠ μB).',
+      assumption: 'A hypothesis written after seeing the data is not a hypothesis — it is a description. The entire logic of p-values assumes the hypothesis was fixed before the data was examined.',
+      interpretation: 'If she wrote "Branch A is faster" after seeing that Branch A was faster, her p-value is meaningless. She has used the data to generate and confirm the same hypothesis simultaneously.'
+    },
+    choices: [
+      { text: 'The hypothesis is fine — it is specific and directional, which is better than a vague two-sided hypothesis. Specificity improves the power of the test.', next: 'q0_hyp_wrong', damage: 15, bad: true },
+      { text: 'The hypothesis was written after seeing the data — it describes what she found rather than predicting what she expected. A valid hypothesis must be committed to before data collection, not derived from it.', next: 'q0_pvalue', xp: 10 }
+    ]
+  },
+
+  q0_hyp_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Prediction That Wasn\'t',
+    narrative: `<p class="npc-speech">"Directional hypotheses do improve power — when they are genuinely directional. When they are written after looking at the data, they are not hypotheses at all. They are descriptions wearing a hypothesis costume."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −15 HP</span>The p-value answers: <em>if H₀ were true, how likely is this data?</em> That question only makes sense if H₀ was specified independently of the data. Writing your hypothesis to match your results inflates your apparent certainty and is a form of HARKing — Hypothesizing After Results are Known.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_hypothesis' }]
+  },
+
+  q0_pvalue: {
+    icon: '📉', chapter: 'Prologue · The Foundations',
+    title: 'What p Actually Means',
+    narrative: `<p>A hotel chain's marketing director bursts into the Archive waving a report.</p>
+    <p class="npc-speech">"Our new breakfast package works! The study shows p = 0.03 — we are 97% certain it increases guest satisfaction!"</p>
+    <p>Three people in the Archive wince simultaneously.</p>
+    <p>What is actually wrong with his interpretation — and what does p = 0.03 actually mean?</p>`,
+    hints: {
+      formula: 'p = the probability of obtaining your data (or more extreme data) if H₀ is true. Small p = your data would be rare under H₀ → reject H₀. It is NOT the probability that H₁ is true.',
+      assumption: 'The 95% confidence interval means: if you repeated this study 100 times, 95 of the resulting CIs would contain the true population parameter. It does NOT mean "95% chance the true value is in this interval."',
+      interpretation: 'p = 0.03 means: if the breakfast package truly had no effect, there is only a 3% chance of seeing a result this large by chance. It says nothing about the probability that the package works — that requires effect size, replication, and context.'
+    },
+    choices: [
+      { text: 'He is close enough — p = 0.03 means the result is unlikely to be due to chance, and "97% certain" is a reasonable way to communicate this to a non-technical audience.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'p = 0.03 means: if the package had no effect, we would see a result this large only 3% of the time. It is not a 97% probability that the package works — it is a statement about the data under H₀, not about how likely H₁ is.', next: 'q0_errors', xp: 10 }
+    ]
+  },
+
+  q0_pvalue_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Probability of Being Wrong About Probability',
+    narrative: `<p class="npc-speech">"Close enough is how half the bad science in this Archive got published. p is the probability of your data under H₀. Not the probability that your hypothesis is correct. Not your certainty level. Not how well the package works."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span>p = 0.03 says: <em>data this extreme would occur 3% of the time if H₀ were true.</em> The marketing director's interpretation inverts this — he is treating p as the probability of H₀ being true, which it is not. Effect size (how big is the improvement?) and confidence intervals (how precise is the estimate?) answer the practical question he actually wants answered.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_pvalue' }]
+  },
+
+  q0_errors: {
+    icon: '⚠️', chapter: 'Prologue · The Foundations',
+    title: 'The Costly Mistake',
+    narrative: `<p>A hotel chain ran a study testing whether a new staff training programme improved service scores. The result was p = 0.04 — just significant. The chain rolled out the programme across all 12 properties at considerable cost.</p>
+    <p>Two years later, a replication study found no effect. The original result was almost certainly a false positive.</p>
+    <p class="npc-speech">"What type of error did the original study make — and what is the other type you need to know about?"</p>
+    <div class="box box-lore"><span class="box-title">📜 Error Types</span>
+    <strong>Type I error (false positive)</strong> — rejecting H₀ when it is actually true. Concluding there is an effect when there isn't one. Probability = α (your significance threshold, e.g. 0.05).<br>
+    <strong>Type II error (false negative)</strong> — failing to reject H₀ when it is actually false. Missing a real effect. Related to statistical power.<br>
+    <strong>Type III error</strong> — rejecting H₀ for the right result but the wrong reason (e.g. correct conclusion, flawed methodology).</div>`,
+    hints: {
+      formula: 'α = 0.05 means you accept a 5% chance of a Type I error. Lowering α (e.g. to 0.01) reduces Type I errors but increases Type II errors. There is always a trade-off.',
+      assumption: 'Type II errors are more common than people realise — underpowered studies (too few participants) miss real effects. Increasing sample size reduces Type II error without changing α.',
+      interpretation: 'In hospitality practice: Type I = spending money on a training programme that does not work. Type II = not implementing a training programme that would have worked. Both have real costs.'
+    },
+    choices: [
+      { text: 'The original study made a Type II error — it failed to detect a real effect because the sample was too small, which is why the replication also found nothing.', next: 'q0_errors_wrong', damage: 10, bad: true },
+      { text: 'The original study made a Type I error — it found a significant result that was not real. With p = 0.04 and α = 0.05, there was a 4% chance of this happening even if the training had no effect at all.', next: 'q0_validity', xp: 10 }
+    ]
+  },
+
+  q0_errors_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Wrong Error',
+    narrative: `<p class="npc-speech">"A Type II error misses a real effect. But the replication found nothing either — which means the original effect probably wasn't real to begin with. That's a Type I error: the first study found something that wasn't there."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span><strong>Type I</strong>: false positive — you conclude an effect exists when it doesn't. This is what happened here — the training programme had no real effect, but p = 0.04 crossed the threshold by chance. This happens 5% of the time at α = 0.05 even when H₀ is completely true.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_errors' }]
+  },
+
+  q0_validity: {
+    icon: '🎯', chapter: 'Prologue · The Foundations',
+    title: 'Valid, Reliable, or Neither?',
+    narrative: `<p>Two research problems land on your desk at the same time.</p>
+    <p><strong>Problem A:</strong> A hotel used a questionnaire to measure "guest loyalty" — but every question was actually about satisfaction with the room. They called the result their loyalty score.</p>
+    <p><strong>Problem B:</strong> The same hotel ran the questionnaire twice with the same guests a week apart. The scores shifted dramatically between the two administrations with no change in conditions.</p>
+    <p class="npc-speech">"What is wrong with each — and which concept does each violate?"</p>`,
+    hints: {
+      formula: 'Validity: are you measuring what you claim to measure? Reliability: do repeated measurements give consistent results? A measure can be reliable without being valid (consistently wrong), but cannot be valid without being reliable.',
+      assumption: 'Problem A is a construct validity issue — the questions do not represent the construct (loyalty) they claim to measure. Problem B is a reliability issue — the measure gives inconsistent results under stable conditions.',
+      interpretation: 'The archery target analogy: reliability = tight grouping (consistent). Validity = hitting the bullseye (accurate). Reliable but not valid = tight grouping, wrong target. Valid but not reliable = can\'t reproduce it.'
+    },
+    choices: [
+      { text: 'Problem A violates reliability — the questionnaire gives inconsistent results. Problem B violates validity — the loyalty score doesn\'t actually measure loyalty.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Problem A violates validity — specifically construct validity, because the items measure satisfaction not loyalty. Problem B violates reliability — the scores are inconsistent across administrations with no real change.', next: 'q0_sampling', xp: 10 }
+    ]
+  },
+
+  q0_validity_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Mixed-Up Concepts',
+    narrative: `<p class="npc-speech">"You have them backwards. Validity asks: are we measuring the right thing? Reliability asks: are we measuring it consistently? A questionnaire about room satisfaction cannot be a valid measure of loyalty — regardless of how consistently it gives wrong answers."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span><strong>Validity</strong> = measuring what you claim to measure (Problem A — wrong construct). <strong>Reliability</strong> = getting consistent results under stable conditions (Problem B — inconsistent scores). A measure must be reliable to be valid, but reliability alone does not make something valid.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_validity' }]
+  },
+
+  q0_sampling: {
+    icon: '🎲', chapter: 'Prologue · The Foundations',
+    title: 'Who Did You Ask?',
+    narrative: `<p>The Archive Master lays four research briefs on the desk, each describing how a hotel chain collected its sample.</p>
+    <div class="box box-lore"><span class="box-title">📜 The Four Scenarios</span>
+    <strong>A.</strong> Surveyed every 10th guest to check in over a month.<br>
+    <strong>B.</strong> Asked guests to share the survey link with other guests they met during their stay.<br>
+    <strong>C.</strong> Divided guests by nationality in the same proportions as the full guest population, then randomly selected within each group.<br>
+    <strong>D.</strong> Interviewed whoever was in the hotel lobby on a Tuesday afternoon because the researcher had a free afternoon.</div>
+    <p class="npc-speech">"Match each to its sampling method — and tell me which two are probability sampling."</p>`,
+    hints: {
+      formula: 'Probability sampling: Simple random, Systematic (every nth), Stratified (random within proportional subgroups), Cluster (select whole groups randomly). Non-probability: Convenience, Snowball, Quota, Self-selection.',
+      assumption: 'Probability sampling gives every member of the target population a known chance of being selected. Non-probability sampling introduces bias — the sample may not represent the population.',
+      interpretation: 'A = Systematic (probability). B = Snowball (non-probability). C = Stratified (probability). D = Convenience (non-probability). Only A and C guarantee every guest type had a known chance of being included.'
+    },
+    choices: [
+      { text: 'A = Convenience, B = Snowball, C = Stratified, D = Systematic. The probability methods are B and D.', next: 'q0_sampling_wrong', damage: 10, bad: true },
+      { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. The probability methods are A and C — both give every guest a known chance of selection.', next: 'q0_boss_intro', xp: 15 }
+    ]
+  },
+
+  q0_sampling_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Confused Sample',
+    narrative: `<p class="npc-speech">"Every 10th guest is systematic — there is a defined rule applied to the whole population. Tuesday afternoon interviews are convenience — whoever happened to be there. Stratified means proportional subgroups selected randomly. Snowball means participants recruit each other."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span><strong>Systematic</strong>: every nth person from an ordered list. <strong>Stratified</strong>: random selection within proportional subgroups. Both are probability methods. <strong>Convenience</strong>: whoever is available. <strong>Snowball</strong>: participants recruit the next participant. Both are non-probability — they introduce selection bias.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_sampling' }]
+  },
+
+  q0_boss_intro: {
+    icon: '💀', chapter: 'Prologue · The Foundations',
+    title: 'The Ghost Stirs',
+    narrative: `<p>The Archive Master closes the last folder and looks at you for a long moment.</p>
+    <p class="npc-speech">"You know the foundations. But knowing them in isolation is not the same as applying them when everything is happening at once. The Ghost of Bad Research Past has been haunting these archives for decades — every methodological error ever committed lives inside it."</p>
+    <p>A cold draft passes through the room. The candles dim.</p>
+    <p class="npc-speech">"It will show you a complete research brief. Everything wrong with it is hidden in plain sight. You have to find it."</p>
+    <div class="box box-lore"><span class="box-title">⚔ Boss Battle Approaching</span>Three phases. Each presents a piece of a flawed research study. Identify the specific error in each — measurement, methodology, or interpretation. Wrong answers cost HP. The clock is running.</div>`,
+    choices: [{ text: '💀 Face the Ghost of Bad Research Past', next: 'BOSS_q0', boss: true }]
+  },
 
   q1_intro: {
     icon: '🏨', chapter: 'Quest I · Correlation',
@@ -1213,8 +1594,327 @@ const SCENES = {
 // ══════════════════════════════════════════════════════
 // BOSS BATTLES
 // ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// SVG HISTOGRAM HELPER
+// Draws a simple histogram as inline SVG
+// bars: array of heights (0-120), labels: x-axis labels
+// annotation: optional string displayed below
+// ══════════════════════════════════════════════════════
+function makeHistogram({ bars, title, xlabel, color = 'var(--rune)', annotation = '' }) {
+  const W = 300, H = 160, padL = 28, padB = 30, padT = 10, padR = 10;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const maxBar = 120;
+  const n = bars.length;
+  const barW = plotW / n;
+  const gap = 2;
+
+  const rects = bars.map((h, i) => {
+    const barH = (h / maxBar) * plotH;
+    const x = padL + i * barW + gap / 2;
+    const y = padT + plotH - barH;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(barW - gap).toFixed(1)}" height="${barH.toFixed(1)}" fill="${color}" opacity="0.75" rx="1"/>`;
+  }).join('');
+
+  // Y axis ticks: 0, 50%, 100%
+  const yTicks = [0, 0.5, 1].map(p => {
+    const y = padT + plotH - p * plotH;
+    return `<line x1="${padL}" x2="${padL - 4}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--text-muted)" stroke-width="1"/>`;
+  }).join('');
+
+  // Axis lines
+  const axes = `
+    <line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT + plotH}" stroke="var(--border-bright)" stroke-width="1"/>
+    <line x1="${padL}" x2="${padL + plotW}" y1="${padT + plotH}" y2="${padT + plotH}" stroke="var(--border-bright)" stroke-width="1"/>`;
+
+  // X label
+  const xLab = `<text x="${(padL + plotW / 2).toFixed(1)}" y="${H - 2}" text-anchor="middle" font-size="9" fill="var(--text-muted)" font-family="Cinzel, serif">${xlabel}</text>`;
+
+  // Annotation text
+  const annEl = annotation
+    ? `<text x="${(W / 2).toFixed(1)}" y="${padT + 14}" text-anchor="middle" font-size="9" fill="${color}" font-family="Crimson Pro, serif" font-style="italic">${annotation}</text>`
+    : '';
+
+  return `<div style="text-align:center; margin: 0.6rem 0">
+    <div style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px">${title}</div>
+    <svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%; display:block; margin:0 auto; background:var(--surface2); border-radius:4px; border:1px solid var(--border)">
+      ${axes}${yTicks}${rects}${xLab}${annEl}
+    </svg>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// JAMOVI-STYLE OUTPUT TABLE HELPER
+// ══════════════════════════════════════════════════════
+function jamoviOutput({ title, rows }) {
+  const headerRow = `<tr>${rows[0].map(h => `<th>${h}</th>`).join('')}</tr>`;
+  const dataRows = rows.slice(1).map(r =>
+    `<tr>${r.map((cell, i) => i === 0 ? `<td class="jmv-row-label">${cell}</td>` : `<td>${cell}</td>`).join('')}</tr>`
+  ).join('');
+  return `<div class="jmv-output">
+    <div class="jmv-title">${title}</div>
+    <table class="jmv-table">
+      <thead>${headerRow}</thead>
+      <tbody>${dataRows}</tbody>
+    </table>
+    <div class="jmv-note">Note. Computed using jamovi 2.4</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// QUEST 3B SCENES — Normality & Mann-Whitney U
+// ══════════════════════════════════════════════════════
+// Pre-build the SVG histograms as constants so they render
+// inline inside scene narrative strings.
+const HIST_NORMAL = makeHistogram({
+  bars: [20, 50, 90, 120, 110, 70, 30, 10],
+  title: 'Histogram — Group A (n = 38)',
+  xlabel: 'Satisfaction Score',
+  color: 'var(--sage-bright)',
+  annotation: 'Roughly bell-shaped, symmetric'
+});
+
+const HIST_RIGHT_SKEW = makeHistogram({
+  bars: [120, 94, 69, 51, 34, 26, 21, 13],
+  title: 'Histogram — Group B (n = 35)',
+  xlabel: 'Satisfaction Score',
+  color: 'var(--ember)',
+  annotation: 'Most scores low, long tail to the right'
+});
+
+const HIST_BOTH = makeHistogram({
+  bars: [20, 50, 90, 120, 110, 70, 30, 10],
+  title: 'Group A (n = 40)',
+  xlabel: 'Score',
+  color: 'var(--sage-bright)'
+}) + makeHistogram({
+  bars: [20, 50, 90, 120, 110, 70, 30, 10],
+  title: 'Group B (n = 42)',
+  xlabel: 'Score',
+  color: 'var(--rune-bright)',
+  annotation: 'Both roughly symmetric'
+});
+
+const HIST_SKEWED_PAIR = makeHistogram({
+  bars: [20, 50, 90, 120, 110, 70, 30, 10],
+  title: 'Group A (n = 38)',
+  xlabel: 'Score',
+  color: 'var(--sage-bright)',
+  annotation: 'Roughly normal'
+}) + makeHistogram({
+  bars: [120, 94, 69, 51, 34, 26, 21, 13],
+  title: 'Group B (n = 35)',
+  xlabel: 'Score',
+  color: 'var(--ember)',
+  annotation: 'Clearly right-skewed'
+});
+
+// Pre-build Jamovi outputs
+const JAMOVI_SHAPIRO_PASS = jamoviOutput({
+  title: 'Shapiro-Wilk Normality Test',
+  rows: [
+    ['', 'W', 'p'],
+    ['Group A', '0.981', '0.743'],
+    ['Group B', '0.976', '0.612']
+  ]
+});
+
+const JAMOVI_SHAPIRO_FAIL = jamoviOutput({
+  title: 'Shapiro-Wilk Normality Test',
+  rows: [
+    ['', 'W', 'p'],
+    ['Group A', '0.979', '0.682'],
+    ['Group B', '0.891', '0.004']
+  ]
+});
+
+const JAMOVI_FULL_OUTPUT = jamoviOutput({
+  title: 'Independent Samples T-Test',
+  rows: [
+    ['', 'Statistic', 'df', 'p', 'Mean diff.', "Cohen's d"],
+    ['Student\'s t', '2.41', '68.0', '0.019', '4.8', '0.57'],
+    ['Welch\'s t', '2.38', '61.4', '0.021', '4.8', '0.57']
+  ]
+}) + `<div style="margin-top:0.7rem">` + jamoviOutput({
+  title: 'Mann-Whitney U Test',
+  rows: [
+    ['', 'U', 'W', 'p'],
+    ['Satisfaction Score', '487.0', '1112.0', '0.038']
+  ]
+}) + `</div>` + `<div style="margin-top:0.7rem">` + jamoviOutput({
+  title: 'Shapiro-Wilk Normality Test',
+  rows: [
+    ['', 'W', 'p'],
+    ['Group A (Spa guests)', '0.979', '0.682'],
+    ['Group B (Non-spa guests)', '0.891', '0.004']
+  ]
+}) + `</div>` + `<div style="margin-top:0.7rem">` + jamoviOutput({
+  title: "Levene's Test for Equality of Variances",
+  rows: [
+    ['', 'F', 'p'],
+    ['Satisfaction Score', '1.84', '0.179']
+  ]
+}) + `</div>`;
+
+Object.assign(SCENES, {
+
+  q3b_intro: {
+    icon: '📊', chapter: 'Quest III·B · Normality',
+    title: 'The Cursed Distribution',
+    narrative: `<p>The Variance Hydra has been slain — but as its ashes settle, a sealed envelope falls from the cellar rafters. Inside: a new commission from the Royal Spa Council.</p>
+    <p class="npc-speech">"We have satisfaction scores from two guest groups — spa users and non-spa users. We want to know if spa guests rate their stay significantly higher. A junior analyst has already started the analysis. He used an independent t-test. But something feels wrong."</p>
+    <p>You open the junior analyst's workbook. The first thing you see is that he ran straight to the t-test without looking at the data first.</p>
+    <p>Your deputy raises an eyebrow: <em>"Shouldn't you check something before comparing means between two groups?"</em></p>`,
+    hints: {
+      formula: 'For an independent t-test, both groups should be roughly normally distributed. If either group is severely non-normal, Mann-Whitney U is the non-parametric alternative.',
+      assumption: 'The decision tree: (1) Check normality (Shapiro-Wilk) AND homogeneity (Levene\'s). (2) If BOTH pass (p > 0.05) → Student\'s t. (3) If normality passes but Levene\'s fails → Welch\'s t. (4) If normality fails (either group) → Mann-Whitney U, regardless of Levene\'s result.',
+      interpretation: 'A t-test compares means. Mann-Whitney U compares the rank ordering of scores. If data is skewed, the mean is misleading — the median and rank-based test tell a more honest story.'
+    },
+    choices: [
+      { text: 'Agree with the junior analyst — two independent groups, continuous outcome, so a t-test is obviously correct. Run it and move on.', next: 'q3b_bad_skip', damage: 20, bad: true },
+      { text: 'Before any test, look at the shape of both distributions. Plot the histograms and see what you\'re actually dealing with.', next: 'q3b_hist', xp: 10 }
+    ]
+  },
+
+  q3b_bad_skip: {
+    icon: '💀', chapter: 'Quest III·B · Setback',
+    title: 'The Invisible Assumption',
+    narrative: `<p>You run the t-test. The Spa Council publishes the result. Three weeks later, a statistician reviewing the report notices that the non-spa group's scores were severely right-skewed — most guests gave low scores with a handful of outliers pulling the mean up. The t-test was comparing means that didn't represent the typical guest at all.</p>
+    <div class="box box-danger"><span class="box-title">⚔ −20 HP</span>The independent t-test assumes both groups are roughly normally distributed. When data is skewed, the <strong>mean is misleading</strong> — a few extreme values drag it away from where most scores sit. You must inspect the distribution before choosing your test.</div>`,
+    choices: [{ text: '↩ Return and inspect the data first', next: 'q3b_intro' }]
+  },
+
+  q3b_hist: {
+    icon: '📊', chapter: 'Quest III·B · Normality',
+    title: 'Reading the Histograms',
+    narrative: `<p>You plot histograms for both groups. Here is what you see:</p>
+    ${HIST_NORMAL}
+    ${HIST_RIGHT_SKEW}
+    <p>Group A looks roughly bell-shaped — symmetric, most scores in the middle. Group B is a different story: most guests gave low scores, with a long tail of a few guests rating very highly.</p>
+    <p class="npc-speech">The junior analyst peers over your shoulder: "Group B is just a bit uneven. The t-test is robust, isn't it? Does the shape really matter that much?"</p>`,
+    hints: {
+      formula: 'A right-skewed distribution has its tail pointing right (high end). Mean > median in a right-skewed distribution — the mean is pulled toward the outliers.',
+      assumption: 'The t-test is moderately robust to mild non-normality with large samples (n > 30). But severe skew — like this Group B — genuinely distorts the comparison of means.',
+      interpretation: 'When Group B is skewed, its mean is not a good summary of a "typical" guest\'s experience. Mann-Whitney U compares median ranks instead, which is more honest for skewed data.'
+    },
+    choices: [
+      { text: 'Group B\'s skew looks severe enough to matter. Before deciding on a test, confirm with Shapiro-Wilk — a formal normality test gives a defensible answer.', next: 'q3b_shapiro', xp: 15 },
+      { text: 'Both groups have n > 30, so the t-test is robust enough. The histogram is just a rough guide — proceed with the t-test.', next: 'q3b_bad_robust', damage: 20, bad: true }
+    ]
+  },
+
+  q3b_bad_robust: {
+    icon: '💀', chapter: 'Quest III·B · Setback',
+    title: 'Robust Is Not Invincible',
+    narrative: `<p>You proceed with the t-test, citing the large sample as justification. But the Spa Council's statistician flags that Group B's skewness statistic is 1.8 — well beyond the ±1 threshold where robustness arguments hold. The mean for Group B was 61, but the median was 48. The t-test was comparing a number that barely described any real guest.</p>
+    <div class="box box-danger"><span class="box-title">⚔ −20 HP</span>"Robust to mild departures from normality" does not mean robust to severe skew. With skewness this pronounced, the mean is a poor summary statistic and the t-test is testing something that doesn't represent the typical guest. Shapiro-Wilk gives you an objective test to make this call formally.</div>`,
+    choices: [{ text: '↩ Return and run the formal normality test', next: 'q3b_hist' }]
+  },
+
+  q3b_shapiro: {
+    icon: '🔬', chapter: 'Quest III·B · Normality',
+    title: 'The Shapiro-Wilk Verdict',
+    narrative: `<p>You run Shapiro-Wilk on both groups. The output arrives:</p>
+    ${JAMOVI_SHAPIRO_FAIL}
+    <p>The W statistic is close to 1.0 for a perfectly normal distribution. Group A passes comfortably. Group B's p = 0.004 — well below 0.05.</p>
+    <p class="npc-speech">The junior analyst frowns: "So Group B fails normality. But we have 35 people in that group — isn't Shapiro-Wilk just being oversensitive with that sample size?"</p>
+    <p>It's a fair challenge. What do you make of it?</p>`,
+    hints: {
+      formula: 'Shapiro-Wilk W ranges from 0 to 1. W close to 1 = data matches normal distribution well. W = 0.891 with p = 0.004 means the deviation from normality is unlikely to be chance.',
+      assumption: 'Shapiro-Wilk sensitivity concerns: with very small n (<15) it may miss real non-normality. With very large n (>100) it flags trivial deviations. At n=35, p=0.004 with W=0.891 is a genuine and meaningful signal.',
+      interpretation: 'W = 0.891 is not a borderline case. Combined with the clearly right-skewed histogram, this is strong evidence that Group B violates the normality assumption. Use Mann-Whitney U.'
+    },
+    choices: [
+      { text: 'The junior analyst has a point — n = 35 is a moderate sample and Shapiro-Wilk can be sensitive. With p = 0.004 being borderline, proceed with the t-test anyway.', next: 'q3b_bad_ignore_sw', damage: 25, bad: true },
+      { text: 'W = 0.891 with p = 0.004 is not a borderline result, and the histogram clearly shows severe skew. Both pieces of evidence point the same way. Use Mann-Whitney U instead of the t-test.', next: 'q3b_decision', xp: 20 }
+    ]
+  },
+
+  q3b_bad_ignore_sw: {
+    icon: '💀', chapter: 'Quest III·B · Setback',
+    title: 'Overruling the Evidence',
+    narrative: `<p>You proceed with the t-test. The Spa Council's external reviewer notes that W = 0.891 represents a substantial departure from normality — this is not the marginal case where Shapiro-Wilk is unreliable. Combined with the visible histogram skew, two independent pieces of evidence pointed to the same conclusion, and you ignored both.</p>
+    <div class="box box-danger"><span class="box-title">⚔ −25 HP</span>Shapiro-Wilk sensitivity to sample size is a real concern — but it cuts both ways. With n = 35, the test has moderate power. W = 0.891 is a meaningful departure, not a hair-trigger false alarm. When the histogram and the formal test agree, the evidence is strong. Trust it.</div>`,
+    choices: [{ text: '↩ Return and make the correct call', next: 'q3b_shapiro' }]
+  },
+
+  q3b_decision: {
+    icon: '🌀', chapter: 'Quest III·B · Normality',
+    title: 'The Wraith Stirs',
+    narrative: `<p>Well reasoned. Mann-Whitney U it is — a non-parametric test that compares the rank ordering of scores rather than the means, making it robust to skewed data.</p>
+    <div class="box box-lore"><span class="box-title">📜 The Decision Rule</span>
+    <strong>Both groups normal → check Levene's → Student's or Welch's t</strong><br>
+    <strong>Either group non-normal → Mann-Whitney U</strong> (regardless of Levene's result)<br>
+    <strong>Both normal, Levene's passes → Student's t</strong><br>
+    <strong>Both normal, Levene's fails → Welch's t</strong><br><br>
+    Mann-Whitney U doesn't compare means — it tests whether scores in one group tend to <em>rank higher</em> than scores in the other. For skewed data, this is a more honest question.</div>
+    <p>But deep in the archive, something ancient stirs. The Shapiro-Wilk Wraith has haunted these records for decades, disguising non-normal distributions behind innocent summary statistics. It has caused more incorrect t-tests than any other force in the kingdom.</p>
+    <p><em>"It will show you full output,"</em> the Archive Master warns. <em>"Every row. You must read the whole table — not just the number that confirms what you want to see."</em></p>
+    <div class="box box-lore"><span class="box-title">⚔ Boss Battle Approaching</span>The Wraith presents three phases of a full Jamovi output panel. You must navigate the normality check, the variance check, and the final test selection — all under the clock.</div>`,
+    choices: [{ text: '🌀 Face the Shapiro-Wilk Wraith', next: 'BOSS_q3b', boss: true }]
+  }
+
+});
+
 const BOSS_BATTLES = {
-  boss_q1: {
+
+  boss_q0: {
+    name: 'The Ghost of Bad Research Past',
+    icon: '💀',
+    sub: 'Every methodological error ever published lives inside it',
+    timePerPhase: 40,
+    phases: [
+      {
+        label: 'The Flawed Study Design',
+        narrative: `<p>The Ghost presents a research brief:</p>
+        <div class="box box-lore" style="font-size:0.9rem; line-height:1.7">
+          <span class="box-title">📄 Research Brief — Hotel Wellness Study</span>
+          A spa hotel wants to know whether guests who use the gym rate their stay higher than those who don't. They distributed paper surveys at checkout to guests who passed by the front desk. 63 surveys were returned. The researcher coded gym usage as: 1 = Non-user, 2 = Occasional, 3 = Regular, then calculated the mean gym usage as 1.9 and compared it to satisfaction scores using a t-test.
+        </div>
+        <p><span style="color:var(--blood)">"Two methodological problems are buried in this design. What are they?"</span></p>`,
+        choices: [
+          { text: "The sampling method is convenience-based (surveys only to guests passing the desk) so the sample is likely unrepresentative. Additionally, gym usage coded 1-2-3 is ordinal data — calculating its mean and using it in a t-test treats it as interval, which is not valid.", correct: true, feedback: "Exactly right. Convenience sampling at the front desk over-represents departing guests who had time to linger — likely a biased subset. And ordinal gym usage codes cannot be averaged meaningfully. The Ghost shudders." },
+          { text: "The sample of 63 is too small to be meaningful, and the t-test is the wrong test since the researcher should have used ANOVA to compare the three gym usage groups against satisfaction.", correct: false, feedback: "Sample size of 63 may be adequate depending on effect size — that's not the primary problem here. And the issue isn't the choice between t-test and ANOVA. The problems are in the sampling method (convenience) and measurement level (ordinal coded as interval)." },
+          { text: "The study has no control group, so it cannot establish whether gym use causes higher satisfaction. The researcher should have randomly assigned guests to use or not use the gym.", correct: false, feedback: "Causality concerns are valid in experimental design, but this is a correlational study — not a trial. The specific errors here are in the sampling method and the measurement level of the gym usage variable, not the absence of random assignment." },
+          { text: "The satisfaction scores were collected at checkout when guests are tired and rushed, which biases the responses downward. The researcher should have surveyed guests on their final morning instead.", correct: false, feedback: "Timing of data collection can affect results, but this is not the primary methodological error in the brief. The Ghost is looking for the sampling bias (convenience method) and the measurement level violation (ordinal data treated as interval)." }
+        ]
+      },
+      {
+        label: 'The Misread Output',
+        narrative: `<p>The Ghost conjures a results table from a different study — a hotel testing whether a new check-in app reduces waiting times. The researcher has written up their conclusion below it.</p>
+        <div class="box box-lore" style="font-size:0.9rem">
+          <span class="box-title">📄 Results Summary</span>
+          H₁: The app reduces waiting times (one-sided, μapp &lt; μtraditional)<br>
+          Result: t(58) = −1.82, p (two-tailed) = 0.074<br>
+          95% CI for mean difference: [−4.2 min, +0.3 min]<br><br>
+          <strong>Conclusion written by researcher:</strong> "p = 0.074 means there is a 92.6% probability that the app reduces waiting times. We are highly confident the app works and recommend full rollout."
+        </div>
+        <p><span style="color:var(--blood)">"How many errors can you identify in the researcher's conclusion?"</span></p>`,
+        choices: [
+          { text: "Three errors: p = 0.074 is not a probability of H₁ being true. For a one-sided hypothesis the two-tailed p should be halved (p = 0.037, which is significant) — but that switch needed to be pre-specified. And the confidence interval includes zero, meaning no difference is plausible.", correct: true, feedback: "Perfect. p is not a probability of the hypothesis. The one-sided/two-tailed mismatch is a real issue — you cannot switch after seeing results. And a CI including zero means the result is not significant at the two-tailed level. The Ghost recoils violently." },
+          { text: "One error: the researcher should report p = 0.037 (one-sided) because the hypothesis was directional, which makes the result significant and justifies the rollout recommendation.", correct: false, feedback: "Switching from two-tailed to one-tailed after seeing p = 0.074 is p-hacking — the direction was chosen because it makes the result significant. The pre-registration requirement for one-sided tests exists precisely to prevent this. There are also two other errors in the conclusion." },
+          { text: "One error: the confidence interval includes zero, which means the result is not significant and the conclusion is unjustified. Everything else in the write-up is standard practice.", correct: false, feedback: "The CI including zero is one error — but the misinterpretation of p as a probability of H₁ being true, and the post-hoc one-sided switching, are also genuine errors. The Ghost is looking for all three." },
+          { text: "The conclusion is reasonable — p = 0.074 is close to 0.05 and with a one-sided hypothesis the result is significant. Recommending further investigation rather than full rollout would be more cautious, but the interpretation is broadly acceptable.", correct: false, feedback: "None of this is acceptable. p is not a probability of the hypothesis being true under any framing. The one-sided switch is not valid post-hoc. And the CI including zero directly contradicts the confident rollout recommendation." }
+        ]
+      },
+      {
+        label: 'The Sampling Defence',
+        narrative: `<p>The Ghost presents its final challenge — a researcher defending their work in front of the Archive's review committee.</p>
+        <div class="box box-lore" style="font-size:0.9rem; line-height:1.7">
+          <span class="box-title">📄 Researcher's Defence</span>
+          "We used stratified sampling, dividing guests into business and leisure segments in the same proportions as our full guest database (60/40). Within each segment, we selected participants by asking the first available guest in the hotel lobby each morning. Our final sample of 120 guests is large, which guarantees it is representative of the full guest population."
+        </div>
+        <p><span style="color:var(--blood)">"The researcher claims to have used stratified sampling. Is this correct — and is the large sample size argument valid?"</span></p>`,
+        choices: [
+          { text: "This is not true stratified sampling. Within each segment, participants were selected by lobby convenience — not randomly. Proportional segment sizes do not make sampling stratified; random selection within each stratum does. And large sample size does not guarantee representativeness — a large biased sample is still biased.", correct: true, feedback: "Perfectly identified. Stratified sampling requires random selection within each stratum — not convenient selection in the right proportions. And the sample size argument is a classic error: representativeness is about how you sample, not how many. n = 10,000 lobby guests at 9am is still a biased sample. The Ghost dissolves!" },
+          { text: "The researcher is correct — stratified sampling requires proportional representation of subgroups, which they have achieved by using the 60/40 business/leisure split. The large sample size further validates the approach.", correct: false, feedback: "Proportional representation of strata is necessary but not sufficient for stratified sampling. The defining requirement is random selection within each stratum. Selecting 'the first available person in the lobby' is convenience sampling within quotas — this is actually quota sampling, not stratified random sampling." },
+          { text: "The approach is valid because the 60/40 split matches the population proportions. The 'lobby convenience' selection method introduces minor bias but is acceptable given the large total sample size.", correct: false, feedback: "Large sample size does not compensate for biased selection. A biased sampling method with n = 1,000 gives you 1,000 biased observations. The lobby at 9am over-represents guests with morning free time — a specific and non-random subset regardless of how many are collected." },
+          { text: "The only real problem is that leisure guests in the lobby at 9am may be underrepresented. The researcher could fix this by sampling at different times of day to catch both segment types equally.", correct: false, feedback: "Sampling at different times would reduce one source of convenience bias, but this is still not stratified random sampling. The fundamental issue is the absence of random selection within strata — and the researcher's incorrect claim that proportional quotas make the method stratified." }
+        ]
+      }
+    ]
+  },
+    boss_q1: {
     name: 'The Ghost of Spurious Reviews',
     icon: '👁️',
     sub: 'It manufactures false patterns in the guest ledger',
@@ -1384,6 +2084,52 @@ const BOSS_BATTLES = {
       }
     ]
   }
+  ,boss_q3b: {
+    name: 'The Shapiro-Wilk Wraith',
+    icon: '🌀',
+    sub: 'It disguises non-normal distributions behind innocent summary statistics',
+    timePerPhase: 45,
+    phases: [
+      {
+        label: 'Read the Histogram',
+        narrative: `<p>The Wraith projects two histograms into the air:</p>
+        ${HIST_SKEWED_PAIR}
+        <p>Two independent groups of hotel guests rated their experience (0–100) after different room types. You must now choose the right test.</p>
+        <p><span style="color:var(--blood)">"Based on these histograms alone — what can you say about the next step?"</span></p>`,
+        choices: [
+          { text: "Group A looks roughly normal but Group B is clearly right-skewed. The histogram is strong evidence that Group B violates normality — this already points toward Mann-Whitney U rather than a t-test.", correct: true, feedback: "Correct. Group B's right skew is obvious and severe — the histogram alone raises serious doubts about using a t-test. You'd confirm with Shapiro-Wilk, but the visual is already telling. The Wraith shudders." },
+          { text: "Both distributions look acceptable — some skew is natural in any real dataset and the t-test is robust to moderate departures from normality when both groups have n > 30.", correct: false, feedback: "Group B is not 'moderately' skewed — it has a pronounced right tail with most scores clustered low. Robustness arguments apply to mild departures, not distributions that look this asymmetric. The histogram matters." },
+          { text: "The shapes of the histograms are irrelevant to test selection — what matters is the Shapiro-Wilk p-value, so you should run the formal test before drawing any conclusions from the visual.", correct: false, feedback: "The histogram is a vital first step, not a distraction. Shapiro-Wilk confirms what you see visually — and when a distribution looks this skewed, the histogram and the formal test should agree. Skipping the visual means missing the full picture." },
+          { text: "Group B has a lower mean than Group A based on the histogram, so a t-test would show a significant difference. The shape of the distribution tells you about effect size, not which test to use.", correct: false, feedback: "Histogram shape determines whether the mean is a valid summary statistic and whether a t-test's normality assumption holds — it's not about effect size. A skewed distribution means the mean may not represent a typical guest at all." }
+        ]
+      },
+      {
+        label: 'Interpret Shapiro-Wilk',
+        narrative: `<p>You run Shapiro-Wilk. The output:</p>
+        ${JAMOVI_SHAPIRO_FAIL}
+        <p>The Wraith hisses: <span style="color:var(--blood)">"Group B has n = 35. Some say Shapiro-Wilk is unreliable at that sample size. Others say p = 0.004 is too significant to dismiss. What does this output actually tell you — and what do you do?"</span></p>`,
+        choices: [
+          { text: "W = 0.891 with p = 0.004 is a meaningful result at n = 35 — not a false alarm from an oversensitive test. Combined with the skewed histogram, both pieces of evidence agree. Switch to Mann-Whitney U.", correct: true, feedback: "Exactly right. Shapiro-Wilk is underpowered below n = 15 and overpowered above n = 100 — but n = 35 is neither. W = 0.891 is a substantial departure from 1.0, and the histogram corroborates it. Two independent signals pointing the same way. The Wraith recoils." },
+          { text: "p = 0.004 is significant, but W = 0.891 is close enough to 1.0 that the practical departure from normality is trivial. Proceed with Welch's t-test given the unequal variances.", correct: false, feedback: "W = 0.891 is not close to 1.0 in practical terms — it represents a meaningful deviation from normality, not a rounding error. The t-test is sensitive to this level of skew in moderate samples. The histogram confirms the test is not being oversensitive here." },
+          { text: "Group A passes with p = 0.743, so at least one group is normal. You can proceed with the t-test as long as you use Welch's version to protect against unequal variances.", correct: false, feedback: "Both groups must satisfy normality for a t-test — not just one. If either group is non-normal, the assumption is violated regardless of what the other group looks like. Group B's failure is decisive on its own." },
+          { text: "Shapiro-Wilk is known to be unreliable at n = 35, so this result cannot be trusted. Use the histogram judgement only, and since all histograms have some irregularity, proceed with the t-test.", correct: false, feedback: "Shapiro-Wilk's reliability concerns apply to very small samples (n < 15) where it misses real non-normality, and very large samples (n > 100) where it flags trivial deviations. At n = 35 it performs well. Dismissing a W of 0.891 as 'unreliable' is not justified." }
+        ]
+      },
+      {
+        label: 'Read the Full Output',
+        narrative: `<p>The Wraith conjures the complete Jamovi output for the spa satisfaction study. Every row is visible. Read carefully.</p>
+        ${JAMOVI_FULL_OUTPUT}
+        <p><span style="color:var(--blood)">"Group B failed Shapiro-Wilk. Levene's test passed. Both t-test and Mann-Whitney U are significant. A colleague says: 'They both agree, so it doesn't matter which one you report.' What do you say?"</span></p>`,
+        choices: [
+          { text: "Report Mann-Whitney U as the primary result — it was the correct test given Group B's non-normality. The fact that the t-test agrees is reassuring but doesn't change the methodological decision made before looking at results.", correct: true, feedback: "Perfect. Test selection must be based on assumptions, not on whether the results agree. Reporting the appropriate test (Mann-Whitney U) and noting the t-test as a sensitivity check is good practice. The Wraith dissolves into the archive shelves." },
+          { text: "Report the t-test because it provides additional information (mean difference, Cohen's d) that Mann-Whitney U does not. Since both are significant, the t-test result is the more informative choice to lead with.", correct: false, feedback: "Cohen's d is not valid when the normality assumption is violated — effect size estimates from t-tests require the same assumptions as the test itself. The richer output does not justify using the wrong test. Report Mann-Whitney U and calculate a rank-based effect size (r) if needed." },
+          { text: "Since both tests give significant results, report whichever has the smaller p-value. The goal is to communicate the strongest possible evidence to the Spa Council.", correct: false, feedback: "Choosing between tests based on which gives a smaller p-value is a form of p-hacking. The test is chosen on methodological grounds before results are seen — not selected post-hoc to maximise significance." },
+          { text: "Levene's test passed (p = 0.179), so the equal variance assumption holds. This means the t-test assumptions are met and it is the correct test to report, regardless of the Shapiro-Wilk result.", correct: false, feedback: "Levene's test and Shapiro-Wilk test different assumptions. A passing Levene's result means equal variances — it says nothing about normality. Both assumptions must hold for a Student's t-test, and normality has already failed for Group B." }
+        ]
+      }
+    ]
+  }
+
 };
 
 // ══════════════════════════════════════════════════════
@@ -1761,25 +2507,27 @@ function showMap() {
         </div>
       </div>
       <p style="font-size:1rem; line-height:1.8; color:var(--text-dim); margin-bottom:1rem">
-        Four quests. Four statistical beasts lurking in the world of hospitality management. 
+        Five quests and a Prologue. Six statistical beasts lurking in the world of hospitality management. 
         Every decision must be grounded in data — not instinct. 
         Your role: <strong style="color:var(--rune-bright)">${cls.icon} ${cls.name}</strong>.
       </p>
-      ${G.questsDone.length === 4 ? `<div class="box box-victory"><span class="box-title">🏆 Grand Champion — The Order's Finest Manager</span>All four seals earned. Total XP: <strong>${G.xp}</strong>. Level <strong>${G.level}</strong>.</div>` : ''}
+      ${G.questsDone.length === 6 ? `<div class="box box-victory"><span class="box-title">🏆 Grand Champion — The Order's Finest Manager</span>All four seals earned. Total XP: <strong>${G.xp}</strong>. Level <strong>${G.level}</strong>.</div>` : ''}
+      <div style="font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.12em; color:var(--text-muted); text-transform:uppercase; text-align:center; margin-bottom:0.8rem">
+        ✦ All quests are open — play in any order ✦
+      </div>
       <div class="quest-map">
         ${Object.entries(QUESTS).map(([key, q]) => {
           const done = G.questsDone.includes(key);
-          // FIX: Use completion-based unlock instead of XP-level gate
-          const locked = isQuestLocked(key) && !done;
+          const suggested = !done && QUEST_ORDER.indexOf(key) === G.questsDone.length;
           return `
-          <div class="quest-node ${done?'completed':''} ${locked?'locked':''}" 
+          <div class="quest-node ${done ? 'completed' : ''} ${suggested ? 'suggested' : ''}"
                style="--node-color:rgba(232,98,26,0.12)"
-               ${locked ? '' : `onclick="startQuest('${key}')"`}>
+               onclick="startQuest('${key}')">
             <span class="node-icon">${q.icon}</span>
             <div class="node-chapter">${q.chapter}</div>
             <div class="node-name">${q.name}</div>
             <div class="node-desc">${q.topic}</div>
-            <div class="node-level">${locked ? '🔒 Complete previous quest first' : done ? '✓ Completed' : '⚔ Available'}</div>
+            <div class="node-level">${done ? '✓ Completed' : suggested ? '★ Suggested next' : '⚔ Available'}</div>
           </div>`;
         }).join('')}
       </div>
@@ -2043,6 +2791,7 @@ function bossVictory() {
   if (!G.questsDone.includes(G.currentQuest)) {
     G.questsDone.push(G.currentQuest);
   }
+  saveProgress();
   // Give enough XP to guarantee the next level threshold is crossed
   const xpNeeded = (G.level * XP_PER_LEVEL) - G.xp;
   const xpToGrant = Math.max(40, xpNeeded > 0 ? xpNeeded : 40);
@@ -2052,9 +2801,18 @@ function bossVictory() {
 function showQuestComplete(quest) {
   const el = document.getElementById('main-content');
   const summaries = {
+    q0: `<strong>Measurement levels:</strong> Nominal (labels) → Ordinal (ordered) → Interval (equal gaps) → Ratio (true zero). Level determines valid statistics.<br>
+    <strong>Charts:</strong> 1 continuous → Histogram. 1 categorical → Bar/pie. 2 continuous → Scatter. Mixed → Error bar/box plot.<br>
+    <strong>Hypotheses:</strong> H₀ and H₁ must be written before data collection. p = probability of data under H₀, not probability H₁ is true.<br>
+    <strong>Errors:</strong> Type I = false positive (α risk). Type II = false negative (power). <strong>Sampling:</strong> Probability methods (systematic, stratified) give known selection chances. Convenience and snowball do not.<br>
+    <strong>Validity</strong> = measuring the right thing. <strong>Reliability</strong> = measuring it consistently.`,
     q1: `<strong>Pearson's r</strong> measures linear association between two continuous variables. Range: -1 to +1.<br>Always plot a scatter first — check for linearity. Curved pattern → use Spearman instead.<br>p-value = probability of r this extreme if the true correlation is zero. <strong>Significant never means causal.</strong>`,
     q2: `<strong>Chi-Square</strong> tests independence between two categorical variables.<br>Expected counts: E = (row total × col total) / grand total. All E ≥ 5 required.<br>If any E &lt; 5 → Fisher's Exact Test. Significant result = association exists but doesn't specify which cells — examine standardised residuals for that.`,
     q3: `<strong>Paired t-test:</strong> same subjects measured twice. <strong>One-sample t-test:</strong> compare group mean to a known benchmark. <strong>Independent t-test:</strong> two completely separate groups.<br>Levene's p &lt; 0.05 → use Welch's t-test (not Student's).<br>One-tailed testing: only valid with a pre-registered directional hypothesis — never chosen after seeing results.`,
+    q3b: `<strong>Normality check first:</strong> always inspect histograms before choosing a test for two independent groups.<br>
+    <strong>Shapiro-Wilk:</strong> W close to 1 = normal. p &lt; 0.05 = significant departure from normality. Reliable at n = 15–100.<br>
+    <strong>Decision rule:</strong> check normality AND Levene's. Both pass → Student's t. Normality passes, Levene's fails → Welch's t. Either group non-normal → <strong>Mann-Whitney U</strong> (Levene's result irrelevant).<br>
+    Mann-Whitney U compares rank ordering, not means — more honest when data is skewed.`,
     q4: `<strong>ANOVA</strong> compares means across 3+ groups in one test — preventing false positive inflation from multiple t-tests.<br>Levene's significant → <strong>Welch's ANOVA → Games-Howell</strong> post-hoc.<br>Levene's non-significant → <strong>Fisher's ANOVA → Tukey/Bonferroni</strong> post-hoc.<br>Significant F = at least one group differs. Post-hoc tests reveal which specific pairs.`
   };
 
@@ -2078,11 +2836,125 @@ function showQuestComplete(quest) {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
+
+
+// ── SAVE TOGGLE ──────────────────────────────────────────────────────────────
+let _saveEnabled = true;
+
+function toggleSave() {
+  _saveEnabled = !_saveEnabled;
+  const btn = document.getElementById('hud-save-btn');
+  const tip = document.getElementById('save-tooltip');
+  if (_saveEnabled) {
+    btn.textContent = '💾 Saving';
+    btn.classList.add('save-on');
+    saveProgress(); // save immediately when re-enabling
+    showTooltip('Progress saving is ON — your completed quests will be remembered next visit.');
+  } else {
+    btn.textContent = '💾 Off';
+    btn.classList.remove('save-on');
+    showTooltip('Progress saving is OFF — this session will not be saved when you close the tab.');
+  }
+}
+
+function showTooltip(msg) {
+  const tip = document.getElementById('save-tooltip');
+  if (!tip) return;
+  tip.textContent = msg;
+  tip.classList.add('show');
+  clearTimeout(tip._timer);
+  tip._timer = setTimeout(() => tip.classList.remove('show'), 3000);
+}
+
+// Patch saveProgress to respect the toggle
+const _originalSaveProgress = saveProgress;
+saveProgress = function() {
+  if (!_saveEnabled) return;
+  _originalSaveProgress();
+};
+
+// ── RESET CONFIRM ─────────────────────────────────────────────────────────────
+function confirmReset() {
+  const el = document.getElementById('main-content');
+  el.innerHTML = `
+    <div class="card scene-wrap" style="text-align:center">
+      <div class="card-rune-tl">✦</div>
+      <div class="card-rune-br">✦</div>
+      <div style="font-size:2.5rem; margin-bottom:0.8rem">↺</div>
+      <div style="font-family:'Cinzel Decorative',serif; font-size:1.1rem; color:var(--gold-bright); margin-bottom:0.8rem">Reset Everything?</div>
+      <p style="color:var(--text-dim); font-size:0.95rem; margin-bottom:1.5rem; line-height:1.7">
+        This will clear your class, XP, level, and all completed quests.<br>
+        You will return to the Initiation. Saved progress will also be erased.
+      </p>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-primary" style="background:linear-gradient(135deg,var(--blood-dim),var(--blood))" onclick="clearProgress()">Yes, reset everything</button>
+        <button class="btn btn-ghost" onclick="showMap()">Cancel</button>
+      </div>
+    </div>`;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ══════════════════════════════════════════════════════
+// LOCALSTORAGE SAVE / RESTORE
+// ══════════════════════════════════════════════════════
+function saveProgress() {
+  if (!G.class) return;
+  try {
+    localStorage.setItem('otsp_save', JSON.stringify({
+      class: G.class, hp: G.hp, maxHp: G.maxHp,
+      xp: G.xp, level: G.level, questsDone: G.questsDone
+    }));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem('otsp_save');
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s.class || !CLASSES[s.class]) return false;
+    G.class = s.class; G.hp = s.hp; G.maxHp = s.maxHp;
+    G.xp = s.xp; G.level = s.level; G.questsDone = s.questsDone || [];
+    return true;
+  } catch(e) { return false; }
+}
+
+function clearProgress() {
+  try { localStorage.removeItem('otsp_save'); } catch(e) {}
+  G.class = null; G.hp = 0; G.maxHp = 0; G.xp = 0; G.level = 1; G.questsDone = [];
+  updateHUD();
+  showTitle();
+}
+
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
 spawnParticles();
-showTitle();
+
+// Check for saved progress
+if (loadProgress()) {
+  updateHUD();
+  const cls = CLASSES[G.class];
+  const el = document.getElementById('main-content');
+  el.innerHTML = `
+    <div id="title-screen">
+      <span class="title-sigil">⚔</span>
+      <h1 class="game-title">The Order of<br>the Significant P</h1>
+      <p class="title-sub">A Statistics Quest</p>
+    </div>
+    <div class="card" style="margin-top:2rem">
+      <div class="card-rune-tl">✦</div>
+      <div class="card-rune-br">✦</div>
+      <p style="font-size:1rem; line-height:1.9; margin-bottom:0.5rem">Welcome back, <strong style="color:var(--gold-bright)">${cls.icon} ${cls.name}</strong>.</p>
+      <p style="font-size:0.9rem; color:var(--text-dim); margin-bottom:1.5rem">Level ${G.level} · ${G.xp} XP · ${G.questsDone.length} quest${G.questsDone.length !== 1 ? 's' : ''} completed</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="showMap()">Continue ›</button>
+        <button class="btn btn-ghost" onclick="clearProgress()">Start Over</button>
+      </div>
+    </div>`;
+} else {
+  showTitle();
+}
 </script>
 </body>
 </html>
