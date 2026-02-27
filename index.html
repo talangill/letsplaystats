@@ -712,6 +712,48 @@ h1.game-title {
   color: var(--gold); letter-spacing: 0.1em;
 }
 
+/* ── Treasure Chest ─────────────────────────────────── */
+.treasure-chest {
+  display: inline-block; cursor: pointer;
+  padding: 0.8rem 1.4rem;
+  background: linear-gradient(135deg, rgba(212,168,32,0.15) 0%, rgba(139,92,246,0.08) 100%);
+  border: 1px solid var(--gold-dim); border-radius: 8px;
+  font-family: 'Cinzel', serif; font-size: 0.8rem;
+  color: var(--gold); letter-spacing: 0.08em; text-align: center;
+  transition: all 0.25s ease; user-select: none;
+}
+.treasure-chest:hover {
+  border-color: var(--gold-bright); color: var(--gold-bright);
+  background: linear-gradient(135deg, rgba(212,168,32,0.22) 0%, rgba(139,92,246,0.12) 100%);
+  transform: translateY(-2px); box-shadow: 0 4px 20px rgba(212,168,32,0.2);
+}
+.treasure-chest .chest-icon { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; transition: transform 0.3s ease; }
+.treasure-chest:hover .chest-icon { transform: translateY(-4px) rotate(-5deg); }
+.treasure-chest.opened .chest-icon::after { content: ' ✦'; font-size: 0.7rem; }
+.treasure-reveal {
+  display: none; margin-top: 1rem; padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, rgba(212,168,32,0.1) 0%, rgba(139,92,246,0.06) 100%);
+  border: 1px solid var(--gold-dim); border-radius: 6px;
+  animation: chestOpen 0.4s ease;
+}
+.treasure-reveal.visible { display: block; }
+@keyframes chestOpen {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.treasure-song-title { font-family: 'Cinzel Decorative', serif; font-size: 0.95rem; color: var(--gold-bright); margin-bottom: 0.25rem; }
+.treasure-song-artist { font-family: 'Crimson Pro', serif; font-style: italic; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.6rem; }
+.treasure-song-note { font-family: 'Crimson Pro', serif; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem; line-height: 1.5; }
+.treasure-link-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.treasure-listen-btn {
+  display: inline-block; padding: 0.4rem 1rem;
+  border: 1px solid var(--gold); border-radius: 4px;
+  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.07em;
+  text-decoration: none; transition: all 0.2s;
+}
+.treasure-listen-btn.bc { background: rgba(26,99,138,0.18); color: #1da0c3; border-color: #1da0c3; }
+.treasure-listen-btn.bc:hover { background: rgba(26,99,138,0.35); color: #fff; }
+
 .scroll-item {
   opacity: 0; transform: translateY(12px);
   animation: scrollReveal 0.4s ease forwards;
@@ -1532,6 +1574,206 @@ function isQuestLocked(questId) {
 }
 
 // ══════════════════════════════════════════════════════
+// ADDITIONAL VISUAL HELPERS
+// ══════════════════════════════════════════════════════
+
+function makePieChart({ title, slices, annotation = '' }) {
+  const W = 180, CX = 90, CY = 80, R = 62;
+  const colors = ['var(--ember)', 'var(--rune-bright)', 'var(--gold)', 'var(--sage-bright)', 'var(--blood)'];
+  const total = slices.reduce((a, s) => a + s.value, 0);
+  let angle = -Math.PI / 2;
+  const paths = slices.map((s, i) => {
+    const sweep = (s.value / total) * 2 * Math.PI;
+    const x1 = CX + R * Math.cos(angle), y1 = CY + R * Math.sin(angle);
+    angle += sweep;
+    const x2 = CX + R * Math.cos(angle), y2 = CY + R * Math.sin(angle);
+    const large = sweep > Math.PI ? 1 : 0;
+    const midA = angle - sweep / 2;
+    const lx = CX + (R * 0.65) * Math.cos(midA), ly = CY + (R * 0.65) * Math.sin(midA);
+    return `<path d="M${CX},${CY} L${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${colors[i]}" opacity="0.82" stroke="var(--bg)" stroke-width="1.5"/>
+    <text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}" text-anchor="middle" font-size="8" fill="var(--bg)" font-family="Cinzel,serif" font-weight="700">${s.label}</text>`;
+  }).join('');
+  const ann = annotation ? `<text x="${W/2}" y="${CY + R + 16}" text-anchor="middle" font-size="9" fill="var(--ember)" font-family="Crimson Pro,serif" font-style="italic">${annotation}</text>` : '';
+  return `<div style="text-align:center; margin:0.6rem 0; display:inline-block; vertical-align:top">
+    <div style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px">${title}</div>
+    <svg viewBox="0 0 ${W} ${CY + R + 22}" width="${W}" style="max-width:100%; display:block; margin:0 auto; background:var(--surface2); border-radius:4px; border:1px solid var(--border)">
+      ${paths}${ann}
+    </svg></div>`;
+}
+
+function makeCIPlot({ title, intervals, threshold, xlabel }) {
+  const W = 320, H = 110, padL = 80, padR = 20, padT = 20, padB = 28;
+  const plotW = W - padL - padR;
+  const allVals = intervals.flatMap(d => [d.lo, d.hi, d.mean]);
+  if (threshold !== undefined) allVals.push(threshold);
+  const minV = Math.min(...allVals) - 0.5;
+  const maxV = Math.max(...allVals) + 0.5;
+  const sc = v => padL + ((v - minV) / (maxV - minV)) * plotW;
+  const rowH = (H - padT - padB) / Math.max(intervals.length, 1);
+  const colors = ['var(--rune-bright)', 'var(--sage-bright)', 'var(--gold)', 'var(--ember)'];
+
+  const rows = intervals.map((d, i) => {
+    const y = padT + i * rowH + rowH / 2;
+    const x1 = sc(d.lo), x2 = sc(d.hi), xm = sc(d.mean);
+    const col = colors[i % colors.length];
+    return `<text x="${(padL - 6).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--text-dim)" font-family="Cinzel,serif">${d.label}</text>
+      <line x1="${x1.toFixed(1)}" x2="${x2.toFixed(1)}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${col}" stroke-width="2.5"/>
+      <line x1="${x1.toFixed(1)}" x2="${x1.toFixed(1)}" y1="${(y-6).toFixed(1)}" y2="${(y+6).toFixed(1)}" stroke="${col}" stroke-width="2"/>
+      <line x1="${x2.toFixed(1)}" x2="${x2.toFixed(1)}" y1="${(y-6).toFixed(1)}" y2="${(y+6).toFixed(1)}" stroke="${col}" stroke-width="2"/>
+      <circle cx="${xm.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="${col}"/>
+      <text x="${(x1 - 4).toFixed(1)}" y="${(y - 9).toFixed(1)}" font-size="8" fill="${col}" font-family="Crimson Pro,serif" text-anchor="middle">${d.lo}</text>
+      <text x="${(x2 + 4).toFixed(1)}" y="${(y - 9).toFixed(1)}" font-size="8" fill="${col}" font-family="Crimson Pro,serif" text-anchor="middle">${d.hi}</text>`;
+  }).join('');
+
+  const threshLine = threshold !== undefined
+    ? `<line x1="${sc(threshold).toFixed(1)}" x2="${sc(threshold).toFixed(1)}" y1="${padT - 4}" y2="${H - padB}" stroke="var(--gold-bright)" stroke-width="1.5" stroke-dasharray="4,3"/>
+       <text x="${sc(threshold).toFixed(1)}" y="${padT - 7}" text-anchor="middle" font-size="8" fill="var(--gold-bright)" font-family="Cinzel,serif">${threshold}</text>` : '';
+
+  const axis = `<line x1="${padL}" x2="${padL + plotW}" y1="${H - padB}" y2="${H - padB}" stroke="var(--border-bright)" stroke-width="1"/>`;
+  const xLab = `<text x="${(padL + plotW / 2).toFixed(1)}" y="${H - 4}" text-anchor="middle" font-size="8.5" fill="var(--text-muted)" font-family="Cinzel,serif">${xlabel}</text>`;
+
+  return `<div style="text-align:center; margin:0.6rem 0">
+    <div style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px">${title}</div>
+    <svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%; display:block; margin:0 auto; background:var(--surface2); border-radius:4px; border:1px solid var(--border)">
+      ${axis}${threshLine}${rows}${xLab}
+    </svg></div>`;
+}
+
+function makePValueDiagram({ p, label }) {
+  const W = 300, H = 100, padL = 14, padR = 14, padT = 18, padB = 24;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const pts = 100;
+  const norm = x => Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+  const xMin = -3.6, xMax = 3.6;
+  const zCrit = p === 0.05 ? 1.96 : p === 0.03 ? 2.17 : p === 0.01 ? 2.58 : 1.96;
+  const sc = x => padL + ((x - xMin) / (xMax - xMin)) * plotW;
+  const scY = y => padT + plotH - (y / norm(0)) * plotH * 0.88;
+
+  const curvePts = Array.from({ length: pts + 1 }, (_, i) => {
+    const x = xMin + (i / pts) * (xMax - xMin);
+    return `${sc(x).toFixed(1)},${scY(norm(x)).toFixed(1)}`;
+  }).join(' ');
+
+  const buildTail = (x0, x1) => {
+    const tailPts = [];
+    const steps = 40;
+    for (let i = 0; i <= steps; i++) {
+      const x = x0 + (i / steps) * (x1 - x0);
+      tailPts.push(`${sc(x).toFixed(1)},${scY(norm(x)).toFixed(1)}`);
+    }
+    tailPts.push(`${sc(x1).toFixed(1)},${scY(0).toFixed(1)}`);
+    tailPts.push(`${sc(x0).toFixed(1)},${scY(0).toFixed(1)}`);
+    return `<polygon points="${tailPts.join(' ')}" fill="var(--blood)" opacity="0.55"/>`;
+  };
+
+  const axis = `<line x1="${padL}" x2="${padL + plotW}" y1="${padT + plotH}" y2="${padT + plotH}" stroke="var(--border-bright)" stroke-width="1"/>`;
+  const curve = `<polyline points="${curvePts}" fill="none" stroke="var(--rune-bright)" stroke-width="1.8"/>`;
+  const rightTail = buildTail(zCrit, xMax);
+  const leftTail = buildTail(xMin, -zCrit);
+  const zLine = `<line x1="${sc(zCrit).toFixed(1)}" x2="${sc(zCrit).toFixed(1)}" y1="${padT}" y2="${padT + plotH}" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,2"/>`;
+  const zLabel = `<text x="${sc(zCrit).toFixed(1)}" y="${padT + plotH + 13}" text-anchor="middle" font-size="8" fill="var(--gold)" font-family="Cinzel,serif">z=${zCrit}</text>`;
+  const pLabel = `<text x="${sc((zCrit + xMax) / 2).toFixed(1)}" y="${padT + plotH - 6}" text-anchor="middle" font-size="8" fill="var(--blood)" font-family="Crimson Pro,serif">p/2</text>`;
+  const h0Label = `<text x="${(padL + plotW / 2).toFixed(1)}" y="${padT - 4}" text-anchor="middle" font-size="8" fill="var(--text-muted)" font-family="Cinzel,serif">Distribution if H\u2080 true — shaded area = p</text>`;
+
+  return `<div style="text-align:center; margin:0.6rem 0">
+    <div style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px">${label}</div>
+    <svg viewBox="0 0 ${W} ${H}" width="${W}" style="max-width:100%; display:block; margin:0 auto; background:var(--surface2); border-radius:4px; border:1px solid var(--border)">
+      ${axis}${leftTail}${rightTail}${curve}${zLine}${zLabel}${pLabel}${h0Label}
+    </svg></div>`;
+}
+
+function makeErrorTable() {
+  return `<div style="margin:0.7rem 0; overflow-x:auto">
+    <table style="width:100%; border-collapse:collapse; font-family:'Crimson Pro',serif; font-size:0.85rem">
+      <thead>
+        <tr>
+          <th style="padding:0.4rem 0.6rem; border:1px solid var(--border-bright); color:var(--text-muted); font-family:'Cinzel',serif; font-size:0.65rem; background:var(--surface2)"></th>
+          <th style="padding:0.4rem 0.6rem; border:1px solid var(--border-bright); color:var(--text-dim); font-family:'Cinzel',serif; font-size:0.65rem; background:var(--surface2); text-align:center">H\u2080 TRUE in reality</th>
+          <th style="padding:0.4rem 0.6rem; border:1px solid var(--border-bright); color:var(--text-dim); font-family:'Cinzel',serif; font-size:0.65rem; background:var(--surface2); text-align:center">H\u2080 FALSE in reality</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:0.4rem 0.6rem; border:1px solid var(--border-bright); color:var(--text-dim); font-family:'Cinzel',serif; font-size:0.65rem; background:var(--surface2)">Reject H\u2080</td>
+          <td style="padding:0.5rem 0.8rem; border:1px solid var(--border-bright); background:rgba(192,24,44,0.18); color:var(--blood); font-weight:600; text-align:center">Type I Error<br><span style="font-size:0.75rem; font-weight:400; color:var(--text-dim)">False Positive (prob = \u03b1)</span></td>
+          <td style="padding:0.5rem 0.8rem; border:1px solid var(--border-bright); background:rgba(45,212,116,0.12); color:var(--sage-bright); font-weight:600; text-align:center">Correct \u2713<br><span style="font-size:0.75rem; font-weight:400; color:var(--text-dim)">Power = 1 \u2212 \u03b2</span></td>
+        </tr>
+        <tr>
+          <td style="padding:0.4rem 0.6rem; border:1px solid var(--border-bright); color:var(--text-dim); font-family:'Cinzel',serif; font-size:0.65rem; background:var(--surface2)">Fail to reject H\u2080</td>
+          <td style="padding:0.5rem 0.8rem; border:1px solid var(--border-bright); background:rgba(45,212,116,0.12); color:var(--sage-bright); font-weight:600; text-align:center">Correct \u2713<br><span style="font-size:0.75rem; font-weight:400; color:var(--text-dim)">Specificity = 1 \u2212 \u03b1</span></td>
+          <td style="padding:0.5rem 0.8rem; border:1px solid var(--border-bright); background:rgba(192,24,44,0.18); color:var(--blood); font-weight:600; text-align:center">Type II Error<br><span style="font-size:0.75rem; font-weight:400; color:var(--text-dim)">False Negative (prob = \u03b2)</span></td>
+        </tr>
+      </tbody>
+    </table></div>`;
+}
+
+function makeArcheryTargets() {
+  const ring = (cx, r, i) => `<circle cx="${cx}" cy="72" r="${r}" fill="none" stroke="var(--border-bright)" stroke-width="${i===0?1.5:1}" opacity="${0.3+i*0.17}"/>`;
+  const target = (cx, hits, color, label, sublabel) => {
+    const rings = [32, 23, 15, 8].map((r, i) => ring(cx, r, i)).join('');
+    const bull = `<circle cx="${cx}" cy="72" r="4" fill="var(--blood)" opacity="0.7"/>`;
+    const arrows = hits.map(([dx, dy]) =>
+      `<circle cx="${(cx+dx).toFixed(1)}" cy="${(72+dy).toFixed(1)}" r="3.2" fill="${color}" stroke="var(--bg)" stroke-width="1" opacity="0.92"/>`
+    ).join('');
+    return `${rings}${bull}${arrows}
+      <text x="${cx}" y="114" text-anchor="middle" font-size="8.5" fill="var(--text-dim)" font-family="Cinzel,serif">${label}</text>
+      <text x="${cx}" y="124" text-anchor="middle" font-size="7.5" fill="var(--text-muted)" font-family="Crimson Pro,serif" font-style="italic">${sublabel}</text>`;
+  };
+  return `<div style="text-align:center; margin:0.7rem 0">
+    <div style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px">Reliability vs Validity</div>
+    <svg viewBox="0 0 300 132" width="300" style="max-width:100%; display:block; margin:0 auto; background:var(--surface2); border-radius:4px; border:1px solid var(--border)">
+      ${target(50,  [[-1,1],[1,-2],[0,2],[-2,0],[2,-1]], 'var(--sage-bright)', 'Reliable + Valid', 'tight & on target')}
+      ${target(150, [[-2+12,1+12],[1+12,-2+12],[0+12,2+12],[-2+12,0+12],[2+12,-1+12]], 'var(--ember)', 'Reliable, not Valid', 'tight, wrong spot')}
+      ${target(250, [[-11,9],[7,-13],[13,5],[-5,-9],[4,14],[-9,3]], 'var(--rune-bright)', 'Unreliable', 'arrows everywhere')}
+    </svg></div>`;
+}
+
+// ── Pre-build visual constants ─────────────────────────────────────────────
+
+const VIZ_PIE_VS_HIST = `<div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:0.6rem 0">` +
+  makePieChart({
+    title: "Manager's Chart — Nightly Spend",
+    slices: [
+      { value: 18, label: '\u20ac45\u2013120' },
+      { value: 29, label: '\u20ac120\u2013200' },
+      { value: 24, label: '\u20ac200\u2013280' },
+      { value: 17, label: '\u20ac280\u2013360' },
+      { value: 12, label: '\u20ac360+' }
+    ],
+    annotation: '\u26a0 Hides shape, skew & outliers'
+  }) +
+  makeHistogram({
+    bars: [8, 22, 41, 38, 19, 12, 7, 4, 3, 2],
+    title: 'Same Data as Histogram',
+    xlabel: 'Nightly Spend (\u20ac)',
+    color: 'var(--sage-bright)',
+    annotation: 'Reveals right skew & long tail'
+  }) + `</div>`;
+
+const VIZ_CI_COMPARISON = makeCIPlot({
+  title: '95% CIs \u2014 Same Mean, Different n',
+  intervals: [
+    { label: 'n = 30', lo: 5.9, hi: 8.5, mean: 7.2 },
+    { label: 'n = 300', lo: 6.9, hi: 7.5, mean: 7.2 }
+  ],
+  threshold: 7.0,
+  xlabel: 'Satisfaction score (0\u201310)'
+});
+
+const VIZ_PVALUE = makePValueDiagram({ p: 0.03, label: 'p = 0.03 \u2014 Red area = probability under H\u2080' });
+
+const VIZ_ERROR_TABLE = makeErrorTable();
+
+const VIZ_ARCHERY = makeArcheryTargets();
+
+const BOSS_CI_PLOT = makeCIPlot({
+  title: '95% CI for Mean Difference (App vs Traditional)',
+  intervals: [{ label: 'Waiting time', lo: -4.2, hi: 0.3, mean: -1.95 }],
+  threshold: 0,
+  xlabel: 'Mean difference (minutes) \u2014 negative = app faster'
+});
+
+// ══════════════════════════════════════════════════════
 // SCENES
 // ══════════════════════════════════════════════════════
 const SCENES = {
@@ -1566,7 +1808,7 @@ const SCENES = {
     ],
     choices: [
       { text: 'The average of 1.8 is fine — numbers are numbers, and the board can interpret it as a position on the 1–3 scale. Arithmetic on numeric codes is always valid provided the original categories had a clear direction.', next: 'q0_levels_wrong', damage: 15, bad: true },
-      { text: 'Room types are nominal labels. Averaging them is meaningless.', next: 'q0_levels', xp: 10 },
+      { text: 'Room types 1, 2, 3 are categorical labels, not quantities — nominal data. Averaging them produces a number with no meaning. The manager has been reporting nonsense to the board for two years.', next: 'q0_levels', xp: 10 },
       { text: 'Room type is ordinal — Standard, Deluxe, Suite have a natural order — so a mean is defensible as a summary of the typical tier. Ordinal means the categories are ranked, and the average conveys roughly where most guests sit on that ranking.', next: 'q0_levels_wrong', damage: 15, bad: true },
       { text: 'The problem is sample size, not measurement level. With a larger guest database the average of 1.8 would stabilise and become more reliable. The mean itself is a perfectly appropriate statistic here regardless of how the room types were coded.', next: 'q0_levels_wrong', damage: 15, bad: true }
     ]
@@ -1603,7 +1845,7 @@ const SCENES = {
     ],
     choices: [
       { text: 'Yes — the scale has order and the gaps feel equal enough. Treating short Likert-style scales as interval is standard practice in hospitality research, so the t-test is defensible here without further justification.', next: 'q0_levels_debate', xp: 5 },
-      { text: 'Technically no — the gaps may not be equal.', next: 'q0_levels_debate', xp: 10 },
+      { text: 'Technically no — satisfaction ratings are ordinal, not interval. The gap between Dissatisfied and Neutral may not equal the gap between Neutral and Satisfied, so a t-test on these scores is questionable.', next: 'q0_levels_debate', xp: 10 },
       { text: 'Yes, entirely uncontroversially. Any scale with a logical direction (1 = low, 3 = high) qualifies as interval data — scale length and gap equality are irrelevant once the categories have a defined order and numeric labels.', next: 'q0_levels_wrong', damage: 10, bad: true },
       { text: 'No — you should never use means or t-tests on any scale with fewer than 7 response options. Below 7 points the gaps between categories are too coarse to treat as equal, so all short scales require non-parametric alternatives.', next: 'q0_levels_wrong', damage: 10, bad: true }
     ]
@@ -1625,6 +1867,7 @@ const SCENES = {
     title: 'The Wrong Chart',
     narrative: `<p>A hotel manager slides a printed report across the desk. He has used a pie chart to show the distribution of guests' nightly spend — a continuous variable ranging from €45 to €420.</p>
     <p>He looks very pleased with it. The Archive Master looks like she might be ill.</p>
+    ${VIZ_PIE_VS_HIST}
     <p class="npc-speech">"Tell him what's wrong."</p>
     <div class="box box-lore"><span class="box-title">📜 Chart Selection Rules</span>
     <strong>One categorical variable</strong> → Bar chart or pie chart<br>
@@ -1643,8 +1886,8 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Chart Selection</span><strong>One categorical</strong> — Bar or pie chart<br><strong>Two categorical</strong> — Clustered or stacked bar<br><strong>One continuous</strong> — Histogram<br><strong>Two continuous</strong> — Scatterplot or line graph<br><strong>One of each</strong> — Bar chart, error bar plot, or box plot</div>' }
     ],
     choices: [
-      { text: 'Pie charts are flexible enough for continuous data provided you divide it into sensible price bands first. The proportions in each band are meaningful, and a well-labelled pie chart communicates the spending distribution to a non-technical audience just as clearly as a histogram would.', next: 'q0_charts_wrong', damage: 10, bad: true },
-      { text: 'He needs a histogram — a pie chart hides the distribution shape.', next: 'q0_hypothesis', xp: 10 },
+      { text: 'Pie charts are suitable here — divide the spend into price bands and the proportions in each band are meaningful. A well-labelled pie chart communicates the spending distribution clearly enough for a non-technical audience.', next: 'q0_charts_wrong', damage: 10, bad: true },
+      { text: 'Nightly spend is continuous data. A pie chart cannot show where guests cluster, whether the distribution is skewed, or whether there are outliers. He needs a histogram, which reveals the true shape.', next: 'q0_hypothesis', xp: 10 },
       { text: 'A bar chart would be better, since bar charts handle both categorical and continuous data and are always easier to read than pie charts regardless of the variable type being displayed.', next: 'q0_charts_wrong', damage: 10, bad: true },
       { text: 'A scatterplot is the correct choice. Nightly spend is recorded over time, so each observation has two dimensions — the amount and the date — making this a two-variable dataset that scatterplots are specifically designed to display.', next: 'q0_charts_wrong', damage: 10, bad: true }
     ]
@@ -1676,7 +1919,7 @@ const SCENES = {
     ],
     choices: [
       { text: 'The hypothesis is fine — directional hypotheses like this are more statistically powerful than vague two-sided ones, and specificity is always a virtue in research design.', next: 'q0_hyp_wrong', damage: 15, bad: true },
-      { text: 'It was written after seeing the data — that makes it a description, not a prediction.', next: 'q0_pvalue', xp: 10 },
+      { text: 'The hypothesis was written after seeing the data, which makes it a description rather than a prediction. A valid hypothesis must be committed to before data collection — not reverse-engineered from the result.', next: 'q0_pvalue', xp: 10 },
       { text: 'The hypothesis is missing H₀. Without an explicit null hypothesis stating no difference between branches, the statistical test has no baseline to compare against and the p-value cannot be correctly interpreted.', next: 'q0_hyp_wrong', damage: 10, bad: true },
       { text: 'The hypothesis uses the wrong notation. Response time is continuous so the correct parameter is μ for the mean — but the hypothesis as written implies we are comparing proportions, which would require π and a different test entirely.', next: 'q0_hyp_wrong', damage: 10, bad: true }
     ]
@@ -1697,6 +1940,7 @@ const SCENES = {
     narrative: `<p>A hotel chain's marketing director bursts into the Archive waving a report.</p>
     <p class="npc-speech">"Our new breakfast package works! The study shows p = 0.03 — we are 97% certain it increases guest satisfaction!"</p>
     <p>Three people in the Archive wince simultaneously.</p>
+    ${VIZ_PVALUE}
     <p>What is actually wrong with his interpretation — and what does p = 0.03 actually mean?</p>`,
     hints: {
       formula: 'p = the probability of obtaining your data (or more extreme data) if H₀ is true. Small p = your data would be rare under H₀ → reject H₀. It is NOT the probability that H₁ is true.',
@@ -1710,9 +1954,9 @@ const SCENES = {
     ],
     choices: [
       { text: 'He is close enough. p = 0.03 means the result is very unlikely to be due to chance, and communicating this as 97% certainty is a reasonable simplification for non-technical audiences making a business decision.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
-      { text: 'p is about the data under H₀, not the probability H₁ is true.', next: 'q0_errors', xp: 10 },
+      { text: 'p = 0.03 means: if the package had no effect, a result this large would appear only 3% of the time by chance. It says nothing about the probability that H₁ is true — that is a separate question entirely.', next: 'q0_errors', xp: 10 },
       { text: 'p = 0.03 is below 0.05 so H₁ is proven true. The director is right — statistical significance at the 5% level is the accepted scientific standard for confirming that an effect is real and worth acting on.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
-      { text: 'The director is wrong because p = 0.03 is dangerously close to the 0.05 boundary. In commercial research only p < 0.01 provides robust enough confidence to justify rollout costs — anything between 0.01 and 0.05 should be treated as provisional and requiring replication first.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'The director is wrong because p = 0.03 is dangerously close to the 0.05 threshold. In commercial contexts only p < 0.01 is robust enough — anything between 0.01 and 0.05 should be treated as provisional evidence requiring replication.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
     ]
   },
 
@@ -1734,7 +1978,8 @@ const SCENES = {
     <div class="box box-lore"><span class="box-title">📜 Error Types</span>
     <strong>Type I error (false positive)</strong> — rejecting H₀ when it is actually true. Concluding there is an effect when there isn't one. Probability = α (your significance threshold, e.g. 0.05).<br>
     <strong>Type II error (false negative)</strong> — failing to reject H₀ when it is actually false. Missing a real effect. Related to statistical power.<br>
-    <strong>Type III error</strong> — rejecting H₀ for the right result but the wrong reason (e.g. correct conclusion, flawed methodology).</div>`,
+    <strong>Type III error</strong> — rejecting H₀ for the right result but the wrong reason (e.g. correct conclusion, flawed methodology).</div>
+    ${VIZ_ERROR_TABLE}`,
     hints: {
       formula: 'α = 0.05 means you accept a 5% chance of a Type I error. Lowering α (e.g. to 0.01) reduces Type I errors but increases Type II errors. There is always a trade-off.',
       assumption: 'Type II errors are more common than people realise — underpowered studies (too few participants) miss real effects. Increasing sample size reduces Type II error without changing α.',
@@ -1746,9 +1991,9 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Error Types</span><strong>Type I (false positive)</strong> — rejecting H0 when it is true. Probability = alpha.<br><strong>Type II (false negative)</strong> — failing to reject H0 when it is false.<br><strong>Type III</strong> — correct rejection, but wrong reasoning or methodology.</div>' }
     ],
     choices: [
-      { text: 'A Type II error — the study failed to detect a real effect because the sample was too small. That is why the replication also found nothing: both studies were underpowered, and the original lucky p = 0.04 was simply the result of noise amplified by insufficient participants.', next: 'q0_errors_wrong', damage: 10, bad: true },
-      { text: 'A Type I error — a false positive. It found an effect that was not real.', next: 'q0_validity', xp: 10 },
-      { text: 'A Type III error — the correct test was applied but the wrong research question was being answered. By measuring behaviour immediately after training rather than on-the-job performance months later, the study generated a technically valid result for the wrong outcome entirely.', next: 'q0_errors_wrong', damage: 10, bad: true },
+      { text: 'A Type II error — the study failed to detect a real effect because the sample was too small. The replication found nothing too, meaning both were underpowered and the original p = 0.04 was noise amplified by too few participants.', next: 'q0_errors_wrong', damage: 10, bad: true },
+      { text: 'The original study made a Type I error — a false positive. It found a significant result that was not real. With p = 0.04 and α = 0.05, there was a 4% chance of this even if the training had no effect at all.', next: 'q0_validity', xp: 10 },
+      { text: 'A Type III error — the right test was applied but to the wrong question. Measuring behaviour immediately after training rather than on-the-job performance months later produced a technically valid result for the wrong outcome entirely.', next: 'q0_errors_wrong', damage: 10, bad: true },
       { text: 'Both studies are equally flawed. The original correctly identified a real effect, while the replication made a Type II error by failing to find it — most likely because it used a smaller sample that lacked the statistical power to detect the same genuine signal.', next: 'q0_errors_wrong', damage: 10, bad: true }
     ]
   },
@@ -1765,7 +2010,8 @@ const SCENES = {
     bg: 'archive',
     icon: '🎯', chapter: 'Prologue · The Foundations',
     title: 'Valid, Reliable, or Neither?',
-    narrative: `<p>Two research problems land on your desk at the same time.</p>
+    narrative: `${VIZ_ARCHERY}
+    <p>Two research problems land on your desk at the same time.</p>
     <p><strong>Problem A:</strong> A hotel used a questionnaire to measure "guest loyalty" — but every question was actually about satisfaction with the room. They called the result their loyalty score.</p>
     <p><strong>Problem B:</strong> The same hotel ran the questionnaire twice with the same guests a week apart. The scores shifted dramatically between the two administrations with no change in conditions.</p>
     <p class="npc-speech">"What is wrong with each — and which concept does each violate?"</p>`,
@@ -1780,9 +2026,9 @@ const SCENES = {
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "Problem B: The same hotel ran the questionnaire twice with the same guests a week apart. Scores shifted dramatically with no change in conditions. Which concept does each violate?" }
     ],
     choices: [
-      { text: 'Problem A violates reliability — different questions covering different ground produce inconsistent results from the same respondents. Problem B violates validity — specifically criterion validity, since scores shift between administrations with no real-world change to justify it.', next: 'q0_validity_wrong', damage: 10, bad: true },
-      { text: 'Problem A violates construct validity; Problem B violates reliability.', next: 'q0_validity_types', xp: 10 },
-      { text: 'Problem A violates external validity — using room satisfaction items means the findings cannot be generalised to loyalty behaviour outside this specific property. Problem B violates face validity — the dramatic score swings will make respondents doubt whether the questionnaire is measuring anything meaningful at all.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Problem A violates reliability — inconsistent question content produces inconsistent results. Problem B violates validity — specifically criterion validity, since scores shift between administrations with no real-world change to justify the difference.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Problem A violates construct validity — the items measure satisfaction, not loyalty. Problem B violates reliability — scores shift dramatically between administrations with no real change in conditions.', next: 'q0_validity_types', xp: 10 },
+      { text: 'Problem A violates external validity — satisfaction items cannot be generalised to loyalty behaviour at other properties. Problem B violates face validity — dramatic score swings make respondents doubt the questionnaire is measuring anything at all.', next: 'q0_validity_wrong', damage: 10, bad: true },
       { text: 'Both problems violate reliability in different ways — Problem A through inconsistent item content and Problem B through inconsistent scores over time. Validity is a separate concept entirely and is not implicated by either scenario.', next: 'q0_validity_wrong', damage: 10, bad: true }
     ]
   },
@@ -1819,9 +2065,9 @@ const SCENES = {
     ],
     choices: [
       { text: 'Content validity — they have checked that the engagement items cover the right dimensions of the construct by comparing them with guests\' stated intentions, which are the external criterion the construct should theoretically represent.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
-      { text: 'Concurrent criterion validity — but without tracking actual future spend, they cannot claim predictive validity.', next: 'q0_reliability_validity', xp: 10 },
+      { text: 'This is concurrent criterion validity — they compared the score against another measure taken at the same moment. To claim predictive validity they would need to wait and track whether actual future spend follows, which they have not done.', next: 'q0_reliability_validity', xp: 10 },
       { text: 'Predictive criterion validity — the engagement score will predict future spend, and correlating it with stated return likelihood at the same time is a valid proxy for the future behaviour they cannot yet observe.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
-      { text: 'Construct validity — they have demonstrated that the engagement scale measures a meaningful theoretical construct by showing it correlates with a related construct (return intention), which is the standard method for establishing convergent construct validity in the absence of a hard behavioural criterion.', next: 'q0_validity_types_wrong', damage: 10, bad: true }
+      { text: 'Construct validity — the score correlates with return intention, which is convergent evidence it measures a real construct. Correlating two self-reports simultaneously is a recognised approach when a hard behavioural criterion is not yet available.', next: 'q0_validity_types_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1853,7 +2099,7 @@ const SCENES = {
     ],
     choices: [
       { text: 'A is neither reliable nor valid because a consistent systematic error proves the instrument is broken in a fundamental way. B is reliable but not valid — the variation is random noise, which at least averages out over large samples and does not introduce bias.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
-      { text: 'A is reliable but not valid. B is worse — unreliable instruments cannot be corrected.', next: 'q0_confidence_intervals', xp: 10 },
+      { text: 'Instrument A is reliable but not valid — it gives the same wrong answer every time. Instrument B is worse: unreliable means you cannot know which readings to trust, so you cannot correct it. Unreliable means necessarily invalid.', next: 'q0_confidence_intervals', xp: 10 },
       { text: 'Both are equally problematic. A systematic error of 4°C is just as damaging to research conclusions as random error of the same magnitude, and there is no principled basis for treating one as less severe than the other.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
       { text: 'B is reliable but not valid — it measures something consistently, just not the right thing. A is worse because systematic errors compound across repeated measurements whereas random errors cancel out, making consistent wrongness more dangerous over time than random variability.', next: 'q0_rel_val_wrong', damage: 10, bad: true }
     ]
@@ -1873,6 +2119,7 @@ const SCENES = {
     title: 'The Width of Uncertainty',
     narrative: `<p>A chain hotel's analytics team has run the same survey study twice — once with 30 guests, once with 300. Both studies asked the same question and found the same mean satisfaction score of 7.2 out of 10.</p>
     <p>The 95% confidence intervals came back as:</p>
+    ${VIZ_CI_COMPARISON}
     <div class="box box-lore"><span class="box-title">📊 Results</span>
     <strong>Study 1 (n = 30):</strong> Mean = 7.2, 95% CI [5.9, 8.5]<br>
     <strong>Study 2 (n = 300):</strong> Mean = 7.2, 95% CI [6.9, 7.5]</div>
@@ -1888,9 +2135,9 @@ const SCENES = {
     ],
     choices: [
       { text: 'The director is right. Both studies found the same mean, which is the best estimate of true satisfaction. The confidence intervals are just a technical formality — the point estimate of 7.2 is what matters for the business decision.', next: 'q0_ci_wrong', damage: 10, bad: true },
-      { text: 'Study 1 cannot confirm satisfaction is above 7.0 — its CI includes 5.9. Study 2 is much more convincing. Larger samples produce narrower CIs.', next: 'q0_sampling', xp: 15 },
-      { text: 'The director is right about Study 2 but not Study 1. However, this is a minor technical detail — in practice, a mean of 7.2 is reported as 7.2 regardless of sample size, and both studies would support the same management conclusion when presented to a non-statistical audience.', next: 'q0_ci_wrong', damage: 10, bad: true },
-      { text: 'Neither study proves satisfaction is above 7.0. Confidence intervals never confirm that a value is above or below a threshold — they only describe a range of plausible estimates, and a formal one-sample t-test against the threshold of 7.0 would be required before any directional claim could be made.', next: 'q0_ci_wrong', damage: 10, bad: true }
+      { text: 'Study 1 cannot confirm satisfaction is above 7.0 — its CI of [5.9, 8.5] includes values well below 7.0. Study 2 is far more convincing with CI [6.9, 7.5]. The mean is identical; only the sample size differs. Larger n produces narrower, more precise intervals.', next: 'q0_sampling', xp: 15 },
+      { text: 'The director is right about Study 2 but not Study 1. In practice though, a mean of 7.2 gets reported as 7.2 regardless of sample size — and both studies would lead management to the same conclusion once the technical details are set aside.', next: 'q0_ci_wrong', damage: 10, bad: true },
+      { text: 'Neither study proves satisfaction is above 7.0. Confidence intervals describe a range of plausible values — they never confirm a threshold is cleared. A formal one-sample t-test against 7.0 would be needed before any directional claim is justified.', next: 'q0_ci_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1924,7 +2171,7 @@ const SCENES = {
     ],
     choices: [
       { text: 'A = Convenience, B = Snowball, C = Stratified, D = Systematic. The probability methods are B and D — snowball is a form of random recruitment through networks, and systematic sampling gives every listed guest a defined chance of selection depending on their position in the register.', next: 'q0_sampling_wrong', damage: 10, bad: true },
-      { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. Probability methods: A and C.', next: 'q0_boss_intro', xp: 15 },
+      { text: 'A = Systematic (every 10th guest — probability sampling), B = Snowball (guests recruit guests — non-probability), C = Stratified (random within proportional subgroups — probability), D = Convenience (whoever was available — non-probability). Probability methods: A and C.', next: 'q0_boss_intro', xp: 15 },
       { text: 'A = Systematic, B = Quota, C = Stratified, D = Convenience. The probability methods are A and C. B is quota sampling rather than snowball because it fills pre-defined category targets — the fact that guests recruit each other is incidental to the defining feature, which is the fixed segment quotas.', next: 'q0_sampling_wrong', damage: 10, bad: true },
       { text: 'A = Cluster, B = Snowball, C = Quota, D = Convenience. None of the four methods qualify as true probability sampling because none of them involve a fully randomised draw from a complete and exhaustive list of every guest who stayed during the period.', next: 'q0_sampling_wrong', damage: 10, bad: true }
     ]
@@ -2723,6 +2970,7 @@ const BOSS_BATTLES = {
           95% CI for mean difference: [−4.2 min, +0.3 min]<br><br>
           <strong>Conclusion written by researcher:</strong> "p = 0.074 means there is a 92.6% probability that the app reduces waiting times. We are highly confident the app works and recommend full rollout."
         </div>
+        ${BOSS_CI_PLOT}
         <p><span style="color:var(--blood)">"How many errors can you identify in the researcher's conclusion?"</span></p>`,
         choices: [
           { text: "Three errors: p misinterpreted, illegal one-sided switch post-hoc, and the CI includes zero.", correct: true, feedback: "Perfect. p is not a probability of the hypothesis. The one-sided/two-tailed mismatch is a real issue — you cannot switch after seeing results. And a CI including zero means the result is not significant at the two-tailed level. The Ghost recoils violently." },
@@ -3646,6 +3894,93 @@ function bossVictory() {
   gainXP(xpToGrant, () => showQuestComplete(quest));
 }
 
+
+// ══════════════════════════════════════════════════════
+// TREASURE CHESTS — post-boss rewards
+// ══════════════════════════════════════════════════════
+const BOSS_TREASURES = {
+  q0: {
+    title: 'Statistical Hypotheses',
+    artist: 'StatsLearn — A Significant Party',
+    note: 'The Ghost of Bad Research Past dissolves. Someone left this here — a track about the very thing it got wrong. H₀ and H₁, written before the data, not after. Name your price on Bandcamp.',
+    bc: 'https://statslearn.bandcamp.com/track/statistical-hypotheses',
+    free: false
+  },
+  q1: {
+    title: 'The Correlation Relation',
+    artist: 'StatsLearn — A Significant Party',
+    note: 'The Ghost of Spurious Reviews dissolves back into the ledger. A song about r, scatter plots, and the oldest trap in data analysis. Correlation is not causation — but it does make a good chorus.',
+    bc: 'https://statslearn.bandcamp.com/track/the-correlation-relation',
+    free: false
+  },
+  q2: {
+    title: 'Chi Square',
+    artist: 'StatsLearn — A Significant Party',
+    note: 'The Wraith of the Contingency Table retreats. Expected counts, observed counts, and the test that tells you whether the difference is real. Someone made this into a song. You deserve to hear it.',
+    bc: 'https://statslearn.bandcamp.com/track/chi-square',
+    free: false
+  },
+  q3: {
+    title: 'T-tests and Mann-Whitney U',
+    artist: 'StatsLearn — A Significant Party',
+    note: 'The Variance Hydra falls, head by head. Three kinds of t-test, Levene’s test, the non-parametric alternative — all in one track. The Hydra would have hated this song.',
+    bc: 'https://statslearn.bandcamp.com/track/t-tests-and-mann-whitney-u',
+    free: false
+  },
+  q3b: {
+    title: 'T-tests and Mann-Whitney U',
+    artist: 'StatsLearn — A Significant Party',
+    note: 'The Shapiro-Wilk Wraith dissolves into the shelves. This track covers the exact decision you just had to make — normality, Levene’s, Mann-Whitney U. Someone turned your exam into a banger.',
+    bc: 'https://statslearn.bandcamp.com/track/t-tests-and-mann-whitney-u',
+    free: false
+  },
+  q4: {
+    title: 'ANOVA',
+    artist: 'StatsLearn — A Significant Party',
+    note: 'The Omnibus Concierge steps aside. You have mastered all four seals. This is your victory track — ANOVA, post-hoc tests, and the gates of the Grand Council Hall. Name your price on Bandcamp.',
+    bc: 'https://statslearn.bandcamp.com/track/anova',
+    free: false
+  }
+};
+
+
+
+function openChest(questId) {
+  const chest = document.getElementById('chest-' + questId);
+  const reveal = document.getElementById('chest-reveal-' + questId);
+  if (!chest || !reveal) return;
+  chest.classList.add('opened');
+  chest.querySelector('.chest-label').textContent = 'Opened';
+  reveal.classList.add('visible');
+  // Scroll to reveal
+  setTimeout(() => reveal.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+function buildTreasureChest(questId) {
+  const t = BOSS_TREASURES[questId];
+  if (!t) return '';
+  const freeLabel = t.free
+    ? '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--sage-bright); letter-spacing:0.08em; text-transform:uppercase">✦ Free download</span>'
+    : '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase">♦ Name your price on Bandcamp</span>';
+  return `
+    <div style="text-align:center; margin: 1.5rem 0 0.5rem">
+      <div class="treasure-chest" id="chest-${questId}" onclick="openChest('${questId}')">
+        <span class="chest-icon">🎵</span>
+        <span class="chest-label">A song was left behind...</span>
+      </div>
+      <div class="treasure-reveal" id="chest-reveal-${questId}">
+        <div style="font-family:Cinzel,serif; font-size:0.6rem; letter-spacing:0.15em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem">🎵 Reward — StatsLearn · A Significant Party</div>
+        <div class="treasure-song-title">${t.title}</div>
+        <div class="treasure-song-artist">${t.artist}</div>
+        <div class="treasure-song-note">${t.note}</div>
+        <div class="treasure-link-row" style="align-items:center; gap:10px">
+          ${freeLabel}
+          <a href="${t.bc}" target="_blank" rel="noopener" class="treasure-listen-btn bc">♫ Open on Bandcamp</a>
+        </div>
+      </div>
+    </div>`;
+}
+
 function showQuestComplete(quest) {
   hideOracleButton();
   vnHide();
@@ -3677,7 +4012,8 @@ function showQuestComplete(quest) {
         <span class="box-title">📜 The Seal of ${quest.topic} — What You Learned</span>
         ${summaries[quest.id]}
       </div>
-      <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      ${buildTreasureChest(quest.id)}
+      <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:1rem">
         <button class="btn btn-primary" onclick="startQuest('${quest.id}')">⟳ Replay Quest</button>
         <button class="btn btn-gold" onclick="showMap()">↩ Return to Archive</button>
       </div>
