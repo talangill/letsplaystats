@@ -983,6 +983,360 @@ h1.game-title {
   border-left-color: var(--blood);
 }
 
+
+/* ══════════════════════════════════════════════════════
+   VISUAL NOVEL ENGINE — Dark Fantasy Style
+══════════════════════════════════════════════════════ */
+
+/* ── VN Stage ───────────────────────────────────────── */
+#vn-stage {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  overflow: hidden;
+}
+#vn-stage.active { display: flex; }
+
+/* ── Scene Background ───────────────────────────────── */
+#vn-bg {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+.vn-bg-archive {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(80,40,10,0.9) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 20% 20%, rgba(139,92,246,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 50% at 80% 10%, rgba(212,168,32,0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #0a0610 0%, #120c18 40%, #1a1010 100%);
+}
+.vn-bg-lobby {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(180,120,20,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 40% at 15% 60%, rgba(180,100,10,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 30% 40% at 85% 60%, rgba(180,100,10,0.2) 0%, transparent 50%),
+    linear-gradient(180deg, #06080e 0%, #0e0c08 60%, #18110a 100%);
+}
+.vn-bg-banquet {
+  background:
+    radial-gradient(ellipse 100% 30% at 50% 100%, rgba(160,80,10,0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 20% 60% at 50% 10%, rgba(212,168,32,0.15) 0%, transparent 60%),
+    linear-gradient(180deg, #080608 0%, #100c06 50%, #180e08 100%);
+}
+.vn-bg-cellar {
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 90%, rgba(120,20,20,0.4) 0%, transparent 55%),
+    radial-gradient(ellipse 20% 30% at 20% 50%, rgba(180,60,10,0.15) 0%, transparent 40%),
+    radial-gradient(ellipse 20% 30% at 80% 50%, rgba(180,60,10,0.15) 0%, transparent 40%),
+    linear-gradient(180deg, #060408 0%, #0e0608 60%, #160808 100%);
+}
+.vn-bg-spa {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(20,80,120,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 20%, rgba(100,180,220,0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #04080e 0%, #060c14 50%, #081018 100%);
+}
+.vn-bg-castle {
+  background:
+    radial-gradient(ellipse 100% 40% at 50% 100%, rgba(60,10,80,0.5) 0%, transparent 50%),
+    radial-gradient(ellipse 30% 60% at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 60%),
+    linear-gradient(180deg, #04020a 0%, #080412 50%, #100820 100%);
+}
+.vn-bg-boss {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(160,10,30,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 80% at 50% 0%, rgba(80,0,10,0.4) 0%, transparent 60%),
+    linear-gradient(180deg, #08020a 0%, #100308 50%, #06020a 100%);
+  animation: bossFlicker 4s ease-in-out infinite alternate;
+}
+@keyframes bossFlicker {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(0.85); }
+  100% { filter: brightness(1.05); }
+}
+
+/* ── Background decoration layers ───────────────────── */
+#vn-bg-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Archive: bookshelf silhouettes */
+.vn-bg-archive #vn-bg-deco::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 45%;
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0px, transparent 28px,
+      rgba(20,12,28,0.9) 28px, rgba(20,12,28,0.9) 32px
+    ),
+    linear-gradient(180deg, transparent 0%, rgba(15,8,20,0.95) 100%);
+  clip-path: polygon(
+    0% 100%, 0% 30%, 5% 30%, 5% 0%, 8% 0%, 8% 20%, 12% 20%, 12% 5%,
+    18% 5%, 18% 25%, 22% 25%, 22% 10%, 28% 10%, 28% 0%, 32% 0%,
+    32% 15%, 38% 15%, 38% 5%, 44% 5%, 44% 20%, 50% 20%, 50% 8%,
+    56% 8%, 56% 0%, 62% 0%, 62% 18%, 68% 18%, 68% 5%, 74% 5%,
+    74% 25%, 80% 25%, 80% 12%, 86% 12%, 86% 0%, 92% 0%, 92% 22%,
+    96% 22%, 96% 30%, 100% 30%, 100% 100%
+  );
+}
+
+/* Lobby: floor glow */
+.vn-bg-lobby #vn-bg-deco::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 10%; right: 10%;
+  height: 35%;
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(212,168,32,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+/* Cellar: stone arch */
+.vn-bg-cellar #vn-bg-deco::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 55%;
+  background: transparent;
+  border-bottom: 4px solid rgba(80,40,30,0.3);
+  border-radius: 0 0 50% 50% / 0 0 30% 30%;
+  box-shadow: 0 0 60px rgba(180,60,10,0.1);
+}
+
+/* Castle: distant towers */
+.vn-bg-castle #vn-bg-deco::before {
+  content: '';
+  position: absolute;
+  bottom: 30%; left: 0; right: 0;
+  height: 40%;
+  background: 
+    linear-gradient(180deg, transparent 60%, rgba(4,2,10,0.8) 100%);
+  clip-path: polygon(
+    0% 100%, 0% 60%, 8% 60%, 8% 40%, 10% 40%, 10% 20%, 12% 20%,
+    12% 40%, 14% 40%, 14% 60%, 22% 60%, 22% 50%, 24% 50%, 24% 30%,
+    26% 30%, 26% 10%, 28% 10%, 28% 30%, 30% 30%, 30% 50%, 32% 50%,
+    32% 60%, 40% 60%, 40% 45%, 48% 45%, 48% 25%, 50% 25%, 50% 5%,
+    52% 5%, 52% 25%, 54% 25%, 54% 45%, 62% 45%, 62% 60%,
+    68% 60%, 68% 50%, 72% 50%, 72% 35%, 74% 35%, 74% 15%,
+    76% 15%, 76% 35%, 78% 35%, 78% 50%, 82% 50%, 82% 60%,
+    90% 60%, 90% 40%, 92% 40%, 92% 55%, 100% 55%, 100% 100%
+  );
+}
+
+/* ── Character Layer ─────────────────────────────────── */
+#vn-chars {
+  position: absolute;
+  inset: 0;
+  bottom: 38%;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 4%;
+}
+
+.vn-char {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  transition: opacity 0.4s ease, transform 0.4s ease, filter 0.4s ease;
+  transform-origin: bottom center;
+}
+.vn-char.hidden { opacity: 0; transform: translateY(20px); }
+.vn-char.dim { opacity: 0.35; filter: brightness(0.5) saturate(0.4); }
+.vn-char.active {
+  filter: drop-shadow(0 0 20px rgba(212,168,32,0.25));
+  transform: scale(1.03);
+}
+.vn-char.speaking {
+  animation: charBob 2s ease-in-out infinite;
+}
+@keyframes charBob {
+  0%,100% { transform: scale(1.03) translateY(0); }
+  50%      { transform: scale(1.03) translateY(-4px); }
+}
+.vn-char svg { display: block; }
+
+/* ── Dialogue Box ────────────────────────────────────── */
+#vn-dialogue {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(180deg, rgba(8,4,12,0.92) 0%, rgba(12,6,18,0.98) 100%);
+  border-top: 1px solid var(--border-bright);
+  backdrop-filter: blur(8px);
+  padding: 0;
+  min-height: 38%;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  user-select: none;
+}
+
+#vn-namebox {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  background: linear-gradient(90deg, rgba(212,168,32,0.18), transparent);
+  border-left: 3px solid var(--gold);
+  padding: 6px 14px 5px;
+  margin: 0;
+}
+
+#vn-text-area {
+  flex: 1;
+  padding: 10px 18px 6px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text);
+  min-height: 80px;
+}
+
+#vn-tap-hint {
+  font-family: 'Cinzel', serif;
+  font-size: 0.52rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 2px 14px 8px;
+  text-transform: uppercase;
+  animation: tapPulse 1.5s ease-in-out infinite;
+}
+@keyframes tapPulse {
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+
+/* ── Lore/Info boxes inside dialogue ─────────────────── */
+#vn-text-area .vn-lore {
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+#vn-text-area .vn-lore strong { color: var(--rune-bright); }
+#vn-text-area .vn-lore-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--rune-bright);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* ── Choice Panel ────────────────────────────────────── */
+#vn-choices {
+  display: none;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(8,4,12,0.5);
+  cursor: default;
+}
+#vn-choices.visible { display: flex; }
+
+.vn-choice-btn {
+  width: 100%;
+  text-align: left;
+  background: rgba(20,14,28,0.8);
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  padding: 9px 13px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+.vn-choice-btn::before {
+  content: '▸';
+  color: var(--gold-dim);
+  margin-right: 8px;
+  font-size: 0.75rem;
+  transition: color 0.18s;
+}
+.vn-choice-btn:hover {
+  border-color: var(--gold);
+  color: var(--text);
+  background: rgba(212,168,32,0.08);
+}
+.vn-choice-btn:hover::before { color: var(--gold-bright); }
+
+/* ── Damage / XP flash on VN stage ──────────────────── */
+#vn-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 60;
+}
+#vn-flash.flash-damage { background: rgba(192,24,44,0.25); }
+#vn-flash.flash-xp     { background: rgba(45,212,116,0.15); }
+
+/* ── Chapter title card ──────────────────────────────── */
+#vn-chapter-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4,2,8,0.92);
+  z-index: 70;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+#vn-chapter-card.show { opacity: 1; pointer-events: all; }
+.vn-chapter-sigil { font-size: 2.5rem; margin-bottom: 0.6rem; }
+.vn-chapter-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+.vn-chapter-topic {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--text-dim);
+}
+
+/* ── Mobile / responsive ─────────────────────────────── */
+@media (max-width: 520px) {
+  #vn-chars { bottom: 42%; padding: 0 2%; }
+  #vn-text-area { font-size: 0.96rem; padding: 8px 12px 4px; }
+  #vn-namebox { font-size: 0.65rem; }
+  #vn-dialogue { min-height: 42%; }
+  .vn-choice-btn { font-size: 0.84rem; padding: 8px 10px; }
+}
+@media (max-width: 380px) {
+  #vn-text-area { font-size: 0.9rem; }
+  .vn-choice-btn { font-size: 0.8rem; }
+}
+
 </style>
 </head>
 <body>
@@ -1025,6 +1379,31 @@ h1.game-title {
   </div>
   <div class="hud-save-tooltip" id="save-tooltip"></div>
   <div id="main-content"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     VISUAL NOVEL STAGE
+══════════════════════════════════════════════════════ -->
+<div id="vn-stage">
+  <div id="vn-bg"></div>
+  <div id="vn-bg-deco"></div>
+  <div id="vn-chars">
+    <div class="vn-char hidden" id="vn-char-left"></div>
+    <div class="vn-char hidden" id="vn-char-right"></div>
+  </div>
+  <div id="vn-chapter-card">
+    <div class="vn-chapter-sigil" id="vn-cc-sigil"></div>
+    <div class="vn-chapter-name" id="vn-cc-name"></div>
+    <div class="vn-chapter-topic" id="vn-cc-topic"></div>
+  </div>
+  <div id="vn-dialogue">
+    <div id="vn-namebox">—</div>
+    <div id="vn-text-area"></div>
+    <div id="vn-tap-hint">tap to continue ▾</div>
+    <div id="vn-choices"></div>
+  </div>
+  <div id="vn-flash"></div>
+</div>
+
 </div>
 
 <script>
@@ -1165,6 +1544,7 @@ const SCENES = {
   // ══════════════════════════════════════════════════════
 
   q0_intro: {
+    bg: 'archive',
     icon: '📜', chapter: 'Prologue · The Foundations',
     title: 'Your First Day',
     narrative: `<p>The Archive Master meets you at the door before you have even taken your coat off.</p>
@@ -1177,6 +1557,12 @@ const SCENES = {
       assumption: 'Measurement level determines what statistics are valid. Using a mean requires interval or ratio data. Nominal data only allows frequencies and modes.',
       interpretation: 'Room type 1, 2, 3 is a label — not a quantity. Saying the "average" is 1.8 is like averaging the numbers on football shirts and calling it a useful statistic.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Before I let you near a single dataset, you need to prove you understand what data actually is." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Half the errors in this Archive were made by people who ran straight to a statistical test without asking the most basic questions first." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A hotel manager sent us this. He recorded room type as 1, 2, and 3 — Standard, Deluxe, Suite — then calculated the average room type as 1.8. He has been reporting this to his board for two years." },
+      { char: null, left: 'archive_master', right: 'player', text: "She raises an eyebrow. What is the problem?" }
+    ],
     choices: [
       { text: 'The average of 1.8 is fine — numbers are numbers. If the categories have labels 1, 2, 3 then arithmetic on them is valid and the board can interpret the result sensibly.', next: 'q0_levels_wrong', damage: 15, bad: true },
       { text: 'Room types 1, 2, 3 are just labels — nominal data. You can count how many guests chose each type, but averaging the labels produces a number that means nothing. The manager has been reporting nonsense.', next: 'q0_levels', xp: 10 },
@@ -1195,6 +1581,7 @@ const SCENES = {
   },
 
   q0_levels: {
+    bg: 'archive',
     icon: '📐', chapter: 'Prologue · The Foundations',
     title: 'The Four Levels',
     narrative: `<p>Good. The Archive Master nods and pulls out a second folder.</p>
@@ -1209,6 +1596,10 @@ const SCENES = {
       assumption: 'The debate about using means on Likert/ordinal scales is real and ongoing. The safe position for this course: ordinal data officially requires non-parametric tests. Many researchers treat 5-7 point scales as interval in practice, but must justify this.',
       interpretation: 'In practice, many hospitality researchers treat 5-point satisfaction scales as interval and use t-tests. The key word is "justify" — you need to acknowledge the assumption you are making.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A researcher coded guest satisfaction as: 1 = Dissatisfied, 2 = Neutral, 3 = Satisfied. She calculated the mean as 2.3 and reported a t-test comparing two hotels. Is this valid?" },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">The Four Measurement Levels</span><strong>Nominal</strong> — categories, no order (room type, nationality).<br><strong>Ordinal</strong> — ordered, unequal gaps (satisfaction scales, star ratings).<br><strong>Interval</strong> — equal gaps, no true zero (temperature in Celsius).<br><strong>Ratio</strong> — equal gaps, true zero (revenue, age, weight).</div>' }
+    ],
     choices: [
       { text: 'Yes — the satisfaction scale 1-2-3 has a clear order and the gaps feel equal enough. Treating it as interval for the purposes of a t-test is standard practice in hospitality research.', next: 'q0_levels_debate', xp: 5 },
       { text: 'Technically no — satisfaction ratings are ordinal, not interval. The gap between Dissatisfied and Neutral may not equal the gap between Neutral and Satisfied. A t-test on these scores is questionable.', next: 'q0_levels_debate', xp: 10 },
@@ -1228,6 +1619,7 @@ const SCENES = {
   },
 
   q0_charts: {
+    bg: 'archive',
     icon: '📊', chapter: 'Prologue · The Foundations',
     title: 'The Wrong Chart',
     narrative: `<p>A hotel manager slides a printed report across the desk. He has used a pie chart to show the distribution of guests' nightly spend — a continuous variable ranging from €45 to €420.</p>
@@ -1244,6 +1636,11 @@ const SCENES = {
       assumption: 'A histogram groups continuous data into bins (ranges) and shows the frequency of each range. This reveals the shape of the distribution — which a pie chart cannot do.',
       interpretation: 'The manager has likely grouped the data into arbitrary price brackets and treated them as categories. The result hides the actual distribution shape — you cannot see skew, outliers, or bimodality in a pie chart.'
     },
+    beats: [
+      { char: 'analyst', left: 'analyst', right: 'player', text: "I just sent the revenue team a report. I used a pie chart to show the distribution of nightly spend — it ranges from 45 to 420 euros. The colours came out beautifully." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Put that report down. Tell him what is wrong with it." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Chart Selection</span><strong>One categorical</strong> — Bar or pie chart<br><strong>Two categorical</strong> — Clustered or stacked bar<br><strong>One continuous</strong> — Histogram<br><strong>Two continuous</strong> — Scatterplot or line graph<br><strong>One of each</strong> — Bar chart, error bar plot, or box plot</div>' }
+    ],
     choices: [
       { text: 'Pie charts are versatile — as long as the data is divided into sensible price bands, a pie chart of spending is a legitimate way to show the proportions in each band.', next: 'q0_charts_wrong', damage: 10, bad: true },
       { text: 'Nightly spend is continuous data. A pie chart cannot show the shape of the distribution — where most guests cluster, whether it is skewed, whether there are outliers. He needs a histogram.', next: 'q0_hypothesis', xp: 10 },
@@ -1261,6 +1658,7 @@ const SCENES = {
   },
 
   q0_hypothesis: {
+    bg: 'archive',
     icon: '🔬', chapter: 'Prologue · The Foundations',
     title: 'The Hypothesis Problem',
     narrative: `<p>A junior researcher at a hotel chain ran a study comparing room service response times between two branches. After collecting the data, she looked at the results and wrote her hypothesis as: <em>"Branch A has faster response times than Branch B."</em></p>
@@ -1271,6 +1669,10 @@ const SCENES = {
       assumption: 'A hypothesis written after seeing the data is not a hypothesis — it is a description. The entire logic of p-values assumes the hypothesis was fixed before the data was examined.',
       interpretation: 'If she wrote "Branch A is faster" after seeing that Branch A was faster, her p-value is meaningless. She has used the data to generate and confirm the same hypothesis simultaneously.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A junior researcher compared room service response times between two branches. After collecting the data, she wrote her hypothesis: Branch A has faster response times than Branch B." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "She is asking you to sign off on the report. What is wrong with her hypothesis?" }
+    ],
     choices: [
       { text: 'The hypothesis is fine — it is specific and directional, which is better than a vague two-sided hypothesis. Specificity improves the power of the test.', next: 'q0_hyp_wrong', damage: 15, bad: true },
       { text: 'The hypothesis was written after seeing the data — it describes what she found rather than predicting what she expected. A valid hypothesis must be committed to before data collection, not derived from it.', next: 'q0_pvalue', xp: 10 },
@@ -1288,6 +1690,7 @@ const SCENES = {
   },
 
   q0_pvalue: {
+    bg: 'archive',
     icon: '📉', chapter: 'Prologue · The Foundations',
     title: 'What p Actually Means',
     narrative: `<p>A hotel chain's marketing director bursts into the Archive waving a report.</p>
@@ -1299,6 +1702,11 @@ const SCENES = {
       assumption: 'The 95% confidence interval means: if you repeated this study 100 times, 95 of the resulting CIs would contain the true population parameter. It does NOT mean "95% chance the true value is in this interval."',
       interpretation: 'p = 0.03 means: if the breakfast package truly had no effect, there is only a 3% chance of seeing a result this large by chance. It says nothing about the probability that the package works — that requires effect size, replication, and context.'
     },
+    beats: [
+      { char: null, left: 'archive_master', right: 'player', text: "A hotel chain marketing director bursts into the Archive waving a report." },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "Our new breakfast package works! The study shows p equals 0.03. We are 97 percent certain it increases guest satisfaction!" },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Three people in the Archive wince simultaneously. What is actually wrong with his interpretation — and what does p = 0.03 actually mean?" }
+    ],
     choices: [
       { text: 'He is close enough — p = 0.03 means the result is unlikely to be due to chance, and "97% certain" is a reasonable way to communicate this to a non-technical audience.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
       { text: 'p = 0.03 means: if the package had no effect, we would only see a result this large 3% of the time by chance. That is not the same as "97% certain the package works" — p is about the data under H₀, not the probability H₁ is true.', next: 'q0_errors', xp: 10 },
@@ -1316,6 +1724,7 @@ const SCENES = {
   },
 
   q0_errors: {
+    bg: 'archive',
     icon: '⚠️', chapter: 'Prologue · The Foundations',
     title: 'The Costly Mistake',
     narrative: `<p>A hotel chain ran a study testing whether a new staff training programme improved service scores. The result was p = 0.04 — just significant. The chain rolled out the programme across all 12 properties at considerable cost.</p>
@@ -1330,6 +1739,11 @@ const SCENES = {
       assumption: 'Type II errors are more common than people realise — underpowered studies (too few participants) miss real effects. Increasing sample size reduces Type II error without changing α.',
       interpretation: 'In hospitality practice: Type I = spending money on a training programme that does not work. Type II = not implementing a training programme that would have worked. Both have real costs.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A hotel chain ran a study testing whether a new training programme improved service scores. p = 0.04 — just significant. They rolled out the programme across all 12 properties at considerable cost." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Two years later, a replication study found no effect. The original result was almost certainly a false positive. What type of error did the original study make?" },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Error Types</span><strong>Type I (false positive)</strong> — rejecting H0 when it is true. Probability = alpha.<br><strong>Type II (false negative)</strong> — failing to reject H0 when it is false.<br><strong>Type III</strong> — correct rejection, but wrong reasoning or methodology.</div>' }
+    ],
     choices: [
       { text: 'The original study made a Type II error — it failed to detect a real effect because the sample was too small, which is why the replication also found nothing.', next: 'q0_errors_wrong', damage: 10, bad: true },
       { text: 'The original study made a Type I error — it found a significant result that was not real. With p = 0.04 and α = 0.05, there was a 4% chance of this happening even if the training had no effect at all.', next: 'q0_validity', xp: 10 },
@@ -1347,6 +1761,7 @@ const SCENES = {
   },
 
   q0_validity: {
+    bg: 'archive',
     icon: '🎯', chapter: 'Prologue · The Foundations',
     title: 'Valid, Reliable, or Neither?',
     narrative: `<p>Two research problems land on your desk at the same time.</p>
@@ -1358,8 +1773,13 @@ const SCENES = {
       assumption: 'Problem A is a construct validity issue — the questions do not represent the construct (loyalty) they claim to measure. Problem B is a reliability issue — the measure gives inconsistent results under stable conditions.',
       interpretation: 'The archery target analogy: reliability = tight grouping (consistent). Validity = hitting the bullseye (accurate). Reliable but not valid = tight grouping, wrong target. Valid but not reliable = can\'t reproduce it.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Two research problems land on your desk at the same time." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Problem A: A hotel used a questionnaire to measure guest loyalty — but every question was about satisfaction with the room. They called the result their loyalty score." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Problem B: The same hotel ran the questionnaire twice with the same guests a week apart. Scores shifted dramatically with no change in conditions. Which concept does each violate?" }
+    ],
     choices: [
-      { text: 'Problem A violates reliability — the questionnaire gives inconsistent results. Problem B violates validity — the loyalty score doesn\'t actually measure loyalty.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Problem A violates reliability — the questionnaire gives inconsistent results. Problem B violates validity — the loyalty score doesn\&#39;t actually measure loyalty.', next: 'q0_validity_wrong', damage: 10, bad: true },
       { text: 'Problem A violates validity — specifically construct validity, because the items measure satisfaction not loyalty. Problem B violates reliability — the scores are inconsistent across administrations with no real change.', next: 'q0_sampling', xp: 10 },
       { text: 'Problem A violates external validity — the questionnaire results cannot be generalised beyond this specific hotel. Problem B violates face validity — the questionnaire does not appear credible to respondents.', next: 'q0_validity_wrong', damage: 10, bad: true },
       { text: 'Both problems violate reliability. Problem A gives inconsistent item content and Problem B gives inconsistent scores over time — both are forms of measurement inconsistency.', next: 'q0_validity_wrong', damage: 10, bad: true }
@@ -1375,6 +1795,7 @@ const SCENES = {
   },
 
   q0_sampling: {
+    bg: 'archive',
     icon: '🎲', chapter: 'Prologue · The Foundations',
     title: 'Who Did You Ask?',
     narrative: `<p>The Archive Master lays four research briefs on the desk, each describing how a hotel chain collected its sample.</p>
@@ -1389,6 +1810,10 @@ const SCENES = {
       assumption: 'Probability sampling gives every member of the target population a known chance of being selected. Non-probability sampling introduces bias — the sample may not represent the population.',
       interpretation: 'A = Systematic (probability). B = Snowball (non-probability). C = Stratified (probability). D = Convenience (non-probability). Only A and C guarantee every guest type had a known chance of being included.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "I am going to describe four studies. Match each to its sampling method — and tell me which two are probability sampling." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">The Four Scenarios</span><strong>A.</strong> Surveyed every 10th guest to check in over a month.<br><strong>B.</strong> Asked guests to share the survey link with other guests they met during their stay.<br><strong>C.</strong> Divided guests by nationality in the same proportions as the full guest population, then randomly selected within each group.<br><strong>D.</strong> Interviewed whoever was in the hotel lobby on a Tuesday afternoon because the researcher had a free afternoon.</div>' }
+    ],
     choices: [
       { text: 'A = Convenience, B = Snowball, C = Stratified, D = Systematic. The probability methods are B and D.', next: 'q0_sampling_wrong', damage: 10, bad: true },
       { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. The probability methods are A and C — both give every guest a known chance of selection.', next: 'q0_boss_intro', xp: 15 },
@@ -1417,6 +1842,7 @@ const SCENES = {
   },
 
   q1_intro: {
+    bg: 'lobby',
     icon: '🏨', chapter: 'Quest I · Correlation',
     title: "The Innkeeper's Ledger",
     narrative: `<p>You are the newly appointed Revenue Manager at <em>The Crowned Stag</em>, the most celebrated inn in the realm. The head innkeeper, Margaux, drops a thick ledger on your desk.</p>
@@ -1428,6 +1854,12 @@ const SCENES = {
       assumption: 'Before any test, you must verify the data meets the test\'s assumptions. For correlation, linearity is the critical check.',
       interpretation: 'A result means nothing if you chose the wrong test. Check the data structure visually first.'
     },
+    beats: [
+      { char: 'margaux', left: 'margaux', right: 'player', text: "Twenty seasons of records — nightly room rates and occupancy percentages. My predecessor swore that charging more fills the inn. The owner insists lower prices are the key." },
+      { char: 'margaux', left: 'margaux', right: 'player', text: "I need to know: is there a real relationship between our price and how full we are?" },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "Just look at the numbers. You have been in hospitality long enough to have a feeling for this." },
+      { char: null, left: 'margaux', right: 'player', text: "You pause. A feeling. Is that really how a data-driven manager operates?" }
+    ],
     choices: [
       { text: "Trust your instincts — you've worked in hospitality for years. Give Margaux your gut feeling and move on.", next: 'q1_bad_guess', damage: 20, bad: true },
       { text: "Plot the data first. Draw a scatter plot of room rate vs occupancy before deciding on any statistical test — you need to see the shape before choosing a method.", next: 'q1_plot', xp: 10 },
@@ -1447,6 +1879,7 @@ const SCENES = {
   },
 
   q1_plot: {
+    bg: 'lobby',
     icon: '📊', chapter: 'Quest I · Correlation',
     title: 'The Scatter Plot Speaks',
     narrative: `<p>You spread the 20 seasons of data across the table and draw two scatter plots. Rate vs occupancy forms a gentle downward slope — almost a straight line. But you also plot average daily temperature vs occupancy: it curves upward steeply in summer, plateaus, then drops in winter.</p>
@@ -1458,6 +1891,12 @@ const SCENES = {
       assumption: "Pearson's r requires: (1) linearity, (2) both variables continuous, (3) no extreme outliers skewing the picture.",
       interpretation: "A non-significant Pearson r on a curved dataset doesn't mean 'no relationship' — it means the wrong test was applied."
     },
+    beats: [
+      { char: null, left: 'margaux', right: 'player', text: "You spread the 20 seasons of data across the table and draw two scatter plots." },
+      { char: null, left: 'margaux', right: 'player', text: "Rate vs occupancy forms a gentle downward slope — almost a straight line. Temperature vs occupancy curves steeply in summer, plateaus, then drops in winter." },
+      { char: 'margaux', left: 'margaux', right: 'player', text: "Interesting curve on that temperature plot. Does that matter for which test we use?" },
+      { char: null, left: 'margaux', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">The Law of Linearity</span>Pearson&#39;s r quantifies linear association only. A curved relationship can have r close to zero while being a strong, real relationship. Confirm the scatter looks roughly linear before computing r.</div>' }
+    ],
     choices: [
       { text: "The temperature-occupancy curve isn't suitable for Pearson's r. But rate-occupancy looks linear — I'll run Pearson's r on that relationship.", next: 'q1_linearity', xp: 15 },
       { text: "The curves are minor — Pearson's r is robust enough for both plots. Run it on all relationships at once.", next: 'q1_bad_curve', damage: 20, bad: true },
@@ -1475,6 +1914,7 @@ const SCENES = {
   },
 
   q1_linearity: {
+    bg: 'lobby',
     icon: '⚖️', chapter: 'Quest I · Correlation',
     title: 'The Test Is Run',
     narrative: `<p>You run Pearson's correlation on room rate vs occupancy across the 20 seasons. The results arrive by courier:</p>
@@ -1485,6 +1925,11 @@ const SCENES = {
       assumption: 'The CI [−0.89, −0.47] excludes zero — additional evidence the relationship is real, not just a fluke.',
       interpretation: 'p = 0.0002 answers: "If the true correlation were zero, how likely is seeing r = −0.74 with n=20?" Very unlikely. But that says nothing about causation.'
     },
+    beats: [
+      { char: null, left: 'margaux', right: 'player', text: "You run Pearson's correlation on room rate vs occupancy across the 20 seasons." },
+      { char: null, left: 'margaux', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Correlation Result</span>r = -0.74, p &lt; 0.001, n = 20 seasons<br>95% CI: [-0.90, -0.45]</div>' },
+      { char: 'margaux', left: 'margaux', right: 'player', text: "A strong negative number. Lower prices, higher occupancy? Does this mean we should slash our rates immediately?" }
+    ],
     choices: [
       { text: "r = −0.74 is a strong negative correlation. p < 0.05 confirms it. Lower prices cause higher occupancy — cut rates.", next: 'q1_bad_causation', damage: 25, bad: true },
       { text: "r = −0.74 shows a strong negative linear association — statistically significant. But this cannot establish causation: direction could run either way, or a third variable like season could drive both.", next: 'q1_interpret', xp: 15 },
@@ -1511,6 +1956,7 @@ const SCENES = {
   },
 
   q2_intro: {
+    bg: 'banquet',
     icon: '🍽️', chapter: 'Quest II · Chi-Square',
     title: "The Banquet Hall Dispute",
     narrative: `<p>The Grand Banquet Hall hosts two types of events: <em>Corporate Conferences</em> and <em>Wedding Receptions</em>. The Events Manager, Lord Pembridge, is furious.</p>
@@ -1528,6 +1974,11 @@ const SCENES = {
       assumption: 'Chi-Square requires all expected cell counts ≥ 5. This must be verified before running the test.',
       interpretation: 'Chi-Square tests independence. H₀: satisfaction is unrelated to event type. H₁: the two variables are associated.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "The Banquet Hall manager has a dispute. Two coordinators argue about whether event type affects guest satisfaction ratings." },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "Corporate events show 52 percent Excellent ratings. Weddings only 38 percent. The pattern is obvious — they are clearly different." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Both variables are categorical. What is the correct statistical approach?" }
+    ],
     choices: [
       { text: "Corporate shows 52% Excellent vs 38% for weddings — clearly different. The pattern is obvious. Declare it a real association.", next: 'q2_bad_eyeball', damage: 20, bad: true },
       { text: "Calculate expected counts first — what the cells would look like if satisfaction were completely independent of event type. Chi-Square then tests whether the observed pattern exceeds what chance would produce.", next: 'q2_expected', xp: 10 },
@@ -1545,6 +1996,7 @@ const SCENES = {
   },
 
   q2_expected: {
+    bg: 'banquet',
     icon: '🔢', chapter: 'Quest II · Chi-Square',
     title: 'Expected Counts & The Rule of Five',
     narrative: `<p>The formula for what we'd expect in each cell if there were <em>no</em> relationship:</p>
@@ -1561,6 +2013,11 @@ const SCENES = {
       assumption: "The key assumption: ALL expected cell frequencies must be ≥ 5. If violated, switch to Fisher's Exact Test.",
       interpretation: "Under H₀ (independence), expected counts describe what the table would look like. The larger the O-E gaps, the less plausible independence becomes."
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Before running Chi-Square, check the expected counts. Row total times column total, divided by grand total." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Expected Counts</span>Grand total N = 200<br>Smallest expected cell: (28 x 50) / 200 = <strong>17.5</strong><br>Largest expected cell: (80 x 120) / 200 = <strong>48.0</strong><br>All cells at least 5?</div>' },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "The grand total is 200 — surely large enough. Do we really need to check every individual cell?" }
+    ],
     choices: [
       { text: "Grand total is 200 — large enough to trust the approximation. Cell sizes only matter in tiny studies.", next: 'q2_bad_rule', damage: 20, bad: true },
       { text: "Every expected count must be ≥ 5. The smallest here is 17.5 — we're safely above the threshold. Chi-Square is valid and we can proceed.", next: 'q2_assumption', xp: 10 },
@@ -1578,6 +2035,7 @@ const SCENES = {
   },
 
   q2_assumption: {
+    bg: 'banquet',
     icon: '✅', chapter: 'Quest II · Chi-Square',
     title: 'The Test Delivers Its Verdict',
     narrative: `<p>All expected counts ≥ 5. You run Chi-Square on the banquet hall data. Results arrive:</p>
@@ -1588,6 +2046,11 @@ const SCENES = {
       assumption: "Fisher's Exact Test was not needed (all E ≥ 5). But with a different, smaller dataset, you'd need to switch.",
       interpretation: 'Standardised residuals reveal which cells contribute most to the significant result. A residual with |z| > 2 flags that cell as notable.'
     },
+    beats: [
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Chi-Square Result</span>chi-squared(3) = 14.2, p = 0.003<br>Cramer&#39;s V = 0.27 (moderate association)</div>' },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "p = 0.003 — significant! So we can say corporate events get significantly more Excellent ratings than weddings, right?" },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Can we say that from this result alone?" }
+    ],
     choices: [
       { text: "Yes — significant Chi-Square identifies which specific event type gets which specific satisfaction rating more often.", next: 'q2_bad_interpret', damage: 25, bad: true },
       { text: "No — Chi-Square is an omnibus test. It says the overall association is non-random, but not which specific cells drive it. Standardised residuals are needed to identify the key cells.", next: 'q2_result', xp: 10 },
@@ -1613,6 +2076,7 @@ const SCENES = {
   },
 
   q3_intro: {
+    bg: 'cellar',
     icon: '🍷', chapter: 'Quest III · T-Tests',
     title: "Three Studies, One Cellar",
     narrative: `<p>The Royal Court has commissioned three separate wine studies. All land on your desk the same morning, each measuring a continuous variable with a comparison of means. But <em>the design of each is fundamentally different.</em></p>
@@ -1625,6 +2089,11 @@ const SCENES = {
       assumption: 'The critical question: are the observations independent? Paired data deliberately violates independence — and that\'s its strength.',
       interpretation: 'Using the wrong t-test can completely reverse your conclusions. The paired test is far more powerful when the same people are measured twice.'
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "The Sommelier's cellar holds three sealed cases. Each contains a different research design. The junior analyst claims they are all the same." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">The Three Cases</span><strong>Study A:</strong> Same 30 sommeliers rate wines before and after a training course.<br><strong>Study B:</strong> A hotel&#39;s average service score compared against the national benchmark of 7.2.<br><strong>Study C:</strong> 40 spa guests vs 40 non-spa guests — do satisfaction scores differ?</div>' },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "They are all t-tests. Two groups, one outcome. Same thing. Just run the standard formula." }
+    ],
     choices: [
       { text: "The junior analyst has a point — they're all t-tests. Run a standard two-sample t-test on all three for consistency.", next: 'q3_bad_allsame', damage: 25, bad: true },
       { text: "The designs are completely different. Study A = paired t-test. Study B = one-sample t-test. Study C = independent samples t-test. The right test depends on study design, not just the number of groups.", next: 'q3_match', xp: 10 },
@@ -1642,6 +2111,7 @@ const SCENES = {
   },
 
   q3_match: {
+    bg: 'cellar',
     icon: '⚖️', chapter: 'Quest III · T-Tests',
     title: "Levene's Challenge in the Cellar",
     narrative: `<p>Correct. For Study C (aged reserve vs young vintage, independent groups), you're about to run the t-test when the Master Sommelier grabs your arm.</p>
@@ -1654,6 +2124,11 @@ const SCENES = {
       assumption: "Levene's p = 0.010 < 0.05 → reject H₀ of equal variances → Student's t-test assumption violated → Welch's required.",
       interpretation: "Many statisticians default to Welch's t-test always. It loses almost no power when variances are equal but offers strong protection when they're not."
     },
+    beats: [
+      { char: null, left: 'archive_master', right: 'player', text: "You correctly identify the three t-test types. But Levene's test of homogeneity arrives for Study C — the spa vs non-spa comparison." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Levene&#39;s Test — Study C</span>F(1, 78) = 7.42, p = 0.010</div>' },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "The Levene's result is significant. What does this mean for your test choice?" }
+    ],
     choices: [
       { text: "p = 0.010 is marginal. Student's t-test is robust to slight variance differences — use the classic formula.", next: 'q3_bad_student', damage: 20, bad: true },
       { text: "p = 0.010 < 0.05: we reject equal variances. Student's assumption is violated. Use Welch's t-test, which adjusts the degrees of freedom to account for unequal variances.", next: 'q3_levene', xp: 10 },
@@ -1671,6 +2146,7 @@ const SCENES = {
   },
 
   q3_levene: {
+    bg: 'cellar',
     icon: '🎯', chapter: 'Quest III · T-Tests',
     title: 'The One-Tailed Temptation',
     narrative: `<p>Welch's t-test on Study C: <strong>t(51.3) = 2.6, p (two-tailed) = 0.012</strong>. The aged reserve scores significantly higher.</p>
@@ -1680,6 +2156,11 @@ const SCENES = {
       assumption: 'One-tailed testing requires the directional hypothesis to be committed to BEFORE data collection — ideally pre-registered in writing.',
       interpretation: "p = 0.012 (two-tailed) is already convincing. The cosmetic gain of one-tailed testing isn't worth the integrity cost if direction was chosen after seeing results."
     },
+    beats: [
+      { char: null, left: 'archive_master', right: 'player', text: "Welch's t-test is run. Aged wine scores significantly higher than young wine. Now the question: one-tailed or two-tailed?" },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "We clearly predicted aged would outscore young — everyone knows that. Use one-tailed for a stronger, more focused result." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "When was this directional prediction made — before or after you saw which direction the data went?" }
+    ],
     choices: [
       { text: "We clearly predicted aged would outscore young — use one-tailed for a stronger, more focused test.", next: 'q3_bad_onetail', damage: 25, bad: true },
       { text: "One-tailed is only legitimate if the directional hypothesis was pre-registered before data collection. Choosing it after seeing the data trend is p-hacking — stay two-tailed.", next: 'q3_tail', xp: 10 },
@@ -1705,6 +2186,7 @@ const SCENES = {
   },
 
   q4_intro: {
+    bg: 'castle',
     icon: '🏰', chapter: 'Quest IV · ANOVA',
     title: "The Grand Hotel Ratings War",
     narrative: `<p>The Royal Hospitality Council has received guest satisfaction scores (0–100) from <strong>five competing grand hotels</strong>: The Ivory Tower, The Velvet Crown, The Amber Keep, The Silver Spire, and The Golden Fleece. Each contributed 20 guests. The Council demands to know: are any hotels meaningfully different from the others?</p>
@@ -1714,6 +2196,11 @@ const SCENES = {
       assumption: 'Family-wise error rate at α=0.05 across k=10 tests: FWER = 1-(0.95)^10 ≈ 0.40. A 40% chance of at least one false alarm.',
       interpretation: "ANOVA's F-test controls Type I error at 0.05 for the entire family of comparisons in one single test."
     },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Five rival hotel chains each claim their guest ratings are superior. The Ivory Tower, the Gilded Fleece, the Obsidian Crown, the Velvet Moat, and the Ember Spire." },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "I will run t-tests between every possible pair. Ten t-tests. That covers all combinations." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "What happens to your Type I error rate when you run ten tests at alpha equals 0.05?" }
+    ],
     choices: [
       { text: "Ten t-tests is the only way to see all pairwise differences — run them.", next: 'q4_bad_multtest', damage: 20, bad: true },
       { text: "Ten tests at α = 0.05 means roughly a 40% chance of at least one false positive. ANOVA tests all five hotels in a single omnibus test, keeping the family-wise error rate controlled.", next: 'q4_anova', xp: 10 },
@@ -1731,6 +2218,7 @@ const SCENES = {
   },
 
   q4_anova: {
+    bg: 'castle',
     icon: '🔬', chapter: 'Quest IV · ANOVA',
     title: 'Fisher or Welch — The Variance Duel',
     narrative: `<p>Before running ANOVA, you check variance equality with Levene's test:</p>
@@ -1741,6 +2229,11 @@ const SCENES = {
       assumption: "Levene's p = 0.007 < 0.05 → equal variance assumption violated → Fisher's ANOVA not appropriate → use Welch's ANOVA + Games-Howell post-hoc.",
       interpretation: "Fisher's ANOVA is more powerful when variances truly are equal. Welch's is the safer choice when Levene's is significant."
     },
+    beats: [
+      { char: null, left: 'archive_master', right: 'player', text: "ANOVA is the correct approach. But first, Levene's test of homogeneity arrives." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Levene&#39;s Test — Five Hotels</span>F(4, 495) = 3.84, p = 0.007</div>' },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "The equal variance assumption is relevant here. Which version of ANOVA — and what post-hoc test follows?" }
+    ],
     choices: [
       { text: "ANOVA is robust to mild variance differences — use standard Fisher's ANOVA. The sample sizes are similar enough.", next: 'q4_bad_fisher', damage: 20, bad: true },
       { text: "Levene's p = 0.007 < 0.05: equal variance assumption is violated. Use Welch's ANOVA, which adjusts for unequal variances, then Games-Howell for post-hoc comparisons.", next: 'q4_welch', xp: 10 },
@@ -1758,6 +2251,7 @@ const SCENES = {
   },
 
   q4_welch: {
+    bg: 'castle',
     icon: '⚡', chapter: 'Quest IV · ANOVA',
     title: 'The Post-Hoc Decision',
     narrative: `<p>Welch's ANOVA across all five grand hotels:</p>
@@ -1768,6 +2262,12 @@ const SCENES = {
       assumption: "Mixing ANOVA type and post-hoc test (e.g. Welch's ANOVA + Tukey) violates the assumptions of the post-hoc test.",
       interpretation: "F(4, 42.7) = 6.9 means: between-hotel variance is 6.9 times the within-hotel variance — very unlikely if all five hotels truly perform the same."
     },
+    beats: [
+      { char: null, left: 'archive_master', right: 'player', text: "Welch's ANOVA is run. The result arrives." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Welch&#39;s ANOVA Result</span>F(4, 248.3) = 6.84, p &lt; 0.001<br>Ivory Tower: M = 8.4 | Gilded Fleece: M = 7.9 | Obsidian Crown: M = 7.6 | Velvet Moat: M = 7.4 | Ember Spire: M = 7.1</div>' },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "The Ivory Tower has the highest mean and F is significant — they are confirmed as the best. We can tell them that." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "What exactly does a significant F tell you — and what does it not tell you?" }
+    ],
     choices: [
       { text: "The Ivory Tower has the highest mean and the F-test is significant — they are confirmed as the best hotel.", next: 'q4_bad_interpret', damage: 25, bad: true },
       { text: "Significant F means at least one hotel differs from at least one other — not which specific pair. Games-Howell post-hoc tests will identify exactly which hotels differ significantly.", next: 'q4_posthoc', xp: 10 },
@@ -1961,6 +2461,7 @@ const JAMOVI_FULL_OUTPUT = jamoviOutput({
 Object.assign(SCENES, {
 
   q3b_intro: {
+    bg: 'spa',
     icon: '📊', chapter: 'Quest III·B · Normality',
     title: 'The Cursed Distribution',
     narrative: `<p>The Variance Hydra has been slain — but as its ashes settle, a sealed envelope falls from the cellar rafters. Inside: a new commission from the Royal Spa Council.</p>
@@ -1972,10 +2473,15 @@ Object.assign(SCENES, {
       assumption: 'The decision tree: (1) Check normality (Shapiro-Wilk) AND homogeneity (Levene\'s). (2) If BOTH pass (p > 0.05) → Student\'s t. (3) If normality passes but Levene\'s fails → Welch\'s t. (4) If normality fails (either group) → Mann-Whitney U, regardless of Levene\'s result.',
       interpretation: 'A t-test compares means. Mann-Whitney U compares the rank ordering of scores. If data is skewed, the mean is misleading — the median and rank-based test tell a more honest story.'
     },
+    beats: [
+      { char: 'spa_rep', left: 'spa_rep', right: 'player', text: "We have satisfaction scores from two guest groups — spa users and non-spa users. We want to know if spa guests rate their stay significantly higher." },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "Two independent groups, continuous outcome — that is exactly the independent t-test scenario. I ran it already." },
+      { char: 'spa_rep', left: 'spa_rep', right: 'player', text: "But should you not check something first before comparing means between two groups?" }
+    ],
     choices: [
       { text: 'Agree with the junior analyst — two independent groups, continuous outcome, so a t-test is obviously correct. Run it and move on.', next: 'q3b_bad_skip', damage: 20, bad: true },
-      { text: 'Before any test, look at the shape of both distributions. Plot the histograms and see what you\'re actually dealing with.', next: 'q3b_hist', xp: 10 },
-      { text: 'Run Levene\'s test first — if the variances are equal use Student\'s t-test, if unequal use Welch\'s. Normality checks are optional when sample sizes exceed 30.', next: 'q3b_bad_skip', damage: 20, bad: true },
+      { text: 'Before any test, look at the shape of both distributions. Plot the histograms and see what you\&#39;re actually dealing with.', next: 'q3b_hist', xp: 10 },
+      { text: 'Run Levene\&#39;s test first — if the variances are equal use Student\&#39;s t-test, if unequal use Welch\&#39;s. Normality checks are optional when sample sizes exceed 30.', next: 'q3b_bad_skip', damage: 20, bad: true },
       { text: 'Use Mann-Whitney U immediately — it is the safer non-parametric option for any comparison of guest satisfaction scores, regardless of what the data looks like.', next: 'q3b_bad_skip', damage: 15, bad: true }
     ]
   },
@@ -1989,6 +2495,7 @@ Object.assign(SCENES, {
   },
 
   q3b_hist: {
+    bg: 'spa',
     icon: '📊', chapter: 'Quest III·B · Normality',
     title: 'Reading the Histograms',
     narrative: `<p>You plot histograms for both groups. Here is what you see:</p>
@@ -2001,8 +2508,13 @@ Object.assign(SCENES, {
       assumption: 'The t-test is moderately robust to mild non-normality with large samples (n > 30). But severe skew — like this Group B — genuinely distorts the comparison of means.',
       interpretation: 'When Group B is skewed, its mean is not a good summary of a "typical" guest\'s experience. Mann-Whitney U compares median ranks instead, which is more honest for skewed data.'
     },
+    beats: [
+      { char: null, left: 'spa_rep', right: 'player', text: "You plot histograms for both groups. Here is what you see." },
+      { char: null, left: 'spa_rep', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Distribution Shapes</span><strong>Group A (n=38):</strong> Roughly bell-shaped, symmetric.<br><strong>Group B (n=35):</strong> Most guests gave low scores, long tail of very high ratings. Clearly right-skewed.</div>' },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "Group B is just a bit uneven. The t-test is robust, is it not? Does the shape really matter that much at n = 35?" }
+    ],
     choices: [
-      { text: 'Group B\'s skew looks severe enough to matter. Before deciding on a test, confirm with Shapiro-Wilk — a formal normality test gives a defensible answer.', next: 'q3b_shapiro', xp: 15 },
+      { text: 'Group B\&#39;s skew looks severe enough to matter. Before deciding on a test, confirm with Shapiro-Wilk — a formal normality test gives a defensible answer.', next: 'q3b_shapiro', xp: 15 },
       { text: 'Both groups have n > 30, so the t-test is robust enough. The histogram is just a rough guide — proceed with the t-test.', next: 'q3b_bad_robust', damage: 20, bad: true },
       { text: 'Group B looks right-skewed, which means a log transformation should be applied to make the data normal before running the t-test.', next: 'q3b_bad_robust', damage: 15, bad: true },
       { text: 'Group A looks normal but Group B does not — this means the comparison is invalid regardless of which test you use. The study should be redesigned with a different outcome measure.', next: 'q3b_bad_robust', damage: 15, bad: true }
@@ -2018,6 +2530,7 @@ Object.assign(SCENES, {
   },
 
   q3b_shapiro: {
+    bg: 'spa',
     icon: '🔬', chapter: 'Quest III·B · Normality',
     title: 'The Shapiro-Wilk Verdict',
     narrative: `<p>You run Shapiro-Wilk on both groups. The output arrives:</p>
@@ -2030,10 +2543,15 @@ Object.assign(SCENES, {
       assumption: 'Shapiro-Wilk sensitivity concerns: with very small n (<15) it may miss real non-normality. With very large n (>100) it flags trivial deviations. At n=35, p=0.004 with W=0.891 is a genuine and meaningful signal.',
       interpretation: 'W = 0.891 is not a borderline case. Combined with the clearly right-skewed histogram, this is strong evidence that Group B violates the normality assumption. Use Mann-Whitney U.'
     },
+    beats: [
+      { char: null, left: 'spa_rep', right: 'player', text: "You run Shapiro-Wilk on both groups. The output arrives." },
+      { char: null, left: 'spa_rep', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Shapiro-Wilk Normality Test</span>Group A: W = 0.979, p = 0.682 — normal<br>Group B: W = 0.891, p = 0.004 — non-normal</div>' },
+      { char: 'analyst', left: 'analyst', right: 'player', text: "W = 0.891 is not very far from 1.0. And Shapiro-Wilk can be oversensitive at moderate sample sizes. Does this really matter?" }
+    ],
     choices: [
       { text: 'The junior analyst has a point — n = 35 is a moderate sample and Shapiro-Wilk can be sensitive. With p = 0.004 being borderline, proceed with the t-test anyway.', next: 'q3b_bad_ignore_sw', damage: 25, bad: true },
       { text: 'W = 0.891 with p = 0.004 is not a borderline result, and the histogram clearly shows severe skew. Both pieces of evidence point the same way. Use Mann-Whitney U instead of the t-test.', next: 'q3b_decision', xp: 20 },
-      { text: 'Shapiro-Wilk is significant for Group B only. Since Group A is normal, run a one-sample t-test comparing Group B against Group A\'s mean rather than a two-group comparison.', next: 'q3b_bad_ignore_sw', damage: 20, bad: true },
+      { text: 'Shapiro-Wilk is significant for Group B only. Since Group A is normal, run a one-sample t-test comparing Group B against Group A\&#39;s mean rather than a two-group comparison.', next: 'q3b_bad_ignore_sw', damage: 20, bad: true },
       { text: 'W = 0.891 is close enough to 1.0 to treat as approximately normal. The Shapiro-Wilk p-value is significant only because the test has inflated power at n = 35 — the practical departure is negligible.', next: 'q3b_bad_ignore_sw', damage: 25, bad: true }
     ]
   },
@@ -2699,6 +3217,7 @@ function selectClass(classKey) {
 
 function showMap() {
   hideOracleButton();
+  vnHide();
   G.currentQuest = null;
   G.currentScene = null;
   const el = document.getElementById('main-content');
@@ -2769,6 +3288,7 @@ function showScene(sceneId) {
   G.currentScene = sceneId;
 
   if (sceneId.startsWith('BOSS_')) {
+    vnHide();
     const questId = sceneId.replace('BOSS_', '');
     startBoss(questId);
     return;
@@ -2777,10 +3297,16 @@ function showScene(sceneId) {
   const scene = SCENES[sceneId];
   if (!scene) { showMap(); return; }
 
+  // If scene has beats, use VN engine
+  if (scene.beats && scene.beats.length > 0) {
+    vnPlayScene(scene, sceneId);
+    return;
+  }
+
+  // Fallback: legacy card rendering (dead-end scenes with single back button)
+  vnHide();
   const cls = CLASSES[G.class];
   const hint = scene.hints ? scene.hints[cls.hintType] : null;
-
-  // Store choices in a module-level array — buttons reference by index only
   _currentChoices = scene.choices;
 
   const el = document.getElementById('main-content');
@@ -2809,7 +3335,6 @@ function showScene(sceneId) {
       </div>
     </div>`;
 
-  // Attach handlers via JS — no inline JSON, no quoting issues
   el.querySelectorAll('.choice-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.getAttribute('data-choice-index'), 10);
@@ -3010,6 +3535,7 @@ function bossVictory() {
 
 function showQuestComplete(quest) {
   hideOracleButton();
+  vnHide();
   const el = document.getElementById('main-content');
   const summaries = {
     q0: `<strong>Measurement levels:</strong> Nominal (labels) → Ordinal (ordered) → Interval (equal gaps) → Ratio (true zero). Level determines valid statistics.<br>
@@ -3154,6 +3680,660 @@ function hideOracleButton() {
   document.getElementById('oracle-toggle').classList.remove('visible');
   document.getElementById('oracle-panel').classList.remove('open');
   _oracleOpen = false;
+}
+
+
+// ══════════════════════════════════════════════════════
+// CHARACTER SVG DEFINITIONS
+// Dark fantasy illustrated portraits
+// ══════════════════════════════════════════════════════
+const CHARS = {
+
+  archive_master: {
+    name: 'The Archive Master',
+    color: '#a78bfa',
+    svg: (h=320) => `<svg width="${Math.round(h*0.55)}" height="${h}" viewBox="0 0 110 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Robe base -->
+      <path d="M28 145 Q20 185 18 220 L92 220 Q90 185 82 145 Q70 130 55 130 Q40 130 28 145Z" fill="#1a0f2e"/>
+      <path d="M35 155 Q28 180 26 220 L50 220 L52 155Z" fill="#140a22"/>
+      <path d="M75 155 Q82 180 84 220 L60 220 L58 155Z" fill="#140a22"/>
+      <!-- Robe collar / front -->
+      <path d="M42 130 L55 145 L68 130 L65 160 L55 168 L45 160Z" fill="#241540"/>
+      <!-- Belt/sash -->
+      <rect x="30" y="148" width="50" height="6" rx="2" fill="#6b3fa0"/>
+      <circle cx="55" cy="151" r="3" fill="#d4a820"/>
+      <!-- Shoulders + sleeves -->
+      <path d="M28 145 Q10 148 8 165 Q12 175 22 172 Q26 162 35 155Z" fill="#1a0f2e"/>
+      <path d="M82 145 Q100 148 102 165 Q98 175 88 172 Q84 162 75 155Z" fill="#1a0f2e"/>
+      <!-- Hands -->
+      <ellipse cx="14" cy="172" rx="7" ry="5" fill="#c4956a"/>
+      <ellipse cx="96" cy="172" rx="7" ry="5" fill="#c4956a"/>
+      <!-- Book in left hand -->
+      <rect x="4" y="165" width="16" height="20" rx="1" fill="#8b1a1a"/>
+      <rect x="5" y="166" width="14" height="18" rx="1" fill="#6b1414"/>
+      <line x1="12" y1="167" x2="12" y2="183" stroke="#d4a820" stroke-width="1"/>
+      <!-- Neck -->
+      <rect x="49" y="110" width="12" height="22" rx="4" fill="#c4956a"/>
+      <!-- Head -->
+      <ellipse cx="55" cy="95" rx="24" ry="26" fill="#c4956a"/>
+      <!-- Silver hair — swept back severe -->
+      <path d="M31 88 Q30 60 55 58 Q80 60 79 88 Q72 70 55 68 Q38 70 31 88Z" fill="#c8c8d8"/>
+      <path d="M31 88 Q26 78 28 68 Q32 55 45 53 Q38 62 36 75Z" fill="#b0b0c0"/>
+      <path d="M79 88 Q84 78 82 68 Q78 55 65 53 Q72 62 74 75Z" fill="#b0b0c0"/>
+      <!-- Hair bun / updo -->
+      <ellipse cx="55" cy="60" rx="14" ry="8" fill="#c8c8d8"/>
+      <ellipse cx="55" cy="57" rx="10" ry="5" fill="#b0b0c0"/>
+      <!-- Hairpin — gold -->
+      <line x1="46" y1="58" x2="64" y2="60" stroke="#d4a820" stroke-width="1.5"/>
+      <circle cx="64" cy="60" r="2" fill="#f5c842"/>
+      <!-- Face -->
+      <!-- Eyes — sharp, intelligent -->
+      <ellipse cx="46" cy="93" rx="5" ry="3.5" fill="white"/>
+      <ellipse cx="64" cy="93" rx="5" ry="3.5" fill="white"/>
+      <circle cx="46" cy="93" r="2.5" fill="#4a2070"/>
+      <circle cx="64" cy="93" r="2.5" fill="#4a2070"/>
+      <circle cx="47" cy="92" r="0.8" fill="white"/>
+      <circle cx="65" cy="92" r="0.8" fill="white"/>
+      <!-- Eyebrows — arched, stern -->
+      <path d="M40 88 Q46 85 52 87" stroke="#888" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M58 87 Q64 85 70 88" stroke="#888" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Nose -->
+      <path d="M54 96 L52 103 L58 103" stroke="#b07a50" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <!-- Mouth — slight disapproving set -->
+      <path d="M48 108 Q55 110 62 108" stroke="#a06848" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Reading glasses -->
+      <circle cx="46" cy="93" r="6" fill="none" stroke="#d4a820" stroke-width="1.2"/>
+      <circle cx="64" cy="93" r="6" fill="none" stroke="#d4a820" stroke-width="1.2"/>
+      <line x1="52" y1="93" x2="58" y2="93" stroke="#d4a820" stroke-width="1"/>
+      <line x1="32" y1="93" x2="40" y2="93" stroke="#d4a820" stroke-width="1"/>
+      <line x1="70" y1="93" x2="78" y2="93" stroke="#d4a820" stroke-width="1"/>
+      <!-- Age lines -->
+      <path d="M36 100 Q40 103 38 107" stroke="#b07a50" stroke-width="0.7" fill="none"/>
+      <path d="M74 100 Q70 103 72 107" stroke="#b07a50" stroke-width="0.7" fill="none"/>
+      <!-- Rune brooch at collar -->
+      <circle cx="55" cy="132" r="5" fill="#241540" stroke="#a78bfa" stroke-width="1.2"/>
+      <text x="55" y="135.5" text-anchor="middle" font-size="5" fill="#a78bfa">✦</text>
+      <!-- Glow aura -->
+      <ellipse cx="55" cy="140" rx="40" ry="15" fill="rgba(167,139,250,0.06)"/>
+    </svg>`
+  },
+
+  analyst: {
+    name: 'The Junior Analyst',
+    color: '#9b8fa0',
+    svg: (h=300) => `<svg width="${Math.round(h*0.52)}" height="${h}" viewBox="0 0 104 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Trousers -->
+      <path d="M34 148 Q28 175 26 210 L50 210 L52 155Z" fill="#2a2a3a"/>
+      <path d="M70 148 Q76 175 78 210 L54 210 L52 155Z" fill="#2a2a3a"/>
+      <!-- Shirt (slightly untucked) -->
+      <path d="M30 118 Q22 130 24 148 Q38 155 52 155 Q66 155 80 148 Q82 130 74 118Z" fill="#e8e0d8"/>
+      <!-- Shirt wrinkles -->
+      <path d="M45 130 Q48 140 46 150" stroke="#ccc4bc" stroke-width="1" fill="none"/>
+      <path d="M59 128 Q62 138 60 148" stroke="#ccc4bc" stroke-width="1" fill="none"/>
+      <!-- Tie — askew -->
+      <path d="M50 118 L54 118 L57 145 L52 150 L47 145Z" fill="#8b2a2a"/>
+      <path d="M52 118 L54 118 L55 124 L52 122Z" fill="#6b1a1a"/>
+      <!-- Collar -->
+      <path d="M44 118 L52 126 L60 118 L62 112 L52 116 L42 112Z" fill="#f0e8e0"/>
+      <!-- Jacket (slightly rumpled, open) -->
+      <path d="M30 118 L22 125 Q18 138 20 148 L30 148Z" fill="#1e2235"/>
+      <path d="M74 118 L82 125 Q86 138 84 148 L74 148Z" fill="#1e2235"/>
+      <!-- Sleeves -->
+      <path d="M22 125 Q14 132 12 148 Q18 155 26 150 L30 135Z" fill="#1e2235"/>
+      <path d="M82 125 Q90 132 92 148 Q86 155 78 150 L74 135Z" fill="#1e2235"/>
+      <!-- Hands holding clipboard -->
+      <ellipse cx="18" cy="152" rx="6" ry="4" fill="#d4a870"/>
+      <ellipse cx="88" cy="152" rx="6" ry="4" fill="#d4a870"/>
+      <!-- Clipboard -->
+      <rect x="30" y="148" width="44" height="36" rx="2" fill="#d4c8a0"/>
+      <rect x="32" y="150" width="40" height="32" rx="1" fill="#e8dcc0"/>
+      <rect x="46" y="145" width="12" height="6" rx="1" fill="#8b7a50"/>
+      <line x1="36" y1="156" x2="68" y2="156" stroke="#9b8870" stroke-width="0.8"/>
+      <line x1="36" y1="161" x2="68" y2="161" stroke="#9b8870" stroke-width="0.8"/>
+      <line x1="36" y1="166" x2="55" y2="166" stroke="#9b8870" stroke-width="0.8"/>
+      <path d="M60 164 L65 158 L67 161 L62 167Z" fill="#8b2a2a" opacity="0.7"/>
+      <!-- Neck -->
+      <rect x="47" y="100" width="10" height="20" rx="4" fill="#d4a870"/>
+      <!-- Head — slightly round, young face -->
+      <ellipse cx="52" cy="84" rx="22" ry="24" fill="#d4a870"/>
+      <!-- Hair — slightly dishevelled -->
+      <path d="M30 82 Q30 54 52 52 Q74 54 74 82 Q68 62 52 60 Q36 62 30 82Z" fill="#3a2a1a"/>
+      <path d="M30 82 Q26 72 30 62 Q32 55 40 52 Q34 60 32 72Z" fill="#2a1c10"/>
+      <path d="M74 82 Q78 72 74 62 Q72 55 64 52 Q70 60 72 72Z" fill="#2a1c10"/>
+      <!-- Stray hair bits -->
+      <path d="M52 52 Q58 48 62 50" stroke="#3a2a1a" stroke-width="2" fill="none"/>
+      <path d="M52 52 Q46 48 50 46" stroke="#3a2a1a" stroke-width="1.5" fill="none"/>
+      <!-- Face -->
+      <ellipse cx="43" cy="82" rx="4.5" ry="3" fill="white"/>
+      <ellipse cx="61" cy="82" rx="4.5" ry="3" fill="white"/>
+      <circle cx="43" cy="82" r="2.2" fill="#5a3a20"/>
+      <circle cx="61" cy="82" r="2.2" fill="#5a3a20"/>
+      <circle cx="44" cy="81" r="0.7" fill="white"/>
+      <circle cx="62" cy="81" r="0.7" fill="white"/>
+      <!-- Eyebrows — slightly worried upward tilt -->
+      <path d="M37 77 Q43 75 49 77" stroke="#3a2a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M55 77 Q61 75 67 77" stroke="#3a2a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <!-- Slight worry line in middle -->
+      <path d="M50 76 L54 76" stroke="#c49060" stroke-width="0.6" fill="none"/>
+      <!-- Nose -->
+      <path d="M51 86 L49 91 L55 91" stroke="#c49060" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+      <!-- Mouth — slightly open, nervous -->
+      <path d="M46 96 Q52 99 58 96" stroke="#b07840" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+      <path d="M48 97 Q52 98 56 97" fill="rgba(80,40,20,0.3)"/>
+      <!-- Ears -->
+      <ellipse cx="30" cy="84" rx="4" ry="5" fill="#d4a870"/>
+      <ellipse cx="74" cy="84" rx="4" ry="5" fill="#d4a870"/>
+    </svg>`
+  },
+
+  margaux: {
+    name: 'Margaux',
+    color: '#d4a820',
+    svg: (h=310) => `<svg width="${Math.round(h*0.53)}" height="${h}" viewBox="0 0 106 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- Dress/skirt - elegant dark with gold trim -->
+      <path d="M30 148 Q20 178 16 220 L90 220 Q86 178 76 148 Q62 136 53 136 Q44 136 30 148Z" fill="#1a1228"/>
+      <path d="M30 148 Q24 168 22 220 L40 220 L44 148Z" fill="#140e20"/>
+      <path d="M76 148 Q82 168 84 220 L66 220 L62 148Z" fill="#140e20"/>
+      <!-- Gold hem -->
+      <path d="M16 210 Q53 205 90 210 L90 220 L16 220Z" fill="#1a1228"/>
+      <line x1="16" y1="210" x2="90" y2="210" stroke="#d4a820" stroke-width="1.5"/>
+      <!-- Sommelier jacket/vest -->
+      <path d="M34 115 Q26 125 26 148 Q40 155 53 155 Q66 155 80 148 Q80 125 72 115Z" fill="#0e0a16"/>
+      <!-- White shirt front -->
+      <path d="M43 115 L53 126 L63 115 L65 110 L53 118 L41 110Z" fill="#e8e0d8"/>
+      <!-- Sommelier collar/lapels -->
+      <path d="M36 115 L43 115 L53 126 L63 115 L70 115 L60 105 L53 112 L46 105Z" fill="#1a1428"/>
+      <!-- Gold buttons -->
+      <circle cx="53" cy="128" r="2" fill="#d4a820"/>
+      <circle cx="53" cy="136" r="2" fill="#d4a820"/>
+      <circle cx="53" cy="144" r="2" fill="#d4a820"/>
+      <!-- Wine glass in right hand -->
+      <path d="M80 138 Q86 135 90 138 Q88 148 84 150 L84 162 L78 162 L78 150 Q74 148 72 138 Q76 135 80 138Z" fill="rgba(120,20,30,0.6)" stroke="#d4a820" stroke-width="0.8"/>
+      <path d="M74 138 Q80 132 86 138" fill="rgba(160,30,40,0.4)"/>
+      <line x1="81" y1="150" x2="81" y2="162" stroke="#d4a820" stroke-width="0.8"/>
+      <line x1="78" y1="162" x2="84" y2="162" stroke="#d4a820" stroke-width="1"/>
+      <!-- Arm holding glass -->
+      <path d="M76 130 Q86 132 90 140 L84 150 Q82 140 78 138 Q76 136 74 130Z" fill="#0e0a16"/>
+      <ellipse cx="88" cy="142" rx="5" ry="4" fill="#c4956a"/>
+      <!-- Left arm at side -->
+      <path d="M30 130 Q22 135 20 148 L26 148 Q26 138 32 134Z" fill="#0e0a16"/>
+      <ellipse cx="18" cy="150" rx="5" ry="4" fill="#c4956a"/>
+      <!-- Neck -->
+      <rect x="48" y="104" width="10" height="18" rx="4" fill="#c4956a"/>
+      <!-- Head - elegant oval -->
+      <ellipse cx="53" cy="88" rx="21" ry="23" fill="#c4956a"/>
+      <!-- Hair — dark, swept up elegantly -->
+      <path d="M32 84 Q32 58 53 55 Q74 58 74 84 Q68 64 53 62 Q38 64 32 84Z" fill="#1c1018"/>
+      <path d="M32 84 Q28 72 30 60 Q34 52 44 50 Q36 60 35 74Z" fill="#140c12"/>
+      <!-- Upswept side -->
+      <path d="M74 78 Q82 70 78 58 Q74 52 64 50 Q72 58 72 72Z" fill="#140c12"/>
+      <!-- Elegant updo with tendrils -->
+      <ellipse cx="53" cy="58" rx="16" ry="9" fill="#1c1018"/>
+      <path d="M38 68 Q36 58 40 53" stroke="#1c1018" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- Loose tendril -->
+      <path d="M36 80 Q32 86 34 92" stroke="#1c1018" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Gold hair pin -->
+      <path d="M44 60 Q53 56 62 58" stroke="#d4a820" stroke-width="1.5" fill="none"/>
+      <circle cx="62" cy="58" r="2.5" fill="#f5c842"/>
+      <!-- Face — refined -->
+      <ellipse cx="44" cy="88" rx="4.5" ry="3" fill="white"/>
+      <ellipse cx="62" cy="88" rx="4.5" ry="3" fill="white"/>
+      <circle cx="44" cy="88" r="2.2" fill="#3a2040"/>
+      <circle cx="62" cy="88" r="2.2" fill="#3a2040"/>
+      <circle cx="45" cy="87" r="0.7" fill="white"/>
+      <circle cx="63" cy="87" r="0.7" fill="white"/>
+      <!-- Eyebrows — elegant arch -->
+      <path d="M38 82 Q44 79 50 81" stroke="#2a1520" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M56 81 Q62 79 68 82" stroke="#2a1520" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Nose — refined -->
+      <path d="M52 92 L50 97 L56 97" stroke="#b07a50" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+      <!-- Mouth — composed smile -->
+      <path d="M47 103 Q53 107 59 103" stroke="#b06858" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M49 104 Q53 106 57 104" fill="rgba(140,60,50,0.4)"/>
+      <!-- Pearl earring -->
+      <circle cx="32" cy="90" r="3" fill="#e8e0e8"/>
+      <circle cx="32" cy="90" r="2" fill="white"/>
+      <circle cx="74" cy="90" r="3" fill="#e8e0e8"/>
+      <circle cx="74" cy="90" r="2" fill="white"/>
+    </svg>`
+  },
+
+  player_wizard: {
+    name: 'You',
+    color: '#8b5cf6',
+    svg: (h=300) => `<svg width="${Math.round(h*0.5)}" height="${h}" viewBox="0 0 100 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Silhouette — wizard class — robe with purple tones -->
+      <path d="M25 148 Q16 182 14 210 L86 210 Q84 182 75 148 Q62 132 50 132 Q38 132 25 148Z" fill="#2a1a4a"/>
+      <path d="M32 158 Q24 182 22 210 L46 210 L48 158Z" fill="#1e1038"/>
+      <path d="M68 158 Q76 182 78 210 L54 210 L52 158Z" fill="#1e1038"/>
+      <!-- Star charts / rune scroll in hand -->
+      <path d="M14 148 Q6 152 4 165 Q8 175 18 170 L25 155Z" fill="#2a1a4a"/>
+      <ellipse cx="8" cy="168" rx="6" ry="4" fill="#8b6a30"/>
+      <rect x="2" y="162" width="12" height="18" rx="1" fill="#d4c080"/>
+      <line x1="5" y1="167" x2="13" y2="167" stroke="#8b5cf6" stroke-width="0.8"/>
+      <line x1="5" y1="171" x2="13" y2="171" stroke="#8b5cf6" stroke-width="0.8"/>
+      <line x1="5" y1="175" x2="10" y2="175" stroke="#8b5cf6" stroke-width="0.8"/>
+      <!-- Hood shadow where face would be — mystery -->
+      <path d="M26 108 Q24 88 50 82 Q76 88 74 108 Q70 92 50 90 Q30 92 26 108Z" fill="#1a0f2e"/>
+      <!-- Hood -->
+      <path d="M20 120 Q20 85 50 78 Q80 85 80 120 Q80 138 50 142 Q20 138 20 120Z" fill="#2a1a4a"/>
+      <path d="M24 115 Q26 88 50 82 Q74 88 76 115" fill="#1e1038"/>
+      <!-- Glowing eyes in shadow -->
+      <ellipse cx="42" cy="108" rx="4" ry="3" fill="rgba(139,92,246,0.0)"/>
+      <circle cx="42" cy="108" r="2.5" fill="#8b5cf6" opacity="0.9"/>
+      <circle cx="42" cy="108" r="1.2" fill="#c4b0f8"/>
+      <circle cx="58" cy="108" r="2.5" fill="#8b5cf6" opacity="0.9"/>
+      <circle cx="58" cy="108" r="1.2" fill="#c4b0f8"/>
+      <!-- Glow from eyes -->
+      <ellipse cx="42" cy="108" rx="6" ry="4" fill="rgba(139,92,246,0.2)"/>
+      <ellipse cx="58" cy="108" rx="6" ry="4" fill="rgba(139,92,246,0.2)"/>
+      <!-- Hood rim detail -->
+      <path d="M22 118 Q50 124 78 118" stroke="#4a2a7a" stroke-width="1.5" fill="none"/>
+      <!-- Rune clasp -->
+      <circle cx="50" cy="140" r="5" fill="#1a0f2e" stroke="#8b5cf6" stroke-width="1.2"/>
+      <text x="50" y="143.5" text-anchor="middle" font-size="5" fill="#a78bfa">✦</text>
+      <!-- Ambient glow -->
+      <ellipse cx="50" cy="95" rx="35" ry="35" fill="rgba(139,92,246,0.05)"/>
+    </svg>`
+  },
+
+  player_healer: {
+    name: 'You',
+    color: '#2dd474',
+    svg: (h=300) => `<svg width="${Math.round(h*0.5)}" height="${h}" viewBox="0 0 100 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Green-toned cloak -->
+      <path d="M25 148 Q16 182 14 210 L86 210 Q84 182 75 148 Q62 132 50 132 Q38 132 25 148Z" fill="#0f2a1a"/>
+      <path d="M32 158 Q24 182 22 210 L46 210 L48 158Z" fill="#0a1e12"/>
+      <path d="M68 158 Q76 182 78 210 L54 210 L52 158Z" fill="#0a1e12"/>
+      <!-- Standards/checklist in hand -->
+      <path d="M14 148 Q6 152 4 165 Q8 175 18 170 L25 155Z" fill="#0f2a1a"/>
+      <ellipse cx="8" cy="168" rx="6" ry="4" fill="#6a8a30"/>
+      <rect x="2" y="162" width="12" height="18" rx="1" fill="#c8e0b0"/>
+      <path d="M5 167 L7 169 L11 165" stroke="#2dd474" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <path d="M5 172 L7 174 L11 170" stroke="#2dd474" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <line x1="5" y1="176" x2="10" y2="176" stroke="#9b9" stroke-width="0.8"/>
+      <!-- Hood -->
+      <path d="M20 120 Q20 85 50 78 Q80 85 80 120 Q80 138 50 142 Q20 138 20 120Z" fill="#0f2a1a"/>
+      <path d="M24 115 Q26 88 50 82 Q74 88 76 115" fill="#0a1e12"/>
+      <!-- Glowing green eyes -->
+      <circle cx="42" cy="108" r="2.5" fill="#2dd474" opacity="0.9"/>
+      <circle cx="42" cy="108" r="1.2" fill="#a0f0c0"/>
+      <circle cx="58" cy="108" r="2.5" fill="#2dd474" opacity="0.9"/>
+      <circle cx="58" cy="108" r="1.2" fill="#a0f0c0"/>
+      <ellipse cx="42" cy="108" rx="6" ry="4" fill="rgba(45,212,116,0.2)"/>
+      <ellipse cx="58" cy="108" rx="6" ry="4" fill="rgba(45,212,116,0.2)"/>
+      <!-- Hood trim -->
+      <path d="M22 118 Q50 124 78 118" stroke="#1a4a2a" stroke-width="1.5" fill="none"/>
+      <!-- Brooch -->
+      <circle cx="50" cy="140" r="5" fill="#0a1e12" stroke="#2dd474" stroke-width="1.2"/>
+      <text x="50" y="143.5" text-anchor="middle" font-size="5" fill="#2dd474">✦</text>
+      <ellipse cx="50" cy="95" rx="35" ry="35" fill="rgba(45,212,116,0.04)"/>
+    </svg>`
+  },
+
+  player_rogue: {
+    name: 'You',
+    color: '#e8621a',
+    svg: (h=300) => `<svg width="${Math.round(h*0.5)}" height="${h}" viewBox="0 0 100 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ember-toned cloak -->
+      <path d="M25 148 Q16 182 14 210 L86 210 Q84 182 75 148 Q62 132 50 132 Q38 132 25 148Z" fill="#2a1008"/>
+      <path d="M32 158 Q24 182 22 210 L46 210 L48 158Z" fill="#1e0c06"/>
+      <path d="M68 158 Q76 182 78 210 L54 210 L52 158Z" fill="#1e0c06"/>
+      <!-- Key ring in hand -->
+      <path d="M14 148 Q6 152 4 165 Q8 175 18 170 L25 155Z" fill="#2a1008"/>
+      <ellipse cx="8" cy="168" rx="6" ry="4" fill="#8a6a30"/>
+      <circle cx="8" cy="166" r="5" fill="none" stroke="#d4a820" stroke-width="1.5"/>
+      <line x1="8" y1="171" x2="8" y2="178" stroke="#d4a820" stroke-width="1.5"/>
+      <line x1="6" y1="175" x2="10" y2="175" stroke="#d4a820" stroke-width="1"/>
+      <line x1="6" y1="177" x2="10" y2="177" stroke="#d4a820" stroke-width="1"/>
+      <!-- Hood -->
+      <path d="M20 120 Q20 85 50 78 Q80 85 80 120 Q80 138 50 142 Q20 138 20 120Z" fill="#2a1008"/>
+      <path d="M24 115 Q26 88 50 82 Q74 88 76 115" fill="#1e0c06"/>
+      <!-- Ember orange eyes -->
+      <circle cx="42" cy="108" r="2.5" fill="#e8621a" opacity="0.9"/>
+      <circle cx="42" cy="108" r="1.2" fill="#f5c842"/>
+      <circle cx="58" cy="108" r="2.5" fill="#e8621a" opacity="0.9"/>
+      <circle cx="58" cy="108" r="1.2" fill="#f5c842"/>
+      <ellipse cx="42" cy="108" rx="6" ry="4" fill="rgba(232,98,26,0.2)"/>
+      <ellipse cx="58" cy="108" rx="6" ry="4" fill="rgba(232,98,26,0.2)"/>
+      <path d="M22 118 Q50 124 78 118" stroke="#4a2010" stroke-width="1.5" fill="none"/>
+      <circle cx="50" cy="140" r="5" fill="#1e0c06" stroke="#e8621a" stroke-width="1.2"/>
+      <text x="50" y="143.5" text-anchor="middle" font-size="5" fill="#e8621a">✦</text>
+      <ellipse cx="50" cy="95" rx="35" ry="35" fill="rgba(232,98,26,0.04)"/>
+    </svg>`
+  },
+
+  spa_rep: {
+    name: 'Spa Council',
+    color: '#60a0c0',
+    svg: (h=300) => `<svg width="${Math.round(h*0.52)}" height="${h}" viewBox="0 0 104 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tailored blazer - clinical teal-grey -->
+      <path d="M28 148 Q20 178 18 210 L86 210 Q84 178 76 148 Q62 134 52 134 Q42 134 28 148Z" fill="#1a2a32"/>
+      <path d="M28 148 Q22 168 20 210 L42 210 L46 148Z" fill="#142028"/>
+      <path d="M76 148 Q82 168 84 210 L62 210 L58 148Z" fill="#142028"/>
+      <!-- White shirt -->
+      <path d="M40 114 L52 126 L64 114 L66 108 L52 116 L38 108Z" fill="#e8f0f0"/>
+      <!-- Blazer lapels -->
+      <path d="M30 114 L40 114 L52 126 L64 114 L74 114 L62 102 L52 112 L42 102Z" fill="#1a2a32"/>
+      <!-- Blazer front panels -->
+      <path d="M30 114 Q26 128 26 148 L40 148 L42 114Z" fill="#142028"/>
+      <path d="M74 114 Q78 128 78 148 L64 148 L62 114Z" fill="#142028"/>
+      <!-- Clipboard / tablet -->
+      <path d="M76 120 Q88 122 90 138 L84 148 Q80 138 78 130 Z" fill="#1a2a32"/>
+      <rect x="78" y="118" width="22" height="28" rx="2" fill="#c0d8e0"/>
+      <rect x="80" y="120" width="18" height="24" rx="1" fill="#d8eef4"/>
+      <rect x="84" y="118" width="10" height="4" rx="1" fill="#8aaSb8"/>
+      <line x1="83" y1="126" x2="96" y2="126" stroke="#6090a8" stroke-width="0.8"/>
+      <line x1="83" y1="130" x2="96" y2="130" stroke="#6090a8" stroke-width="0.8"/>
+      <line x1="83" y1="134" x2="90" y2="134" stroke="#6090a8" stroke-width="0.8"/>
+      <ellipse cx="98" cy="145" rx="5" ry="4" fill="#c4a870"/>
+      <!-- Left arm -->
+      <path d="M30 120 Q20 126 18 140 L24 148 Q26 136 30 130Z" fill="#1a2a32"/>
+      <ellipse cx="16" cy="142" rx="5" ry="4" fill="#c4a870"/>
+      <!-- Neck -->
+      <rect x="47" y="100" width="10" height="18" rx="4" fill="#c4a870"/>
+      <!-- Head -->
+      <ellipse cx="52" cy="85" rx="21" ry="22" fill="#c4a870"/>
+      <!-- Hair - pulled back, professional -->
+      <path d="M31 82 Q32 57 52 54 Q72 57 73 82 Q66 62 52 60 Q38 62 31 82Z" fill="#2a2018"/>
+      <path d="M31 82 Q27 70 30 60 Q34 52 44 50 Q36 60 34 74Z" fill="#1e1810"/>
+      <path d="M73 82 Q77 70 74 60 Q70 52 60 50 Q68 60 70 74Z" fill="#1e1810"/>
+      <ellipse cx="52" cy="57" rx="14" ry="7" fill="#2a2018"/>
+      <!-- Face -->
+      <ellipse cx="43" cy="85" rx="4.5" ry="3" fill="white"/>
+      <ellipse cx="61" cy="85" rx="4.5" ry="3" fill="white"/>
+      <circle cx="43" cy="85" r="2.2" fill="#2a4050"/>
+      <circle cx="61" cy="85" r="2.2" fill="#2a4050"/>
+      <circle cx="44" cy="84" r="0.7" fill="white"/>
+      <circle cx="62" cy="84" r="0.7" fill="white"/>
+      <path d="M37 80 Q43 77 49 79" stroke="#2a2018" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M55 79 Q61 77 67 80" stroke="#2a2018" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M51 89 L49 94 L55 94" stroke="#b09060" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+      <path d="M46 100 Q52 103 58 100" stroke="#a07858" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    </svg>`
+  }
+};
+
+// Player character — determined by class
+function getPlayerChar() {
+  const map = { wizard: 'player_wizard', healer: 'player_healer', rogue: 'player_rogue' };
+  return CHARS[map[G.class] || 'player_wizard'];
+}
+
+// ══════════════════════════════════════════════════════
+// VISUAL NOVEL ENGINE
+// ══════════════════════════════════════════════════════
+let VN = {
+  beats: [],
+  beatIndex: 0,
+  choices: [],
+  typing: false,
+  typeTimer: null,
+  currentText: '',
+  displayedText: '',
+  onChoiceSelect: null,
+};
+
+const BG_CLASS = {
+  archive: 'vn-bg-archive',
+  lobby:   'vn-bg-lobby',
+  banquet: 'vn-bg-banquet',
+  cellar:  'vn-bg-cellar',
+  spa:     'vn-bg-spa',
+  castle:  'vn-bg-castle',
+  boss:    'vn-bg-boss',
+};
+
+function vnShow() {
+  document.getElementById('vn-stage').classList.add('active');
+  document.getElementById('main-content').style.display = 'none';
+  showOracleButton();
+}
+
+function vnHide() {
+  document.getElementById('vn-stage').classList.remove('active');
+  document.getElementById('main-content').style.display = '';
+  hideOracleButton();
+}
+
+function vnSetBackground(key) {
+  const bg = document.getElementById('vn-bg');
+  bg.className = BG_CLASS[key] || BG_CLASS.archive;
+}
+
+function vnSetChar(side, charKey, active) {
+  const id = `vn-char-${side}`;
+  const el = document.getElementById(id);
+  if (!charKey) {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+    return;
+  }
+  const resolvedKey = charKey === 'player' ? `player_${G.class}` : charKey;
+  const charDef = CHARS[resolvedKey] || getPlayerChar();
+  const h = window.innerHeight < 600 ? 220 : 300;
+  el.innerHTML = charDef.svg(h);
+  el.classList.remove('hidden','dim','active','speaking');
+  if (active) {
+    el.classList.add('active', 'speaking');
+  } else {
+    el.classList.add('dim');
+  }
+}
+
+function vnFlash(type) {
+  const el = document.getElementById('vn-flash');
+  el.className = `flash-${type}`;
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; el.className = ''; }, 350);
+}
+
+// Show chapter title card briefly
+function vnChapterCard(icon, name, topic, cb) {
+  const card = document.getElementById('vn-chapter-card');
+  document.getElementById('vn-cc-sigil').textContent = icon;
+  document.getElementById('vn-cc-name').textContent = name;
+  document.getElementById('vn-cc-topic').textContent = topic;
+  card.classList.add('show');
+  setTimeout(() => {
+    card.classList.remove('show');
+    setTimeout(cb, 500);
+  }, 1800);
+}
+
+// Type out text word by word
+function vnTypeText(text, cb) {
+  const area = document.getElementById('vn-text-area');
+  // Check if text contains HTML (lore boxes etc) — show immediately, no typewriter
+  if (!text || typeof text !== 'string') {
+    area.innerHTML = '';
+    VN.typing = false;
+    if (cb) cb();
+    return;
+  }
+  const hasHtml = /<[a-zA-Z]/.test(text);
+  if (hasHtml) {
+    area.innerHTML = text;
+    VN.typing = false;
+    if (cb) cb();
+    return;
+  }
+  VN.typing = true;
+  VN.currentText = text;
+  VN.displayedText = '';
+  area.textContent = '';
+  let i = 0;
+  const words = text.split(' ');
+  function nextWord() {
+    if (i >= words.length) {
+      VN.typing = false;
+      if (cb) cb();
+      return;
+    }
+    VN.displayedText += (i > 0 ? ' ' : '') + words[i];
+    area.textContent = VN.displayedText;
+    i++;
+    VN.typeTimer = setTimeout(nextWord, 42);
+  }
+  nextWord();
+}
+
+function vnSkipType() {
+  if (VN.typing) {
+    clearTimeout(VN.typeTimer);
+    VN.typing = false;
+    const area = document.getElementById('vn-text-area');
+    area.textContent = VN.currentText;
+  }
+}
+
+// Advance to next beat or show choices
+function vnAdvance() {
+  if (VN.typing) {
+    vnSkipType();
+    return;
+  }
+  VN.beatIndex++;
+  if (VN.beatIndex < VN.beats.length) {
+    vnPlayBeat(VN.beatIndex);
+  } else {
+    vnShowChoices();
+  }
+}
+
+function vnPlayBeat(idx) {
+  const beat = VN.beats[idx];
+  const nameBox = document.getElementById('vn-namebox');
+  const tapHint = document.getElementById('vn-tap-hint');
+  const choicesEl = document.getElementById('vn-choices');
+
+  choicesEl.classList.remove('visible');
+  tapHint.style.display = '';
+
+  // Determine speaker
+  let charKey = beat.char || null;
+  let charName = '—';
+  if (charKey === 'player') {
+    charKey = `player_${G.class}`;
+    charName = 'You';
+  } else if (charKey && CHARS[charKey]) {
+    charName = CHARS[charKey].name;
+  }
+
+  nameBox.textContent = charName;
+
+  // Update character displays
+  const resolveP = k => k === 'player' ? `player_${G.class}` : k;
+  const beatLeft  = beat.left  !== undefined ? resolveP(beat.left)  : undefined;
+  const beatRight = beat.right !== undefined ? resolveP(beat.right) : undefined;
+  const beatChar  = charKey; // already resolved above
+  if (beatLeft  !== undefined) vnSetChar('left',  beatLeft,  beatChar === beatLeft);
+  if (beatRight !== undefined) vnSetChar('right', beatRight, beatChar === beatRight);
+
+  // Highlight speaking character
+  const leftEl = document.getElementById('vn-char-left');
+  const rightEl = document.getElementById('vn-char-right');
+  if (beatChar && beatChar === beatLeft) {
+    leftEl.classList.remove('dim'); leftEl.classList.add('active','speaking');
+    rightEl.classList.remove('active','speaking'); if (beatRight) rightEl.classList.add('dim');
+  } else if (beatChar && beatChar === beatRight) {
+    rightEl.classList.remove('dim'); rightEl.classList.add('active','speaking');
+    leftEl.classList.remove('active','speaking'); if (beatLeft) leftEl.classList.add('dim');
+  } else {
+    // Narrator
+    nameBox.textContent = '—';
+    leftEl.classList.remove('active','speaking');
+    rightEl.classList.remove('active','speaking');
+  }
+
+  if (beat.html) {
+    const area = document.getElementById('vn-text-area');
+    area.innerHTML = beat.html;
+    VN.typing = false;
+  } else {
+    vnTypeText(beat.text || '');
+  }
+}
+
+function vnShowChoices() {
+  const choicesEl = document.getElementById('vn-choices');
+  const tapHint = document.getElementById('vn-tap-hint');
+  tapHint.style.display = 'none';
+
+  choicesEl.innerHTML = VN.choices.map((c,i) =>
+    `<button class="vn-choice-btn" data-vi="${i}">${c.text}</button>`
+  ).join('');
+  choicesEl.classList.add('visible');
+
+  choicesEl.querySelectorAll('.vn-choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-vi'), 10);
+      vnPickChoice(VN.choices[idx]);
+    });
+  });
+}
+
+function vnPickChoice(choice) {
+  document.getElementById('vn-choices').classList.remove('visible');
+  document.getElementById('vn-tap-hint').style.display = '';
+
+  if (choice.bad || choice.damage) {
+    vnFlash('damage');
+    const dead = takeDamage(choice.damage || 10);
+    if (dead) return;
+    // Show feedback beat then continue to next scene
+    vnFeedbackBeat(choice, () => showScene(choice.next));
+  } else if (choice.boss) {
+    vnHide();
+    showScene(choice.next);
+  } else {
+    vnFlash('xp');
+    if (choice.xp) {
+      gainXP(choice.xp, () => vnFeedbackBeat(choice, () => showScene(choice.next)));
+    } else {
+      vnFeedbackBeat(choice, () => showScene(choice.next));
+    }
+  }
+}
+
+function vnFeedbackBeat(choice, cb) {
+  // Brief transition — no feedback beat needed, scene change handles it
+  cb();
+}
+
+// Main entry: play a scene as VN
+function vnPlayScene(scene, sceneId) {
+  vnShow();
+  vnSetBackground(scene.bg || 'archive');
+  VN.beats = scene.beats || [];
+  VN.beatIndex = 0;
+  VN.choices = scene.choices || [];
+
+  // Clear chars
+  vnSetChar('left', null);
+  vnSetChar('right', null);
+  document.getElementById('vn-choices').classList.remove('visible');
+  document.getElementById('vn-tap-hint').style.display = '';
+  document.getElementById('vn-namebox').textContent = '—';
+  document.getElementById('vn-text-area').textContent = '';
+
+  // Set up initial chars from first beat
+  if (VN.beats.length > 0) {
+    const first = VN.beats[0];
+    if (first.left) vnSetChar('left', first.left, first.char === first.left);
+    if (first.right) vnSetChar('right', first.right, first.char === first.right);
+    vnPlayBeat(0);
+  } else {
+    vnShowChoices();
+  }
+
+  // Tap anywhere on dialogue to advance
+  const dialogue = document.getElementById('vn-dialogue');
+  dialogue.onclick = (e) => {
+    if (e.target.classList.contains('vn-choice-btn')) return;
+    if (document.getElementById('vn-choices').classList.contains('visible')) return;
+    vnAdvance();
+  };
 }
 
 // ── SAVE TOGGLE ──────────────────────────────────────────────────────────────
