@@ -1889,7 +1889,7 @@ const G = {
   currentQuest: null,
   currentScene: null,
   bossTimer: null,
-  avatar: { silhouette: 'scholar', robe: '#7c3aed', accessory: 'scroll', name: 'Initiate' },
+  avatar: { silhouette: 'scholar', robe: '#7c3aed', accessory: 'scroll', name: 'Initiate', hair: 'short_dark', hairColor: '#2a1508', skinColor: '#d4a574' },
 };
 
 // FIX 1: Use a global callback reference instead of serializing to string
@@ -4304,85 +4304,231 @@ let _sortingChoices = [];
 const AVATAR_SILHOUETTES = {
   scholar: {
     label: 'Scholar',
-    svg: (robe) => `
+    svg: (robe, skin='#d4a574') => `
       <g>
-        <!-- Robe / body -->
         <ellipse cx="50" cy="112" rx="28" ry="18" fill="${robe}" opacity="0.4"/>
         <path d="M22 90 Q28 130 50 138 Q72 130 78 90 Q70 82 50 80 Q30 82 22 90Z" fill="${robe}"/>
-        <!-- Collar -->
         <path d="M38 80 Q50 90 62 80" fill="none" stroke="${robe}" stroke-width="2" opacity="0.7"/>
-        <!-- Neck & head -->
-        <rect x="45" y="60" width="10" height="14" rx="4" fill="#d4a574"/>
-        <circle cx="50" cy="52" r="18" fill="#d4a574"/>
-        <!-- Hair — short academic -->
-        <path d="M32 46 Q35 30 50 28 Q65 30 68 46 Q63 38 50 36 Q37 38 32 46Z" fill="#5a3e28"/>
-        <!-- Eyes -->
+        <rect x="45" y="60" width="10" height="14" rx="4" fill="${skin}"/>
+        <circle cx="50" cy="52" r="18" fill="${skin}"/>
         <circle cx="44" cy="50" r="2.5" fill="#2d1b0e"/>
         <circle cx="56" cy="50" r="2.5" fill="#2d1b0e"/>
         <circle cx="45" cy="49" r="0.8" fill="#fff" opacity="0.7"/>
         <circle cx="57" cy="49" r="0.8" fill="#fff" opacity="0.7"/>
-        <!-- Slight smile -->
-        <path d="M45 56 Q50 59 55 56" fill="none" stroke="#8b5e3c" stroke-width="1.2" stroke-linecap="round"/>
-        <!-- Robe hem detail -->
+        <path d="M45 56 Q50 59 55 56" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="1.2" stroke-linecap="round"/>
         <path d="M25 118 Q50 124 75 118" fill="none" stroke="${robe}" stroke-width="1.5" opacity="0.6"/>
       </g>`
   },
   knight: {
     label: 'Knight',
-    svg: (robe) => `
+    svg: (robe, skin='#c0a080') => `
       <g>
-        <!-- Armour body -->
         <ellipse cx="50" cy="112" rx="30" ry="16" fill="${robe}" opacity="0.35"/>
         <path d="M20 88 Q26 132 50 138 Q74 132 80 88 Q72 78 50 76 Q28 78 20 88Z" fill="${robe}"/>
-        <!-- Pauldrons / shoulders -->
         <ellipse cx="24" cy="84" rx="10" ry="6" fill="${robe}" opacity="0.8"/>
         <ellipse cx="76" cy="84" rx="10" ry="6" fill="${robe}" opacity="0.8"/>
-        <!-- Armour chest line -->
         <path d="M40 86 L50 100 L60 86" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-        <!-- Neck -->
-        <rect x="44" y="60" width="12" height="12" rx="3" fill="#c0a080"/>
-        <!-- Helmet -->
+        <rect x="44" y="60" width="12" height="12" rx="3" fill="${skin}"/>
         <path d="M30 54 Q32 30 50 26 Q68 30 70 54 L68 58 Q60 62 50 62 Q40 62 32 58Z" fill="${robe}"/>
-        <!-- Visor slit -->
         <path d="M36 50 L64 50" stroke="rgba(0,0,0,0.4)" stroke-width="3" stroke-linecap="round"/>
         <path d="M36 55 L64 55" stroke="rgba(0,0,0,0.25)" stroke-width="2" stroke-linecap="round"/>
-        <!-- Helmet ridge -->
         <path d="M50 26 L50 36" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
-        <!-- Belt -->
         <rect x="28" y="108" width="44" height="5" rx="2" fill="${robe}" opacity="0.7"/>
         <rect x="47" y="107" width="6" height="7" rx="1" fill="rgba(255,215,0,0.6)"/>
       </g>`
   },
   mage: {
     label: 'Mage',
-    svg: (robe) => `
+    svg: (robe, skin='#d4a574') => `
       <g>
-        <!-- Robe — wide, flowing -->
         <ellipse cx="50" cy="116" rx="34" ry="16" fill="${robe}" opacity="0.3"/>
         <path d="M16 86 Q18 138 50 142 Q82 138 84 86 Q74 74 50 72 Q26 74 16 86Z" fill="${robe}"/>
-        <!-- Hood -->
         <path d="M28 68 Q30 40 50 34 Q70 40 72 68 Q62 60 50 58 Q38 60 28 68Z" fill="${robe}" opacity="0.9"/>
-        <!-- Hood shadow -->
         <path d="M34 64 Q36 46 50 40 Q64 46 66 64" fill="rgba(0,0,0,0.2)"/>
-        <!-- Face in hood shadow -->
-        <circle cx="50" cy="56" r="14" fill="#d4a574"/>
-        <!-- Eyes — slightly mysterious -->
+        <circle cx="50" cy="56" r="14" fill="${skin}"/>
         <circle cx="44" cy="54" r="2.5" fill="#1a0a2e"/>
         <circle cx="56" cy="54" r="2.5" fill="#1a0a2e"/>
         <circle cx="44.8" cy="53.2" r="0.9" fill="#fff" opacity="0.8"/>
         <circle cx="56.8" cy="53.2" r="0.9" fill="#fff" opacity="0.8"/>
-        <!-- Slight glow in eyes -->
         <circle cx="44" cy="54" r="1.2" fill="${robe}" opacity="0.5"/>
         <circle cx="56" cy="54" r="1.2" fill="${robe}" opacity="0.5"/>
-        <!-- Robe star pattern -->
         <text x="38" y="100" font-size="8" fill="rgba(255,255,255,0.25)" font-family="serif">✦</text>
         <text x="56" y="114" font-size="6" fill="rgba(255,255,255,0.2)" font-family="serif">✦</text>
         <text x="30" y="118" font-size="5" fill="rgba(255,255,255,0.15)" font-family="serif">✦</text>
-        <!-- Robe hem -->
         <path d="M18 130 Q50 136 82 130" fill="none" stroke="${robe}" stroke-width="1.5" opacity="0.5"/>
+      </g>`
+  },
+  ranger: {
+    label: 'Ranger',
+    svg: (robe, skin='#c49060') => `
+      <g>
+        <ellipse cx="50" cy="110" rx="26" ry="16" fill="${robe}" opacity="0.35"/>
+        <path d="M24 86 Q26 128 46 138 Q50 140 54 138 Q74 128 76 86 Q68 77 50 76 Q32 77 24 86Z" fill="${robe}"/>
+        <path d="M38 80 L44 96 L50 82 L56 96 L62 80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+        <rect x="26" y="108" width="48" height="4" rx="2" fill="${robe}" opacity="0.8"/>
+        <rect x="62" y="82" width="5" height="28" rx="2" fill="${robe}" opacity="0.7"/>
+        <line x1="64.5" y1="85" x2="64.5" y2="108" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+        <rect x="45" y="61" width="10" height="13" rx="4" fill="${skin}"/>
+        <circle cx="50" cy="52" r="17" fill="${skin}"/>
+        <ellipse cx="44" cy="51" rx="2.5" ry="2" fill="#1e0e00"/>
+        <ellipse cx="56" cy="51" rx="2.5" ry="2" fill="#1e0e00"/>
+        <circle cx="44.8" cy="50.4" r="0.7" fill="#fff" opacity="0.7"/>
+        <circle cx="56.8" cy="50.4" r="0.7" fill="#fff" opacity="0.7"/>
+        <path d="M46 57 Q51 60 55 57" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.1" stroke-linecap="round"/>
+      </g>`
+  },
+  noble: {
+    label: 'Noble',
+    svg: (robe, skin='#d4a574') => `
+      <g>
+        <ellipse cx="50" cy="112" rx="29" ry="17" fill="${robe}" opacity="0.4"/>
+        <path d="M21 88 Q24 132 50 140 Q76 132 79 88 Q70 79 50 78 Q30 79 21 88Z" fill="${robe}"/>
+        <path d="M21 88 Q15 80 20 74 Q28 76 30 84Z" fill="${robe}" opacity="0.85"/>
+        <path d="M79 88 Q85 80 80 74 Q72 76 70 84Z" fill="${robe}" opacity="0.85"/>
+        <line x1="50" y1="82" x2="50" y2="128" stroke="rgba(255,215,0,0.3)" stroke-width="1.5"/>
+        <circle cx="50" cy="90" r="2" fill="rgba(255,215,0,0.5)"/>
+        <circle cx="50" cy="100" r="2" fill="rgba(255,215,0,0.5)"/>
+        <circle cx="50" cy="110" r="2" fill="rgba(255,215,0,0.5)"/>
+        <path d="M36 79 Q43 86 50 82 Q57 86 64 79 Q58 74 50 73 Q42 74 36 79Z" fill="rgba(255,255,255,0.85)"/>
+        <rect x="45" y="60" width="10" height="13" rx="4" fill="${skin}"/>
+        <circle cx="50" cy="52" r="18" fill="${skin}"/>
+        <circle cx="44" cy="50" r="2.5" fill="#2a1a0a"/>
+        <circle cx="56" cy="50" r="2.5" fill="#2a1a0a"/>
+        <circle cx="44.8" cy="49.2" r="0.9" fill="#fff" opacity="0.8"/>
+        <circle cx="56.8" cy="49.2" r="0.9" fill="#fff" opacity="0.8"/>
+        <path d="M45 56 Q50 58.5 55 56" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M41 47 Q44 45 47 47" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.9" stroke-linecap="round"/>
+        <path d="M53 47 Q56 45 59 47" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.9" stroke-linecap="round"/>
+      </g>`
+  },
+  alchemist: {
+    label: 'Alchemist',
+    svg: (robe, skin='#c89a6a') => `
+      <g>
+        <ellipse cx="50" cy="114" rx="28" ry="17" fill="${robe}" opacity="0.3"/>
+        <path d="M20 88 Q22 136 50 142 Q78 136 80 88 Q72 80 50 78 Q28 80 20 88Z" fill="${robe}"/>
+        <path d="M36 88 Q36 134 50 140 Q64 134 64 88 Q58 84 50 84 Q42 84 36 88Z" fill="rgba(255,255,255,0.07)"/>
+        <rect x="38" y="104" width="10" height="8" rx="1" fill="none" stroke="${robe}" stroke-width="1.2" opacity="0.7"/>
+        <rect x="29" y="107" width="4" height="9" rx="2" fill="rgba(45,212,116,0.6)"/>
+        <rect x="34" y="108" width="3" height="8" rx="1.5" fill="rgba(232,98,26,0.6)"/>
+        <rect x="63" y="107" width="4" height="9" rx="2" fill="rgba(139,92,246,0.6)"/>
+        <rect x="45" y="62" width="10" height="13" rx="4" fill="${skin}"/>
+        <circle cx="50" cy="52" r="17" fill="${skin}"/>
+        <ellipse cx="44" cy="44" rx="5" ry="3.5" fill="none" stroke="${robe}" stroke-width="2"/>
+        <ellipse cx="56" cy="44" rx="5" ry="3.5" fill="none" stroke="${robe}" stroke-width="2"/>
+        <line x1="49" y1="44" x2="51" y2="44" stroke="${robe}" stroke-width="2"/>
+        <ellipse cx="44" cy="44" rx="3.5" ry="2.2" fill="rgba(100,180,255,0.2)"/>
+        <ellipse cx="56" cy="44" rx="3.5" ry="2.2" fill="rgba(100,180,255,0.2)"/>
+        <circle cx="44" cy="52" r="2.5" fill="#2a1800"/>
+        <circle cx="56" cy="52" r="2.5" fill="#2a1800"/>
+        <circle cx="44.8" cy="51.2" r="0.8" fill="#fff" opacity="0.7"/>
+        <circle cx="56.8" cy="51.2" r="0.8" fill="#fff" opacity="0.7"/>
+        <path d="M45 58 Q50 60 55 58" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1.1" stroke-linecap="round"/>
       </g>`
   }
 };
+
+// ── HAIR STYLES ────────────────────────────────────────────
+// Each style is a function(color) returning SVG path elements
+// drawn OVER the silhouette body, positioned for the head at cx=50 cy=52 r≈17
+const AVATAR_HAIRSTYLES = {
+  short_dark:   { label: 'Short', color: '#3b2410',
+    svg: (c) => `<path d="M33 46 Q36 28 50 26 Q64 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>` },
+
+  buzz:         { label: 'Buzz', color: '#5a3a20',
+    svg: (c) => `<path d="M33 48 Q34 30 50 27 Q66 30 67 48 Q63 40 50 38 Q37 40 33 48Z" fill="${c}" opacity="0.9"/>
+                 <path d="M33 48 Q36 42 50 40 Q64 42 67 48" fill="${c}" opacity="0.6"/>` },
+
+  long_straight:{ label: 'Long', color: '#2a1508',
+    svg: (c) => `<path d="M33 46 Q30 55 28 80 Q34 75 36 70 Q38 80 38 95 Q44 85 46 75 L46 46Z" fill="${c}"/>
+                 <path d="M67 46 Q70 55 72 80 Q66 75 64 70 Q62 80 62 95 Q56 85 54 75 L54 46Z" fill="${c}"/>
+                 <path d="M33 46 Q36 28 50 26 Q64 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>` },
+
+  wavy:         { label: 'Wavy', color: '#7a3e10',
+    svg: (c) => `<path d="M33 46 Q28 58 30 72 Q34 68 35 62 Q36 72 38 80 Q42 72 42 64 L44 46Z" fill="${c}"/>
+                 <path d="M67 46 Q72 58 70 72 Q66 68 65 62 Q64 72 62 80 Q58 72 58 64 L56 46Z" fill="${c}"/>
+                 <path d="M33 46 Q36 28 50 26 Q64 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>` },
+
+  bun:          { label: 'Bun', color: '#4a2e14',
+    svg: (c) => `<path d="M33 46 Q35 30 50 27 Q65 30 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>
+                 <circle cx="50" cy="26" r="8" fill="${c}"/>
+                 <circle cx="50" cy="26" r="5" fill="${c}" opacity="0.7"/>
+                 <path d="M44 28 Q50 22 56 28" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.5"/>` },
+
+  ponytail:     { label: 'Ponytail', color: '#5a3010',
+    svg: (c) => `<path d="M33 46 Q35 30 50 27 Q65 30 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>
+                 <path d="M64 38 Q74 44 72 60 Q68 72 66 84 Q62 74 62 62 Q60 50 64 38Z" fill="${c}"/>
+                 <ellipse cx="64" cy="39" rx="4" ry="3" fill="${c}" opacity="0.8"/>` },
+
+  curly:        { label: 'Curly', color: '#2e1a08',
+    svg: (c) => `<path d="M33 46 Q35 28 50 25 Q65 28 67 46 Q62 34 50 32 Q38 34 33 46Z" fill="${c}"/>
+                 <circle cx="34" cy="44" r="5" fill="${c}"/>
+                 <circle cx="40" cy="36" r="5.5" fill="${c}"/>
+                 <circle cx="50" cy="32" r="6" fill="${c}"/>
+                 <circle cx="60" cy="36" r="5.5" fill="${c}"/>
+                 <circle cx="66" cy="44" r="5" fill="${c}"/>
+                 <circle cx="36" cy="52" r="4.5" fill="${c}"/>
+                 <circle cx="64" cy="52" r="4.5" fill="${c}"/>` },
+
+  side_swept:   { label: 'Side Swept', color: '#4a3020',
+    svg: (c) => `<path d="M33 46 Q35 28 50 26 Q65 28 67 46 Q60 34 50 33 Q38 35 33 46Z" fill="${c}"/>
+                 <path d="M33 40 Q26 42 24 50 Q28 48 32 50 Q30 44 33 40Z" fill="${c}"/>
+                 <path d="M35 34 Q28 36 26 46 Q32 42 35 34Z" fill="${c}" opacity="0.7"/>` },
+
+  braided:      { label: 'Braided', color: '#3a2010',
+    svg: (c) => `<path d="M33 46 Q35 28 50 26 Q65 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>
+                 <path d="M36 50 Q34 58 36 68 Q38 76 36 86 Q40 78 40 68 Q42 58 40 50Z" fill="${c}" opacity="0.9"/>
+                 <path d="M36 54 L40 56 L36 60 L40 62 L36 66 L40 68 L36 72 L40 74" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>` },
+
+  shaved_sides: { label: 'Undercut', color: '#1a0e06',
+    svg: (c) => `<path d="M37 46 Q38 30 50 27 Q62 30 63 46 Q60 37 50 35 Q40 37 37 46Z" fill="${c}"/>
+                 <path d="M33 50 Q33 46 37 44 Q37 50 37 56Z" fill="${c}" opacity="0.3"/>
+                 <path d="M67 50 Q67 46 63 44 Q63 50 63 56Z" fill="${c}" opacity="0.3"/>` },
+
+  white:        { label: 'Silver', color: '#d0ccc8',
+    svg: (c) => `<path d="M33 46 Q35 28 50 26 Q65 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>
+                 <path d="M33 46 Q30 54 31 64 Q35 60 35 52Z" fill="${c}" opacity="0.8"/>
+                 <path d="M67 46 Q70 54 69 64 Q65 60 65 52Z" fill="${c}" opacity="0.8"/>` },
+
+  auburn:       { label: 'Auburn', color: '#8b2500',
+    svg: (c) => `<path d="M33 46 Q35 28 50 26 Q65 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>
+                 <path d="M33 46 Q29 56 30 68 Q34 64 35 56 Q34 50 33 46Z" fill="${c}"/>
+                 <path d="M67 46 Q71 56 70 68 Q66 64 65 56 Q66 50 67 46Z" fill="${c}"/>` },
+
+  blonde:       { label: 'Blonde', color: '#d4a820',
+    svg: (c) => `<path d="M33 46 Q35 28 50 26 Q65 28 67 46 Q62 36 50 34 Q38 36 33 46Z" fill="${c}"/>
+                 <path d="M67 46 Q72 60 68 76 Q64 68 64 58Z" fill="${c}" opacity="0.8"/>
+                 <path d="M33 46 Q28 60 32 76 Q36 68 36 58Z" fill="${c}" opacity="0.8"/>` },
+};
+
+// Map hair key → colour override (for the colour picker in hair section)
+const HAIR_COLORS = [
+  { key: 'dark',    hex: '#2a1508', label: 'Jet Black' },
+  { key: 'brown',   hex: '#5a3010', label: 'Chestnut' },
+  { key: 'auburn',  hex: '#8b2500', label: 'Auburn' },
+  { key: 'blonde',  hex: '#d4a820', label: 'Blonde' },
+  { key: 'silver',  hex: '#c8c4c0', label: 'Silver' },
+  { key: 'white',   hex: '#ece8e2', label: 'White' },
+  { key: 'raven',   hex: '#1a1218', label: 'Raven' },
+  { key: 'teal',    hex: '#0d7a6a', label: 'Teal' },
+  { key: 'rose',    hex: '#b83060', label: 'Rose' },
+  { key: 'violet',  hex: '#6b21a8', label: 'Violet' },
+];
+
+const SKIN_TONES = [
+  { hex: '#FDDBB4', label: 'Porcelain'  },
+  { hex: '#F5C89A', label: 'Ivory'      },
+  { hex: '#E8A87C', label: 'Sand'       },
+  { hex: '#D4A574', label: 'Beige'      },
+  { hex: '#C49060', label: 'Warm Tan'   },
+  { hex: '#A0714A', label: 'Caramel'    },
+  { hex: '#8B5E3C', label: 'Toffee'     },
+  { hex: '#7A4A2E', label: 'Chestnut'   },
+  { hex: '#5C3317', label: 'Mahogany'   },
+  { hex: '#3B1F0A', label: 'Ebony'      },
+  { hex: '#C8A882', label: 'Warm Olive' },
+  { hex: '#9A7B5A', label: 'Olive'      },
+];
 
 const AVATAR_ACCESSORIES = {
   scroll: { emoji: '📜', label: 'Scroll',
@@ -4432,12 +4578,19 @@ const AVATAR_ACCESSORIES = {
 function buildAvatarSVG(av, size = 100) {
   const sil = AVATAR_SILHOUETTES[av.silhouette] || AVATAR_SILHOUETTES.scholar;
   const acc = AVATAR_ACCESSORIES[av.accessory] || AVATAR_ACCESSORIES.scroll;
-  const silHtml = sil.svg(av.robe);
+  const hairKey = av.hair || 'short_dark';
+  const hairStyle = AVATAR_HAIRSTYLES[hairKey] || AVATAR_HAIRSTYLES.short_dark;
+  const hairColor = av.hairColor || hairStyle.color;
+  const skinColor = av.skinColor || '#d4a574';
+  const silHtml = sil.svg(av.robe, skinColor);
+  const hairHtml = hairStyle.svg(hairColor);
   const accHtml = acc.svg ? acc.svg(av.robe) : '';
+  const showHair = av.silhouette !== 'knight';
   return `<svg viewBox="0 0 100 150" width="${size}" height="${Math.round(size*1.5)}"
     style="display:block; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5))"
     xmlns="http://www.w3.org/2000/svg">
     ${silHtml}
+    ${showHair ? hairHtml : ''}
     ${accHtml}
   </svg>`;
 }
@@ -4475,7 +4628,7 @@ function showAvatarBuilder() {
         <div class="avatar-preview-wrap">
           <div id="avatar-svg-preview">${buildAvatarSVG(av, 120)}</div>
           <div class="avatar-preview-name" id="avatar-name-preview">${av.name}</div>
-          <div style="font-family:'Cinzel',serif; font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase">${AVATAR_SILHOUETTES[av.silhouette].label} · ${AVATAR_ACCESSORIES[av.accessory].label}</div>
+          <div style="font-family:'Cinzel',serif; font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase">${AVATAR_SILHOUETTES[av.silhouette].label} · ${AVATAR_HAIRSTYLES[av.hair||'short_dark'].label} · ${AVATAR_ACCESSORIES[av.accessory].label}</div>
         </div>
 
         <!-- RIGHT: controls -->
@@ -4490,6 +4643,19 @@ function showAvatarBuilder() {
               oninput="G.avatar.name=this.value||'Initiate'; document.getElementById('avatar-name-preview').textContent=G.avatar.name"/>
           </div>
 
+          <!-- Skin tone -->
+          <div>
+            <div class="avatar-section-label">Skin</div>
+            <div class="avatar-option-row" style="flex-wrap:wrap; gap:5px">
+              ${SKIN_TONES.map(s => `
+                <button class="avatar-color-btn ${(av.skinColor||'#d4a574')===s.hex?'selected':''}"
+                  title="${s.label}"
+                  style="background:${s.hex}; width:26px; height:26px; border-radius:50%; border:2px solid ${(av.skinColor||'#d4a574')===s.hex?'var(--gold-bright)':'rgba(255,255,255,0.15)'}"
+                  onclick="G.avatar.skinColor='${s.hex}'; updateAvatarPreview(); this.closest('.avatar-option-row').querySelectorAll('.avatar-color-btn').forEach(b=>{b.classList.remove('selected');b.style.border='2px solid rgba(255,255,255,0.15)'}); this.classList.add('selected'); this.style.border='2px solid var(--gold-bright)'">
+                </button>`).join('')}
+            </div>
+          </div>
+
           <!-- Silhouette -->
           <div>
             <div class="avatar-section-label">Bearing</div>
@@ -4501,6 +4667,37 @@ function showAvatarBuilder() {
                   <svg viewBox="0 0 100 150" width="40" height="40" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
                     ${sil.svg(av.robe)}
                   </svg>
+                </button>`).join('')}
+            </div>
+          </div>
+
+          <!-- Hair style -->
+          <div>
+            <div class="avatar-section-label">Hair Style</div>
+            <div class="avatar-option-row" style="flex-wrap:wrap; gap:5px">
+              ${Object.entries(AVATAR_HAIRSTYLES).map(([key, hs]) => `
+                <button class="avatar-sil-btn ${(av.hair||'short_dark')===key?'selected':''}"
+                  title="${hs.label}"
+                  style="width:42px; height:42px; padding:2px; font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0; text-transform:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px"
+                  onclick="G.avatar.hair='${key}'; updateAvatarPreview(); this.closest('.avatar-option-row').querySelectorAll('.avatar-sil-btn').forEach(b=>b.classList.remove('selected')); this.classList.add('selected')">
+                  <svg viewBox="20 20 60 50" width="28" height="22" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+                    <circle cx="50" cy="38" r="16" fill="${av.skinColor||'#d4a574'}"/>
+                    ${hs.svg(av.hairColor || hs.color)}
+                  </svg>
+                  <span style="color:var(--text-dim); line-height:1">${hs.label}</span>
+                </button>`).join('')}
+            </div>
+          </div>
+
+          <!-- Hair colour -->
+          <div>
+            <div class="avatar-section-label">Hair Colour</div>
+            <div class="avatar-option-row" style="flex-wrap:wrap; gap:5px">
+              ${HAIR_COLORS.map(c => `
+                <button class="avatar-color-btn ${(av.hairColor||'#2a1508')===c.hex?'selected':''}"
+                  title="${c.label}"
+                  style="background:${c.hex}; border:2px solid ${(av.hairColor||'#2a1508')===c.hex?'var(--gold-bright)':'var(--border-bright)'}"
+                  onclick="G.avatar.hairColor='${c.hex}'; updateAvatarPreview(); this.closest('.avatar-option-row').querySelectorAll('.avatar-color-btn').forEach(b=>{b.classList.remove('selected');b.style.border='2px solid var(--border-bright)'}); this.classList.add('selected'); this.style.border='2px solid var(--gold-bright)'">
                 </button>`).join('')}
             </div>
           </div>
@@ -4544,14 +4741,14 @@ function showAvatarBuilder() {
 
 function updateAvatarPreview() {
   const prev = document.getElementById('avatar-svg-preview');
-  const silLabel = document.querySelector('.avatar-preview-wrap div:last-child');
   if (prev) prev.innerHTML = buildAvatarSVG(G.avatar, 120);
-  // Update the subtitle label too
   const wrap = document.querySelector('.avatar-preview-wrap');
   if (wrap) {
     const sub = wrap.querySelector('div:last-child');
     if (sub && sub !== document.getElementById('avatar-name-preview')) {
-      sub.textContent = `${AVATAR_SILHOUETTES[G.avatar.silhouette].label} · ${AVATAR_ACCESSORIES[G.avatar.accessory].label}`;
+      const hairKey = G.avatar.hair || 'short_dark';
+      const hairLabel = (AVATAR_HAIRSTYLES[hairKey] || AVATAR_HAIRSTYLES.short_dark).label;
+      sub.textContent = `${AVATAR_SILHOUETTES[G.avatar.silhouette].label} · ${hairLabel} · ${AVATAR_ACCESSORIES[G.avatar.accessory].label}`;
     }
   }
 }
