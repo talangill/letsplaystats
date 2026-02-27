@@ -5819,7 +5819,7 @@ function tsShowRound(idx) {
   if (barEl) { barEl.style.width = '100%'; barEl.className = 'ts-timer-fill'; }
   clearInterval(window._tsTimer);
   window._tsTimer = setInterval(() => {
-    pct -= 100 / 80; // 8s at 100ms ticks
+    pct -= 100 / 80; // 15s at 100ms ticks
     const bar = document.getElementById('ts-bar');
     if (bar) {
       bar.style.width = Math.max(0, pct) + '%';
