@@ -568,13 +568,345 @@ h1.game-title {
 }
 .shake { animation: shake 0.4s ease; }
 
-.quest-map {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px; margin-top: 1.2rem;
+/* ═══════════════════════════════════════════════════
+   WORLD MAP STYLES
+═══════════════════════════════════════════════════ */
+.world-map-wrap {
+  position: relative;
+  width: 100%;
+  background: #0d1a12;
+  border: 2px solid var(--border-bright);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
 }
-@media(max-width:480px){ .quest-map { grid-template-columns: 1fr; } }
+.world-map-svg {
+  display: block; width: 100%;
+  height: auto;
+}
+.map-region {
+  cursor: pointer;
+  transition: filter 0.25s;
+}
+.map-region:hover { filter: brightness(1.4) drop-shadow(0 0 6px rgba(212,168,32,0.6)); }
+.map-region.completed { filter: brightness(0.8) saturate(0.6); }
+.map-region.suggested { filter: brightness(1.2) drop-shadow(0 0 8px rgba(212,168,32,0.8)); }
+.map-region.locked { cursor: not-allowed; filter: brightness(0.5) grayscale(0.7); }
 
+.map-tooltip {
+  position: absolute; pointer-events: none;
+  background: rgba(8,6,8,0.95);
+  border: 1px solid var(--gold-dim);
+  border-radius: 4px;
+  padding: 0.5rem 0.8rem;
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  z-index: 50;
+  transform: translate(-50%, -110%);
+  display: none;
+}
+.map-tooltip.visible { display: block; }
+.map-tooltip-sub { font-family: 'Crimson Pro', serif; font-size: 0.8rem; color: var(--text-dim); font-style: italic; letter-spacing: 0; display: block; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════════
+   MINI-GAMES SECTION
+═══════════════════════════════════════════════════ */
+.minigames-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+@media(max-width:720px){ .minigames-strip { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width:480px){ .minigames-strip { grid-template-columns: 1fr 1fr; } }
+
+.minigame-card {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative; overflow: hidden;
+}
+.minigame-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--mg-color, rgba(139,92,246,0.15)) 0%, transparent 70%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.minigame-card:hover { transform: translateY(-3px); border-color: var(--mg-border, var(--rune)); }
+.minigame-card:hover::before { opacity: 1; }
+.mg-icon { font-size: 2.2rem; display: block; margin-bottom: 0.4rem; }
+.mg-name {
+  font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold-bright); margin-bottom: 0.25rem;
+}
+.mg-desc { font-size: 0.78rem; color: var(--text-dim); font-style: italic; line-height: 1.4; }
+.mg-badge {
+  font-family: 'Cinzel', serif; font-size: 0.6rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-top: 0.4rem; display: block;
+}
+
+/* ═══════════════════════════════════════════════════
+   MINI-GAME OVERLAY
+═══════════════════════════════════════════════════ */
+.mg-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(4,2,6,0.92);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.25s ease;
+  padding: 16px;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.mg-panel {
+  background: var(--surface);
+  border: 2px solid var(--border-bright);
+  border-radius: 8px;
+  max-width: 600px; width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 1.8rem;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.mg-close {
+  position: absolute; top: 12px; right: 14px;
+  background: transparent; border: none;
+  color: var(--text-muted); font-size: 1.2rem;
+  cursor: pointer; transition: color 0.2s;
+}
+.mg-close:hover { color: var(--gold); }
+.mg-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  color: var(--gold-bright);
+  margin-bottom: 0.3rem;
+}
+.mg-subtitle {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 1.2rem;
+}
+.mg-score-display {
+  font-family: 'Cinzel', serif; font-size: 0.75rem;
+  letter-spacing: 0.1em; color: var(--gold);
+  text-align: right; margin-bottom: 0.8rem;
+}
+.mg-arena {
+  min-height: 200px;
+  position: relative;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.mg-feedback {
+  font-family: 'Cinzel', serif; font-size: 0.8rem;
+  text-align: center; min-height: 24px;
+  margin: 0.6rem 0;
+  transition: all 0.3s;
+}
+.mg-feedback.correct { color: var(--sage-bright); }
+.mg-feedback.wrong { color: var(--blood); }
+
+/* GAME 1 — Catch the P-Values */
+#pval-field {
+  width: 100%; height: 220px;
+  position: relative; overflow: hidden;
+  cursor: crosshair;
+}
+.pval-bubble {
+  position: absolute;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+  user-select: none;
+  border: 2px solid transparent;
+}
+.pval-bubble:hover { transform: scale(1.1); }
+.pval-bubble.sig,
+.pval-bubble.nonsig,
+.pval-bubble.borderline {
+  background: radial-gradient(circle, rgba(139,92,246,0.22), rgba(139,92,246,0.06));
+  border-color: var(--rune-bright);
+  color: var(--text);
+}
+/* Reveal colour AFTER click */
+.pval-bubble.revealed-sig   { border-color: var(--sage-bright) !important; color: var(--sage-bright) !important; background: radial-gradient(circle, rgba(45,212,116,0.3), rgba(45,212,116,0.08)) !important; }
+.pval-bubble.revealed-wrong { border-color: var(--blood) !important; color: var(--blood) !important; background: radial-gradient(circle, rgba(192,24,44,0.3), rgba(192,24,44,0.08)) !important; }
+
+/* GAME 2 — Sampling Sorter */
+.sort-target-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.sort-bucket {
+  flex: 1; min-width: 100px;
+  border: 2px dashed var(--border-bright);
+  border-radius: 6px; padding: 8px;
+  min-height: 70px;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.sort-bucket.dragover {
+  border-color: var(--gold);
+  background: rgba(212,168,32,0.08);
+}
+.sort-bucket.correct-drop { border-color: var(--sage-bright); background: rgba(45,212,116,0.07); }
+.sort-bucket.wrong-drop { border-color: var(--blood); background: rgba(192,24,44,0.07); }
+.sort-bucket-label {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--rune-bright); margin-bottom: 6px; display: block;
+}
+.sort-villager {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 4px; padding: 5px 9px;
+  font-size: 0.82rem; cursor: grab;
+  transition: all 0.2s; margin: 3px;
+  color: var(--text); user-select: none;
+}
+.sort-villager:active { cursor: grabbing; opacity: 0.7; }
+.sort-villager.dragging { opacity: 0.4; }
+.villager-pool {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  min-height: 50px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px; background: rgba(255,255,255,0.02);
+}
+.type-banner {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1rem, 4vw, 1.8rem);
+  color: var(--ember);
+  text-align: center;
+  padding: 0.6rem;
+  animation: typeFlash 0.5s ease;
+}
+@keyframes typeFlash { 0%{opacity:0;transform:scale(0.85);} 100%{opacity:1;transform:scale(1);} }
+
+/* GAME 3 — Graph Matcher */
+.graph-hand {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center; margin: 0.6rem 0;
+}
+.graph-card {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 6px; padding: 0.5rem;
+  cursor: pointer; text-align: center;
+  transition: all 0.2s; width: 110px;
+}
+.graph-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+.graph-card.selected { border-color: var(--rune-bright); background: rgba(139,92,246,0.1); }
+.graph-card.correct-pick { border-color: var(--sage-bright); background: rgba(45,212,116,0.1); }
+.graph-card.wrong-pick { border-color: var(--blood); background: rgba(192,24,44,0.1); }
+.graph-card svg { display: block; margin: 0 auto 4px; }
+.graph-card-label { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.05em; color: var(--text-dim); text-transform: uppercase; }
+.data-scenario {
+  background: var(--surface2); border: 1px solid var(--border-bright);
+  border-radius: 6px; padding: 0.8rem 1rem;
+  margin-bottom: 0.8rem; font-size: 0.9rem;
+  line-height: 1.65; color: var(--text);
+}
+.data-scenario strong { color: var(--gold-bright); }
+
+/* GAME 4 — Shoot the Test */
+.test-targets {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center;
+  padding: 1rem;
+}
+.test-target {
+  padding: 0.55rem 1rem;
+  border: 2px solid var(--border-bright);
+  border-radius: 6px;
+  background: var(--surface2);
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: crosshair; color: var(--text);
+  transition: all 0.15s;
+  user-select: none; position: relative;
+  overflow: hidden;
+}
+.test-target::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(192,24,44,0.0) 0%, transparent 70%);
+  transition: background 0.15s;
+}
+.test-target:hover { border-color: var(--gold); color: var(--gold-bright); transform: scale(1.04); }
+.test-target.correct-shot {
+  border-color: var(--sage-bright); background: rgba(45,212,116,0.15);
+  color: var(--sage-bright); animation: shotFlash 0.4s ease;
+}
+.test-target.wrong-shot {
+  border-color: var(--blood); background: rgba(192,24,44,0.15);
+  color: var(--blood); animation: shotFlash 0.4s ease;
+}
+@keyframes shotFlash { 0%{transform:scale(1.15);} 100%{transform:scale(1);} }
+.scenario-card {
+  background: var(--surface2); border: 1px solid var(--border-bright);
+  border-radius: 6px; padding: 0.9rem 1.1rem;
+  margin-bottom: 0.8rem; font-size: 0.92rem; line-height: 1.65;
+  color: var(--text); min-height: 72px;
+  animation: scenarioIn 0.35s ease;
+}
+@keyframes scenarioIn { from{opacity:0;transform:translateX(-8px);} to{opacity:1;transform:translateX(0);} }
+.scenario-card strong { color: var(--gold-bright); }
+.scenario-card em { color: var(--ember); }
+.ts-timer-bar {
+  height: 5px; background: var(--surface2);
+  border-radius: 3px; overflow: hidden; margin-bottom: 0.8rem;
+}
+.ts-timer-fill {
+  height: 100%; background: linear-gradient(90deg, var(--sage-bright), var(--gold));
+  border-radius: 3px; transition: width 0.1s linear;
+}
+.ts-timer-fill.urgent { background: linear-gradient(90deg, var(--ember), var(--blood)); }
+
+/* GAME 5 — Validity Lab */
+.validity-card {
+  background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 6px; padding: 0.55rem 0.8rem;
+  font-size: 0.82rem; color: var(--text);
+  cursor: pointer; transition: all 0.2s;
+  line-height: 1.4; margin: 4px;
+  display: inline-block; user-select: none;
+}
+.validity-card:hover { border-color: var(--gold); color: var(--gold-bright); transform: translateY(-2px); }
+.validity-card.selected { border-color: var(--rune-bright); background: rgba(139,92,246,0.12); }
+.validity-card.correct-val { border-color: var(--sage-bright); background: rgba(45,212,116,0.1); color: var(--sage-bright); }
+.validity-card.wrong-val { border-color: var(--blood); background: rgba(192,24,44,0.1); color: var(--blood); }
+.validity-buckets {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-bottom: 10px;
+}
+@media(max-width:400px) { .validity-buckets { grid-template-columns: 1fr; } }
+.validity-bucket {
+  border: 2px dashed var(--border-bright);
+  border-radius: 6px; padding: 8px; min-height: 60px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.validity-bucket.vdragover { border-color: var(--gold); background: rgba(212,168,32,0.06); }
+.validity-bucket.vcorrect { border-color: var(--sage-bright); background: rgba(45,212,116,0.06); }
+.validity-bucket.vwrong { border-color: var(--blood); background: rgba(192,24,44,0.06); }
+.vbucket-label {
+  font-family: 'Cinzel', serif; font-size: 0.6rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 5px; display: block;
+}
+.vcard-pool { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; min-height: 44px; border: 1px solid var(--border); border-radius: 4px; background: rgba(255,255,255,0.01); }
 .quest-node {
   background: var(--surface2);
   border: 2px solid var(--border);
@@ -583,31 +915,13 @@ h1.game-title {
   transition: all 0.25s ease; position: relative;
   overflow: hidden;
 }
-.quest-node::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 0%, var(--node-color, rgba(139,92,246,0.12)) 0%, transparent 70%);
-  opacity: 0; transition: opacity 0.3s;
-}
 .quest-node:hover:not(.locked) { border-color: var(--gold); transform: translateY(-3px); }
-.quest-node:hover:not(.locked)::before { opacity: 1; }
-
-.quest-node.suggested {
-  border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(212,168,32,0.25);
-}
-.quest-node.suggested .node-level {
-  color: var(--gold-bright);
-}
-
 .quest-node.locked { opacity: 0.4; cursor: not-allowed; }
 .quest-node.completed { border-color: var(--sage); }
 .quest-node.completed::after {
-  content: '✓';
-  position: absolute; top: 8px; right: 10px;
+  content: '✓'; position: absolute; top: 8px; right: 10px;
   color: var(--sage-bright); font-size: 1rem;
 }
-
 .node-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
 .node-chapter {
   font-family: 'Cinzel', serif; font-size: 0.6rem;
@@ -616,14 +930,12 @@ h1.game-title {
 }
 .node-name {
   font-family: 'Cinzel', serif; font-size: 0.82rem;
-  color: var(--gold-bright); font-weight: 700;
-  margin-bottom: 0.25rem;
+  color: var(--gold-bright); font-weight: 700; margin-bottom: 0.25rem;
 }
 .node-desc { font-size: 0.82rem; color: var(--text-dim); font-style: italic; }
 .node-level {
   font-family: 'Cinzel', serif; font-size: 0.65rem;
-  color: var(--rune-bright); margin-top: 0.5rem;
-  letter-spacing: 0.08em;
+  color: var(--rune-bright); margin-top: 0.5rem; letter-spacing: 0.08em;
 }
 
 .death-screen {
@@ -1586,7 +1898,7 @@ let pendingLevelUpCallback = null;
 const XP_PER_LEVEL = 100;
 
 // Quest order for sequential unlock logic
-const QUEST_ORDER = ['q0','q1','q2','q3','q3b','q4'];
+const QUEST_ORDER = ['q0','q1','q2','q3','q3b','q4','q5'];
 
 const CLASSES = {
   wizard: {
@@ -1672,22 +1984,28 @@ const QUESTS = {
     bossSub: 'It claims one grand result tells you everything',
     scenes: ['q4_intro','q4_anova','q4_welch','q4_posthoc'],
     boss: 'boss_q4'
+  },
+  q5: {
+    id: 'q5', name: "The Grand Inquest", icon: '⚖️',
+    chapter: 'Capstone', topic: 'Full Research Audit',
+    bossName: 'The Research Director',
+    bossIcon: '🎭',
+    bossSub: 'She has defended every bad decision in this institution for twenty years',
+    scenes: ['q5_intro'],
+    boss: 'boss_q5',
+    capstone: true
   }
 };
 
 // ══════════════════════════════════════════════════════
-// QUEST UNLOCK LOGIC (FIX 2)
-// A quest is unlocked if:
-//   - it's quest 1 (always available), OR
-//   - the previous quest in QUEST_ORDER has been completed
-// This replaces the brittle XP-level gate that could fail
-// if a player took damage and missed XP pickups.
+// QUEST UNLOCK LOGIC
+// All quests are freely available. Only the capstone (q5)
+// requires all other quests to be completed first.
 // ══════════════════════════════════════════════════════
 function isQuestLocked(questId) {
-  const idx = QUEST_ORDER.indexOf(questId);
-  if (idx === 0) return false; // Quest 1 always available
-  const prevQuestId = QUEST_ORDER[idx - 1];
-  return !G.questsDone.includes(prevQuestId);
+  if (questId !== 'q5') return false; // every quest except capstone is always open
+  const prereqs = ['q0','q1','q2','q3','q3b','q4'];
+  return !prereqs.every(id => G.questsDone.includes(id));
 }
 
 // ══════════════════════════════════════════════════════
@@ -3006,12 +3324,140 @@ const SCENES = {
     choices: [{ text: '↩ Return and interpret correctly', next: 'q4_welch' }]
   },
 
-  q4_posthoc: {
-    icon: '🗿', chapter: 'Quest IV · ANOVA',
-    title: 'The Omnibus Concierge',
-    narrative: `<p>You have mastered the ratings war. But at the entrance to the Grand Council Hall stands the <strong>Omnibus Concierge</strong> — an ancient stone figure who has guarded the doors for centuries, turning away any analyst who mistakes an overall F-test for a complete answer.</p>
-    <div class="box box-lore"><span class="box-title">⚔ Final Boss Battle</span>The Concierge will present new hospitality scenarios across three phases. ANOVA type → Levene's interpretation → post-hoc logic. The clock ticks. Every wrong answer costs HP.</div>`,
-    choices: [{ text: '🗿 Face the Omnibus Concierge', next: 'BOSS_q4', boss: true }]
+  q5_intro: {
+    bg: 'archive',
+    icon: '⚖️', chapter: 'Capstone · The Grand Inquest',
+    title: 'The Audit',
+    narrative: `<p>A sealed letter arrives from the Order's High Council. Three words on the outside: <em>"Fix this. Now."</em></p>
+    <p>Inside: a 40-page research report from the Sovereign Crown Hotel Group — six properties, a five-year guest satisfaction programme, and a final board presentation in 48 hours. The report is riddled with errors. Someone used convenience sampling and called it representative. Someone ran a t-test on ordinal data. Someone reported p = 0.049 as "highly significant."</p>
+    <p class="npc-speech">"The Research Director commissioned this. She has defended every decision in it. She is standing outside this door right now, and she is not happy you are here."</p>
+    <p>The Archive Master drops the report on the desk. <em>"You have read every scroll in this Archive. Sampling, measurement, hypothesis testing, charts, t-tests, chi-square, ANOVA. All of it. This is where it counts."</em></p>
+    <div class="box box-danger"><span class="box-title">⚖ Capstone Quest</span>This audit weaves together everything. Four cascading crises — each one revealing another error in the Crown Group's research. Dismantle every bad decision. Then face the Research Director herself.</div>`,
+    choices: [{ text: '⚖️ Begin the Audit — enter the Board Room', next: 'q5_sampling' }]
+  },
+
+  q5_sampling: {
+    bg: 'archive',
+    icon: '🏘️', chapter: 'Capstone · Crisis I',
+    title: 'The Sample That Was Not a Sample',
+    narrative: `<p>You open the methods section. Your eyes stop at line one.</p>
+    <p><em>"Data were collected from guests who visited the hotel lobby between 10am and 2pm on weekdays over a two-week period in August."</em></p>
+    <p>The report calls this a <strong>"representative random sample of Crown Group guests."</strong></p>
+    <p class="npc-speech">"The Director says: 'We got 847 responses. Surely that is enough? Large samples are always representative.'"</p>
+    <div class="box box-lore"><span class="box-title">🏘️ The Evidence</span>Crown Group guests include: business travellers (mostly weekday mornings/evenings), leisure guests (mostly weekends), event guests (evenings), and international guests (spread evenly). August is peak leisure season, mid-week mornings are the quietest period for business guests.</div>`,
+    hints: {
+      formula: 'Sample size and representativeness are separate things. A biased sample of 100,000 is still biased.',
+      assumption: 'Who is systematically excluded by this sampling window? Business travellers, weekend leisure guests, evening event guests.',
+      interpretation: 'The sampling method is convenience (whoever was in the lobby), not random. And the timing creates systematic bias against multiple guest segments.'
+    },
+    choices: [
+      { text: 'The Director is right. 847 responses is a large and therefore representative sample regardless of how they were collected.', next: 'q5_sampling_wrong', damage: 20, feedback: 'Incorrect. Sample size and representativeness are entirely separate. 847 biased responses is still 847 biased responses. The timing and method systematically exclude most guest segments.', correct: false },
+      { text: 'This is convenience sampling, not random sampling — and the 10am–2pm weekday window systematically excludes business travellers, weekend guests, and evening visitors. The sample cannot represent all Crown Group guests.', next: 'q5_measurement', xp: 30, feedback: 'Exactly right. Large numbers do not cancel out systematic bias. The Director has confused sample size with sample quality — a foundational error.', correct: true },
+      { text: 'The sampling is fine because it was conducted over two weeks and at multiple properties, which introduces enough variation to make it representative.', next: 'q5_sampling_wrong', damage: 20, feedback: 'Duration and coverage do not fix a biased sampling window. Two weeks of 10am–2pm weekday data is still two weeks of 10am–2pm weekday data.', correct: false }
+    ]
+  },
+
+  q5_sampling_wrong: {
+    bg: 'archive',
+    icon: '💀', chapter: 'Capstone · Crisis I',
+    title: 'The Director Smiles',
+    narrative: `<p>The Research Director opens the door, smiling. <em>"I see you agree with my methods. Perhaps we can move on?"</em></p>
+    <p>The Archive Master gives you a sharp look.</p>`,
+    choices: [{ text: '↩ Re-examine the sampling section', next: 'q5_sampling' }]
+  },
+
+  q5_measurement: {
+    bg: 'archive',
+    icon: '📏', chapter: 'Capstone · Crisis II',
+    title: 'The Average That Should Not Exist',
+    narrative: `<p>Page 12. Results section. A table catches your eye:</p>
+    <div class="box box-gold"><span class="box-title">Table 3 — Guest Satisfaction by Room Type</span>
+    Room Type coded as: 1 = Standard, 2 = Deluxe, 3 = Suite, 4 = Executive<br>
+    <strong>Mean Room Type: 2.34 (SD = 0.87)</strong><br>
+    Independent samples t-test: Room Type vs. Overall Satisfaction, t(845) = 3.12, p = 0.002</div>
+    <p class="npc-speech">"The Director says: 'The mean room type of 2.34 shows guests stayed in slightly above-standard accommodation on average. The t-test confirms room type drives satisfaction. This is our key finding.'"</p>`,
+    hints: {
+      formula: 'What measurement level is room type? What does a mean require?',
+      assumption: 'Nominal data can only be counted — not averaged. Running a t-test requires at least interval-level data on both variables.',
+      interpretation: '"Average room type of 2.34" is as meaningful as "average nationality." The t-test is invalid.'
+    },
+    choices: [
+      { text: 'Room type is nominal — it is a label, not a quantity. Calculating a mean or running a t-test on it is meaningless. The correct approach is a chi-square test or frequency comparison.', next: 'q5_pvalue', xp: 30, feedback: 'Correct. The numbers 1, 2, 3, 4 are arbitrary codes. "Mean room type 2.34" has no interpretation. A chi-square test would examine whether satisfaction levels differ across room type categories.', correct: true },
+      { text: 'Room type can be treated as interval data since the categories have a natural order from Standard to Executive. The mean and t-test are therefore valid.', next: 'q5_measurement_wrong', damage: 20, feedback: 'Ordinal data has order but unequal gaps — and room type here is nominal, not even ordinal. Even if it were ordinal, arithmetic means are invalid. The intervals between Standard, Deluxe, Suite, and Executive are not equal.', correct: false },
+      { text: 'The t-test is valid as long as the satisfaction variable is continuous. What type room type is coded as does not affect the t-test assumptions.', next: 'q5_measurement_wrong', damage: 20, feedback: 'Both variables in an independent samples t-test must meet the measurement assumptions. Room type as a grouping variable must at least be categorical at the nominal level — which means you compare categories, not calculate a mean from the codes.', correct: false }
+    ]
+  },
+
+  q5_measurement_wrong: {
+    bg: 'archive',
+    icon: '💀', chapter: 'Capstone · Crisis II',
+    title: 'The Director Nods Vigorously',
+    narrative: `<p><em>"Exactly. My analysts are thorough."</em> The Director gestures toward the exit. The Archive Master clears her throat pointedly.</p>`,
+    choices: [{ text: '↩ Re-examine the measurement section', next: 'q5_measurement' }]
+  },
+
+  q5_pvalue: {
+    bg: 'archive',
+    icon: '🎯', chapter: 'Capstone · Crisis III',
+    title: 'The P-Value That Proved Too Much',
+    narrative: `<p>Page 23. Executive Summary. The centrepiece finding:</p>
+    <div class="box box-danger"><span class="box-title">Key Finding — Board Presentation Slide 4</span>
+    "Our new 'Service Excellence' training programme <strong>significantly improved guest satisfaction scores</strong> (p = 0.049). This is <strong>highly significant proof</strong> that the programme works. We recommend immediate rollout to all 847 properties at a cost of £2.3 million."</div>
+    <p class="npc-speech">"The Director: 'p is less than 0.05. That is the gold standard. The board will approve this in the morning.'"</p>
+    <p>You notice the footnote: <em>"Pre-registration was not conducted. Analysis was run fourteen times across different sub-groups before this result was found."</em></p>`,
+    hints: {
+      formula: 'p = 0.049 with 14 tests run: if each test has α = 0.05, family-wise error rate ≈ 1 - (0.95)^14 ≈ 51%.',
+      assumption: '"Highly significant" is not a thing. p < 0.05 is one threshold. Effect size determines practical significance.',
+      interpretation: 'Running 14 tests and reporting the one that hits p < 0.05 is p-hacking. The result is almost certainly a false positive.'
+    },
+    choices: [
+      { text: 'p = 0.049 is the weakest possible significant result. More critically: running 14 tests and reporting only the one that hit p < 0.05 is p-hacking. With 14 tests at α = 0.05, there is a ~51% chance of at least one false positive. This finding cannot justify a £2.3m rollout.', next: 'q5_graph', xp: 40, feedback: 'Precisely right on all counts. p-hacking, inflated family-wise error rate, conflating statistical with practical significance, and no pre-registration — this finding is almost worthless as evidence. The Director goes pale.', correct: true },
+      { text: 'The result is significant at p < 0.05, which is the agreed standard. Running multiple analyses is normal exploratory practice. The board should approve the rollout.', next: 'q5_pvalue_wrong', damage: 25, feedback: 'Running 14 tests without correction and reporting only the significant one is not "exploratory practice" — it is p-hacking. The probability of finding at least one false positive across 14 tests at α = 0.05 is over 50%.', correct: false },
+      { text: 'The problem is only that they called it "highly significant." p = 0.049 is borderline significant. If they correct the language to "marginally significant," the finding can proceed to the board.', next: 'q5_pvalue_wrong', damage: 20, feedback: 'The language is a minor issue compared to the multiple testing problem. Whether you call it "highly" or "marginally" significant, a result from 14 exploratory tests with no correction has an inflated false positive rate that makes the finding unreliable.', correct: false }
+    ]
+  },
+
+  q5_pvalue_wrong: {
+    bg: 'archive',
+    icon: '💀', chapter: 'Capstone · Crisis III',
+    title: 'The Board Approves',
+    narrative: `<p>The Director reaches for her phone. The Archive Master stops her.</p>
+    <p><em>"Before you call the board — are you certain?"</em></p>`,
+    choices: [{ text: '↩ Re-examine the p-value section', next: 'q5_pvalue' }]
+  },
+
+  q5_graph: {
+    bg: 'archive',
+    icon: '📊', chapter: 'Capstone · Crisis IV',
+    title: 'The Chart That Lied',
+    narrative: `<p>The final crisis. The board presentation deck. Slide 7 shows a dramatic bar chart — satisfaction scores soaring across all six properties, with the caption: <em>"Guest satisfaction has increased every year for five years."</em></p>
+    <p>You open the raw data file. The y-axis on the chart starts at 6.8. The scores range from 6.9 to 7.3 across all five years.</p>
+    <p class="npc-speech">"The Director: 'It clearly shows growth. The visual impact is important for a board presentation.'"</p>
+    <div class="box box-lore"><span class="box-title">The Numbers</span>Year 1: 6.91 · Year 2: 7.02 · Year 3: 7.08 · Year 4: 7.19 · Year 5: 7.31<br>Scale: 0–10. The chart y-axis runs from 6.8 to 7.4.</div>`,
+    choices: [
+      { text: 'A truncated y-axis makes a 0.4-point change over 5 years look like a dramatic rise. The honest chart should start at 0 or clearly label the truncation, and the actual change should be contextualised — a 0.4 increase on a 10-point scale may not be practically meaningful.', next: 'q5_boss_intro', xp: 30, feedback: 'Correct. Truncated axes are a classic visual manipulation — they exaggerate small changes. The board deserves to see the true scale of change before approving major investment decisions.', correct: true },
+      { text: 'The chart is fine — all bar charts focus on the area of interest. Starting at 6.8 makes the relevant variation visible, which is good data visualisation practice.', next: 'q5_graph_wrong', damage: 20, feedback: 'There is a difference between zooming in for clarity and manipulating the visual to mislead. A y-axis starting at 6.8 with no label makes a 0.4 change appear to be a 500% improvement visually. The board cannot make an informed decision from this.', correct: false },
+      { text: 'The chart should be replaced with a pie chart to show the proportion of satisfied guests across properties.', next: 'q5_graph_wrong', damage: 10, feedback: 'A pie chart shows proportions of a whole — it cannot show change over time. A line graph with an honest y-axis (starting at 0 or clearly marked as truncated) is the appropriate choice for this time-series data.', correct: false }
+    ]
+  },
+
+  q5_graph_wrong: {
+    bg: 'archive',
+    icon: '💀', chapter: 'Capstone · Crisis IV',
+    title: 'The Director Approves the Deck',
+    narrative: `<p>The Archive Master sighs quietly. <em>"Look again. Look at the numbers."</em></p>`,
+    choices: [{ text: '↩ Re-examine the chart', next: 'q5_graph' }]
+  },
+
+  q5_boss_intro: {
+    bg: 'archive',
+    icon: '🎭', chapter: 'Capstone · Final Confrontation',
+    title: 'The Research Director',
+    narrative: `<p>The door opens. The Research Director walks in. She has a copy of the audit report in one hand and a legal pad in the other.</p>
+    <p class="npc-speech">"You found four errors. I will grant you that. But let me be clear: this research programme has run for five years, involved 847 guests, and cost this company significant money. You are not going to walk in here and tell my board it is worthless."</p>
+    <p>She sits down. <em>"I have three objections. Answer them correctly and I will accept the audit."</em></p>
+    <div class="box box-danger"><span class="box-title">🎭 Final Boss Battle</span>The Research Director will challenge you on the four crises you uncovered. Three phases. Everything you have learned in the Archive is on the line. The board is watching.</div>`,
+    choices: [{ text: '🎭 Face the Research Director', next: 'BOSS_q5', boss: true }]
   }
 };
 
@@ -3533,6 +3979,49 @@ const BOSS_BATTLES = {
       }
     ]
   }
+  ,boss_q5: {
+    name: 'The Research Director',
+    icon: '🎭',
+    sub: 'She has defended every bad decision in this institution for twenty years',
+    timePerPhase: 50,
+    phases: [
+      {
+        label: 'Defend the Sampling Critique',
+        narrative: `<p>The Director slides a document across the table.</p>
+        <p><em>"You called our sample biased. But we had <strong>847 responses</strong>. Every major survey I have ever read uses far fewer. Are you seriously arguing that 847 people is not enough?"</em></p>
+        <p><span style="color:var(--blood)">"Tell me why I am wrong — or admit that our sample is fine."</span></p>`,
+        choices: [
+          { text: "Sample size and representativeness are different things. 847 biased responses cannot represent Crown Group guests as a whole because the 10am–2pm weekday window systematically excludes business travellers, weekend guests, and evening visitors — entire guest segments never had a chance of being selected.", correct: true, feedback: "Correct. The Director opens her notepad and writes something. She nods, slowly. 'I accept that point. What else?'" },
+          { text: "847 is a large enough sample to be statistically representative by the law of large numbers, regardless of how and when data were collected.", correct: false, feedback: "The law of large numbers applies to random sampling, not convenience sampling. A large convenience sample is still a convenience sample — it converges on the biased population it actually sampled, not the target population." },
+          { text: "The sample is biased, but the biases may cancel each other out across properties — making the aggregate finding trustworthy even if individual segments are not.", correct: false, feedback: "Biases do not cancel out unless they are randomly distributed — which requires random sampling. Systematic exclusion of specific guest segments at all six properties compounds rather than cancels." }
+        ]
+      },
+      {
+        label: 'Defend the p-Value Critique',
+        narrative: `<p>The Director's second challenge is faster, sharper.</p>
+        <p><em>"You attacked our training programme finding. p = 0.049. That is statistically significant by the standard your own textbooks define. Are you saying the statistical standard is wrong?"</em></p>
+        <p><span style="color:var(--blood)">"And do not bring up the fourteen analyses — exploratory work is normal science."</span></p>`,
+        choices: [
+          { text: "The standard is not wrong — but the process violated it. α = 0.05 means a 5% false positive rate per test, assuming one pre-specified test. Running fourteen tests gives a family-wise error rate over 50%. The threshold only protects you if you use it once, on a pre-specified hypothesis.", correct: true, feedback: "The Director sets down her pen. 'That is a fair point about multiple testing. I had not considered the family-wise rate.' She circles something on her notepad." },
+          { text: "p = 0.049 is so close to the threshold that it is essentially meaningless — any result this weak should be dismissed regardless of how many tests were run.", correct: false, feedback: "p = 0.049 from a single pre-specified test would be legitimate, if weak, evidence. The problem is not the threshold — it is the multiple testing without correction. The Director correctly pushes back on dismissing p-values categorically." },
+          { text: "The real issue is that p = 0.049 lacks an effect size. Without Cohen's d, the result is uninterpretable and should be removed from the board presentation entirely.", correct: false, feedback: "Effect sizes are important, but the primary flaw here is multiple testing and inflated false positive rates — not missing effect sizes. Fixing the language without addressing the p-hacking problem still leaves a likely false positive." }
+        ]
+      },
+      {
+        label: 'The Final Concession',
+        narrative: `<p>The Research Director sets down her legal pad. A long pause.</p>
+        <p><em>"You have identified real problems. The sampling is biased. The room type analysis is invalid. The training programme result is unreliable. The chart is misleading."</em></p>
+        <p>She looks up. <em>"But I have one final question. If I accept your audit — what do I tell the board tomorrow? That five years of research is worthless?"</em></p>
+        <p><span style="color:var(--blood)">"Give me something I can say. Something honest — and something that does not destroy the programme before it has a chance to be done properly."</span></p>`,
+        choices: [
+          { text: "Tell the board that the research programme identified important questions worth answering — but the methodology needs to be strengthened before results can be relied on. Recommend a properly designed replication: random sampling across all guest segments, pre-registered hypotheses, and appropriate statistical tests. That is not failure — that is good science.", correct: true, feedback: "The Research Director closes her notepad. She stands. 'That,' she says quietly, 'is what I should have said five years ago.' She extends her hand. The audit is accepted. The Archive Master smiles for the first time." },
+          { text: "Tell the board the research is invalid and the programme should be cancelled immediately pending a full investigation.", correct: false, feedback: "This overcorrects — the programme may have real merit, just poor methodology. Recommending cancellation without offering a path forward is not the goal of a research audit. It also gives the Director no constructive way forward." },
+          { text: "Tell the board that the findings are directionally correct and the methodology problems are minor technical issues that do not change the core conclusions.", correct: false, feedback: "This understates the severity. Convenience sampling, nominal data misuse, p-hacking, and a misleading chart are not minor technical issues — they mean the core conclusions cannot be trusted as stated. The board deserves the honest picture." }
+        ]
+      }
+    ]
+  }
+
   ,boss_q3b: {
     name: 'The Shapiro-Wilk Wraith',
     icon: '🌀',
@@ -4201,6 +4690,152 @@ function selectClass(classKey) {
   showMap();
 }
 
+// ══════════════════════════════════════════════════════
+// WORLD MAP DATA — positions of quest nodes on the SVG
+// ══════════════════════════════════════════════════════
+const MAP_NODES = {
+  q0:  { cx: 200, cy: 130, r: 28, label: 'The Archive', color: '#8b5cf6', terrain: 'tower' },
+  q1:  { cx: 105, cy: 220, r: 26, label: 'The Inn',    color: '#e8621a', terrain: 'inn' },
+  q2:  { cx: 320, cy: 200, r: 26, label: 'Banquet Hall', color: '#d4a820', terrain: 'hall' },
+  q3:  { cx: 145, cy: 320, r: 26, label: "Sommelier's Cellar", color: '#c0182c', terrain: 'cellar' },
+  q3b: { cx: 265, cy: 330, r: 25, label: 'Cursed Crypt', color: '#1a7a4a', terrain: 'crypt' },
+  q4:  { cx: 390, cy: 290, r: 30, label: 'Grand Hotel', color: '#a78bfa', terrain: 'castle' },
+  q5:  { cx: 250, cy: 415, r: 34, label: 'The Grand Inquest', color: '#f5c842', terrain: 'inquest' }
+};
+
+const TERRAIN_ICONS = {
+  tower: '🏛️', inn: '🏨', hall: '🍽️', cellar: '🍷', crypt: '📊', castle: '🏰'
+};
+
+function buildMapSVG() {
+  const W = 500, H = 460;
+  const nodes = MAP_NODES;
+
+  // Build path connections between quests
+  const paths = [
+    [nodes.q0, nodes.q1], [nodes.q0, nodes.q2],
+    [nodes.q1, nodes.q3], [nodes.q2, nodes.q4],
+    [nodes.q3, nodes.q3b], [nodes.q3b, nodes.q4],
+    // All roads lead to the Inquest
+    [nodes.q1, nodes.q5], [nodes.q3, nodes.q5],
+    [nodes.q3b, nodes.q5], [nodes.q4, nodes.q5], [nodes.q2, nodes.q5]
+  ];
+
+  const pathStr = paths.map(([a,b]) =>
+    `<line x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}"
+      stroke="rgba(74,56,96,0.6)" stroke-width="2.5" stroke-dasharray="6,4"/>`
+  ).join('');
+
+  // terrain details (decorative blobs)
+  const terrainBlobs = `
+    <ellipse cx="200" cy="230" rx="120" ry="60" fill="rgba(26,122,74,0.07)"/>
+    <ellipse cx="350" cy="160" rx="80" ry="45" fill="rgba(139,92,246,0.05)"/>
+    <ellipse cx="120" cy="340" rx="90" ry="35" fill="rgba(192,24,44,0.05)"/>
+    <!-- capstone glow platform -->
+    <ellipse cx="250" cy="420" rx="85" ry="22" fill="rgba(245,200,66,0.06)" stroke="rgba(245,200,66,0.12)" stroke-width="1"/>
+    <!-- mountains top right -->
+    <polygon points="410,60 430,25 450,60" fill="rgba(74,56,96,0.35)"/>
+    <polygon points="440,65 465,22 488,65" fill="rgba(74,56,96,0.28)"/>
+    <!-- forest bottom left -->
+    <circle cx="50" cy="320" r="18" fill="rgba(26,122,74,0.18)"/>
+    <circle cx="68" cy="310" r="14" fill="rgba(26,122,74,0.15)"/>
+    <circle cx="38" cy="305" r="12" fill="rgba(26,122,74,0.12)"/>
+    <!-- water top left -->
+    <ellipse cx="50" cy="80" rx="45" ry="22" fill="rgba(29,160,195,0.09)" stroke="rgba(29,160,195,0.18)" stroke-width="1"/>
+    <text x="50" y="83" text-anchor="middle" font-family="Crimson Pro,serif" font-size="8" fill="rgba(29,160,195,0.45)" font-style="italic">Null Sea</text>
+    <!-- title scroll top -->
+    <rect x="155" y="6" width="190" height="26" rx="3" fill="rgba(8,6,8,0.7)" stroke="rgba(74,56,96,0.5)" stroke-width="1"/>
+    <text x="250" y="24" text-anchor="middle" font-family="Cinzel Decorative,serif" font-size="10" fill="rgba(212,168,32,0.7)" letter-spacing="1">Kingdom of Statistica</text>
+  `;
+
+  const questEntries = Object.entries(QUESTS);
+  const nodesSVG = questEntries.map(([key, q]) => {
+    const n = nodes[key];
+    if (!n) return '';
+    const done = G.questsDone.includes(key);
+    const locked = isQuestLocked(key);
+    const isCapstone = !!q.capstone;
+    const cls = done ? 'completed' : (locked ? 'locked' : '');
+    const ringColor = done ? '#2dd474' : (locked ? 'rgba(74,56,96,0.4)' : (isCapstone ? '#f5c842' : n.color));
+    return `
+      <g class="map-region ${cls}"
+         data-quest="${key}"
+         data-locked="${locked}"
+         data-name="${q.name.replace(/"/g, '&quot;')}"
+         data-topic="${q.topic.replace(/"/g, '&quot;')}"
+         data-done="${done}">
+        ${isCapstone && !locked ? `
+          <circle cx="${n.cx}" cy="${n.cy}" r="${n.r+16}" fill="none" stroke="rgba(245,200,66,0.07)" stroke-width="2"/>
+          <circle cx="${n.cx}" cy="${n.cy}" r="${n.r+9}" fill="none" stroke="rgba(245,200,66,0.13)" stroke-width="1.5" stroke-dasharray="4,3"/>
+        ` : ''}
+        <circle cx="${n.cx}" cy="${n.cy}" r="${n.r}" fill="${locked?'rgba(6,4,8,0.9)':'rgba(8,6,8,0.78)'}" stroke="${ringColor}" stroke-width="${isCapstone?3:2.5}"/>
+        <text x="${n.cx}" y="${n.cy+2}" text-anchor="middle" dominant-baseline="middle" font-size="${n.r*0.78}">${locked ? '🔒' : q.icon}</text>
+        ${done ? `<text x="${n.cx+n.r-3}" y="${n.cy-n.r+7}" text-anchor="middle" font-size="11" fill="#2dd474">✓</text>` : ''}
+        <text x="${n.cx}" y="${n.cy+n.r+14}" text-anchor="middle" font-family="Cinzel,serif" font-size="${isCapstone?9:8}" fill="${done?'rgba(255,255,255,0.38)':(isCapstone?'rgba(245,200,66,0.88)':'rgba(212,168,32,0.82)')}" letter-spacing="0.4">${q.name}</text>
+        <text x="${n.cx}" y="${n.cy+n.r+25}" text-anchor="middle" font-family="Crimson Pro,serif" font-size="7.5" fill="${isCapstone?'rgba(245,200,66,0.48)':'rgba(155,143,160,0.65)'}" font-style="italic">${locked?'Complete all quests first':q.chapter}</text>
+      </g>`;
+  }).join('');
+
+  // Compass rose
+  const compass = `
+    <g transform="translate(462,55)">
+      <text x="0" y="-18" text-anchor="middle" font-family="Cinzel,serif" font-size="9" fill="rgba(212,168,32,0.5)">N</text>
+      <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(212,168,32,0.35)" stroke-width="1.5"/>
+      <line x1="-14" y1="0" x2="14" y2="0" stroke="rgba(212,168,32,0.25)" stroke-width="1"/>
+      <circle cx="0" cy="0" r="6" fill="none" stroke="rgba(212,168,32,0.3)" stroke-width="1"/>
+      <circle cx="0" cy="0" r="2" fill="rgba(212,168,32,0.4)"/>
+    </g>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="world-map-svg">
+    <defs>
+      <filter id="mapglow">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect width="${W}" height="${H}" fill="#0c1510"/>
+    ${Array.from({length:10},(_,i)=>`<line x1="${i*W/9}" y1="0" x2="${i*W/9}" y2="${H}" stroke="rgba(46,36,56,0.15)" stroke-width="0.5"/>`).join('')}
+    ${Array.from({length:9},(_,i)=>`<line x1="0" y1="${i*H/8}" x2="${W}" y2="${i*H/8}" stroke="rgba(46,36,56,0.15)" stroke-width="0.5"/>`).join('')}
+    ${terrainBlobs}
+    ${pathStr}
+    ${nodesSVG}
+    ${compass}
+  </svg>`;
+}
+
+function mapTooltipShow(e, name, topic, done, locked) {
+  const tip = document.getElementById('map-tooltip');
+  if (!tip) return;
+  const prefix = done ? '✓ ' : locked ? '🔒 ' : '';
+  const sub = locked ? 'Complete previous quest first' : topic;
+  tip.innerHTML = prefix + name + `<span class="map-tooltip-sub">${sub}</span>`;
+  const wrapEl = document.getElementById('world-map-container');
+  const wrapRect = wrapEl.getBoundingClientRect();
+  tip.style.left = (e.clientX - wrapRect.left) + 'px';
+  tip.style.top  = (e.clientY - wrapRect.top - 10) + 'px';
+  tip.classList.add('visible');
+}
+function mapTooltipHide() {
+  const tip = document.getElementById('map-tooltip');
+  if (tip) tip.classList.remove('visible');
+}
+
+function attachMapEvents() {
+  const container = document.getElementById('world-map-container');
+  if (!container) return;
+  container.querySelectorAll('.map-region').forEach(g => {
+    const key    = g.dataset.quest;
+    const locked = g.dataset.locked === 'true';
+    const done   = g.dataset.done === 'true';
+    const name   = g.dataset.name;
+    const topic  = g.dataset.topic;
+
+    g.addEventListener('click', () => { if (!locked) startQuest(key); });
+    g.addEventListener('mouseenter', e => mapTooltipShow(e, name, topic, done, locked));
+    g.addEventListener('mouseleave', mapTooltipHide);
+  });
+}
+
 function showMap() {
   hideOracleButton();
   vnHide();
@@ -4209,6 +4844,7 @@ function showMap() {
   G.currentScene = null;
   const el = document.getElementById('main-content');
   const cls = CLASSES[G.class];
+  const totalDone = G.questsDone.length;
 
   el.innerHTML = `
     <div class="card scene-wrap">
@@ -4221,36 +4857,834 @@ function showMap() {
           <div class="scene-title">The Kingdom of Statistica</div>
         </div>
       </div>
-      <p style="font-size:1rem; line-height:1.8; color:var(--text-dim); margin-bottom:1rem">
-        Five quests and a Prologue. Six statistical beasts lurking in the world of hospitality management. 
-        Every decision must be grounded in data — not instinct. 
-        Your role: <strong style="color:var(--rune-bright)">${cls.icon} ${cls.name}</strong>.
+      <p style="font-size:0.95rem; line-height:1.8; color:var(--text-dim); margin-bottom:0.8rem">
+        Six territories. One final reckoning. All quests are open — complete them all to unlock <strong style="color:var(--gold-bright)">⚖️ The Grand Inquest</strong>.
+        Your role: <strong style="color:var(--rune-bright)">${cls.icon} ${cls.name}</strong> · 
+        <span style="color:var(--gold)">${totalDone} / 7 quests complete</span>
       </p>
-      ${G.questsDone.length === 6 ? `<div class="box box-victory"><span class="box-title">🏆 Grand Champion — The Order's Finest Manager</span>All four seals earned. Total XP: <strong>${G.xp}</strong>. Level <strong>${G.level}</strong>.</div>` : ''}
-      <div style="font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.12em; color:var(--text-muted); text-transform:uppercase; text-align:center; margin-bottom:0.8rem">
-        ✦ All quests are open — play in any order ✦
+      ${G.questsDone.length === 7 ? `<div class="box box-victory" style="margin-bottom:0.8rem"><span class="box-title">🏆 Grand Champion — The Order's Finest Manager</span>All seals earned. Total XP: <strong>${G.xp}</strong>. Level <strong>${G.level}</strong>.</div>` : ''}
+
+      <!-- WORLD MAP -->
+      <div class="world-map-wrap" id="world-map-container" style="position:relative">
+        ${buildMapSVG()}
+        <div class="map-tooltip" id="map-tooltip"></div>
       </div>
-      <div class="quest-map">
-        ${Object.entries(QUESTS).map(([key, q]) => {
-          const done = G.questsDone.includes(key);
-          const suggested = !done && QUEST_ORDER.indexOf(key) === G.questsDone.length;
-          return `
-          <div class="quest-node ${done ? 'completed' : ''} ${suggested ? 'suggested' : ''}"
-               style="--node-color:rgba(232,98,26,0.12)"
-               onclick="startQuest('${key}')">
-            <span class="node-icon">${q.icon}</span>
-            <div class="node-chapter">${q.chapter}</div>
-            <div class="node-name">${q.name}</div>
-            <div class="node-desc">${q.topic}</div>
-            <div class="node-level">${done ? '✓ Completed' : suggested ? '★ Suggested next' : '⚔ Available'}</div>
-          </div>`;
-        }).join('')}
+
+      <!-- MINI-GAMES SECTION -->
+      <div style="font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.15em; color:var(--text-muted); text-transform:uppercase; text-align:center; margin:1.2rem 0 0.6rem">
+        ✦ Arcade — Train Your Stats Skills ✦
       </div>
+      <div class="minigames-strip">
+        <div class="minigame-card" style="--mg-color:rgba(45,212,116,0.14); --mg-border:var(--sage-bright)" onclick="openMiniGame('pvalue')">
+          <span class="mg-icon">🎯</span>
+          <div class="mg-name">Catch the P!</div>
+          <div class="mg-desc">Click significant p-values before they escape. Read the number — not the colour.</div>
+          <span class="mg-badge" style="color:var(--sage-bright)">⚔ Hypothesis Testing</span>
+        </div>
+        <div class="minigame-card" style="--mg-color:rgba(232,98,26,0.14); --mg-border:var(--ember)" onclick="openMiniGame('sampling')">
+          <span class="mg-icon">🏘️</span>
+          <div class="mg-name">Sampling Sorter</div>
+          <div class="mg-desc">Drag villagers into the correct sampling bucket before the method changes!</div>
+          <span class="mg-badge" style="color:var(--ember)">⚔ Research Design</span>
+        </div>
+        <div class="minigame-card" style="--mg-color:rgba(139,92,246,0.14); --mg-border:var(--rune-bright)" onclick="openMiniGame('graphs')">
+          <span class="mg-icon">📊</span>
+          <div class="mg-name">Graph Oracle</div>
+          <div class="mg-desc">Match the right chart to each data scenario. The Archive Master is watching.</div>
+          <span class="mg-badge" style="color:var(--rune-bright)">⚔ Data Visualisation</span>
+        </div>
+        <div class="minigame-card" style="--mg-color:rgba(192,24,44,0.14); --mg-border:var(--blood)" onclick="openMiniGame('testshoot')">
+          <span class="mg-icon">🔫</span>
+          <div class="mg-name">Shoot the Test</div>
+          <div class="mg-desc">A scenario appears. Blast the correct statistical test before the wrong ones multiply!</div>
+          <span class="mg-badge" style="color:var(--blood)">⚔ Test Selection</span>
+        </div>
+        <div class="minigame-card" style="--mg-color:rgba(29,160,195,0.14); --mg-border:#1da0c3" onclick="openMiniGame('validity')">
+          <span class="mg-icon">🔬</span>
+          <div class="mg-name">Validity Lab</div>
+          <div class="mg-desc">Sort research evidence into the right validity & reliability buckets before time runs out!</div>
+          <span class="mg-badge" style="color:#1da0c3">⚔ Validity & Reliability</span>
+        </div>
+      </div>
+
       <div style="margin-top:1.5rem; text-align:center">
         <button class="btn btn-ghost" onclick="showTitle()">↩ Retake Initiation</button>
       </div>
     </div>`;
   updateHUD();
+  attachMapEvents();
+}
+
+// ══════════════════════════════════════════════════════
+// MINI-GAME ENGINE
+// ══════════════════════════════════════════════════════
+function openMiniGame(type) {
+  const overlay = document.createElement('div');
+  overlay.className = 'mg-overlay';
+  overlay.id = 'mg-overlay';
+  document.body.appendChild(overlay);
+
+  if (type === 'pvalue')   buildPValueGame(overlay);
+  if (type === 'sampling') buildSamplingGame(overlay);
+  if (type === 'graphs')   buildGraphGame(overlay);
+  if (type === 'testshoot') buildTestShootGame(overlay);
+  if (type === 'validity') buildValidityGame(overlay);
+}
+
+function closeMiniGame() {
+  const ov = document.getElementById('mg-overlay');
+  if (ov) ov.remove();
+  // stop any game loops
+  if (window._mgTimer) { clearInterval(window._mgTimer); window._mgTimer = null; }
+  if (window._mgCountdown) { clearInterval(window._mgCountdown); window._mgCountdown = null; }
+}
+
+// ─── GAME 1: CATCH THE P-VALUES ─────────────────────────
+function buildPValueGame(overlay) {
+  overlay.innerHTML = `
+    <div class="mg-panel">
+      <button class="mg-close" onclick="closeMiniGame()">✕</button>
+      <div class="mg-title">🎯 Catch the Significant P!</div>
+      <div class="mg-subtitle">Click every p ≤ 0.05 · Avoid p > 0.05 · 30 seconds</div>
+      <div class="mg-score-display">Score: <span id="mg-score">0</span> &nbsp;|&nbsp; Time: <span id="mg-time">30</span>s</div>
+      <div id="pval-field" class="mg-arena"></div>
+      <div class="mg-feedback" id="mg-feedback"></div>
+      <div style="text-align:center; margin-top:0.6rem">
+        <button class="btn btn-primary" id="mg-start-btn" onclick="startPValueGame()">▶ Start</button>
+      </div>
+    </div>`;
+}
+
+function startPValueGame() {
+  document.getElementById('mg-start-btn').style.display = 'none';
+  const field = document.getElementById('pval-field');
+  let score = 0, timeLeft = 30;
+
+  const pvals = [
+    { v: 0.02, type: 'sig' }, { v: 0.04, type: 'sig' }, { v: 0.001, type: 'sig' },
+    { v: 0.048, type: 'sig' }, { v: 0.03, type: 'sig' },
+    { v: 0.12, type: 'nonsig' }, { v: 0.34, type: 'nonsig' }, { v: 0.08, type: 'nonsig' },
+    { v: 0.52, type: 'nonsig' }, { v: 0.21, type: 'nonsig' },
+    { v: 0.051, type: 'borderline' }, { v: 0.049, type: 'sig' }, { v: 0.06, type: 'nonsig' }
+  ];
+
+  function spawnBubble() {
+    const p = pvals[Math.floor(Math.random() * pvals.length)];
+    const size = 52 + Math.random() * 20;
+    const bubble = document.createElement('div');
+    bubble.className = `pval-bubble ${p.type}`;
+    bubble.style.cssText = `width:${size}px;height:${size}px;font-size:${size*0.22}px;
+      left:${5+Math.random()*75}%;top:${5+Math.random()*75}%;`;
+    bubble.textContent = `p=${p.v}`;
+    let removed = false;
+
+    bubble.onclick = () => {
+      if (removed) return;
+      removed = true;
+      const fb = document.getElementById('mg-feedback');
+      if (p.type === 'sig') {
+        score += 10;
+        fb.textContent = '+10 ✦ Significant! p ≤ 0.05 — reject H₀';
+        fb.className = 'mg-feedback correct';
+        bubble.classList.add('revealed-sig');
+        bubble.style.transform = 'scale(1.5)';
+        bubble.style.opacity = '0';
+        bubble.style.transition = 'all 0.25s';
+        setTimeout(() => bubble.remove(), 250);
+      } else if (p.type === 'nonsig') {
+        score -= 5;
+        fb.textContent = '-5 ✗ Not significant — p > 0.05, fail to reject H₀';
+        fb.className = 'mg-feedback wrong';
+        bubble.classList.add('revealed-wrong');
+        bubble.style.transition = 'all 0.3s';
+        bubble.style.opacity = '0';
+        setTimeout(() => bubble.remove(), 300);
+      } else {
+        score += 5;
+        fb.textContent = '+5 🤔 Borderline — context matters. p is just above/below 0.05';
+        fb.className = 'mg-feedback';
+        bubble.classList.add('revealed-sig');
+        bubble.style.opacity = '0';
+        bubble.style.transition = 'all 0.25s';
+        setTimeout(() => bubble.remove(), 250);
+      }
+      document.getElementById('mg-score').textContent = score;
+    };
+
+    // auto-remove after 3s
+    setTimeout(() => { if (!removed) { removed = true; bubble.remove(); } }, 3000);
+    field.appendChild(bubble);
+  }
+
+  window._mgTimer = setInterval(spawnBubble, 700);
+  window._mgCountdown = setInterval(() => {
+    timeLeft--;
+    const tEl = document.getElementById('mg-time');
+    if (tEl) tEl.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(window._mgTimer);
+      clearInterval(window._mgCountdown);
+      window._mgTimer = null; window._mgCountdown = null;
+      field.innerHTML = '';
+      const panel = document.querySelector('.mg-panel');
+      if (!panel) return;
+      const fb = document.getElementById('mg-feedback');
+      fb.textContent = '';
+      const grade = score >= 80 ? '🏆 Archon of Significance' : score >= 40 ? '⚔ Apprentice Analyst' : '💀 The Ghost of Bad Research Past approves';
+      field.innerHTML = `<div style="text-align:center; padding:2rem">
+        <div style="font-size:3rem; margin-bottom:0.5rem">🎯</div>
+        <div style="font-family:'Cinzel Decorative',serif; font-size:1.3rem; color:var(--gold-bright); margin-bottom:0.3rem">Final Score: ${score}</div>
+        <div style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem">${grade}</div>
+        <button class="btn btn-ghost" onclick="closeMiniGame()">Close</button>
+        &nbsp;
+        <button class="btn btn-primary" onclick="closeMiniGame(); openMiniGame('pvalue')">Play Again</button>
+      </div>`;
+    }
+  }, 1000);
+}
+
+// ─── GAME 2: SAMPLING SORTER ─────────────────────────────
+const SAMPLING_DATA = {
+  rounds: [
+    {
+      type: 'Simple Random', emoji: '🎲',
+      lore: 'Every unit in the population has an equal chance of being selected.',
+      villagers: [
+        { name: '🎲 Random draw from guest list', correct: true },
+        { name: '📋 Every 10th guest at check-in', correct: false },
+        { name: '🎰 Lottery selection from all bookings', correct: true },
+        { name: '👥 Friends recruited by guests', correct: false },
+        { name: '🔢 Randomly generated room numbers', correct: true },
+      ]
+    },
+    {
+      type: 'Systematic', emoji: '📋',
+      lore: 'Select every kth unit from a list after a random start.',
+      villagers: [
+        { name: '📋 Every 5th guest at reception', correct: true },
+        { name: '🎲 Random names from database', correct: false },
+        { name: '📅 Every 3rd booking on Mondays', correct: true },
+        { name: '🏘️ All guests from one floor', correct: false },
+        { name: '📏 Every 10th room in sequence', correct: true },
+      ]
+    },
+    {
+      type: 'Stratified', emoji: '🧩',
+      lore: 'Divide population into subgroups (strata), then randomly sample within each.',
+      villagers: [
+        { name: '🧩 Random sample within each nationality group', correct: true },
+        { name: '📋 Every 7th guest alphabetically', correct: false },
+        { name: '🌍 Proportional sample per region', correct: true },
+        { name: '👥 Snowball through guest networks', correct: false },
+        { name: '🎯 Random draw within each star-rating tier', correct: true },
+      ]
+    },
+    {
+      type: 'Convenience', emoji: '☕',
+      lore: 'Select whoever is easiest to reach — quick but potentially biased.',
+      villagers: [
+        { name: '☕ Guests in the café right now', correct: true },
+        { name: '🎲 Random from full guest database', correct: false },
+        { name: '🛋️ Lobby visitors on a Tuesday afternoon', correct: true },
+        { name: '🧩 Proportional by age group', correct: false },
+        { name: '📱 Whoever replies to a WhatsApp message', correct: true },
+      ]
+    }
+  ]
+};
+
+function buildSamplingGame(overlay) {
+  overlay.innerHTML = `
+    <div class="mg-panel">
+      <button class="mg-close" onclick="closeMiniGame()">✕</button>
+      <div class="mg-title">🏘️ Sampling Sorter</div>
+      <div class="mg-subtitle">Drag or click villagers that match the sampling method shown</div>
+      <div class="mg-score-display">Round: <span id="ss-round">1</span>/4 &nbsp;|&nbsp; Score: <span id="ss-score">0</span></div>
+      <div id="ss-type-banner" class="type-banner"></div>
+      <div id="ss-lore" style="font-size:0.82rem; color:var(--text-dim); font-style:italic; text-align:center; margin-bottom:0.8rem; min-height:24px"></div>
+      <div style="display:flex; gap:10px; margin-bottom:8px">
+        <div style="flex:1">
+          <div style="font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--rune-bright); margin-bottom:4px">✦ Matches this method</div>
+          <div class="sort-bucket" id="ss-yes-bucket" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="ssDrop(event,true)"></div>
+        </div>
+        <div style="flex:1">
+          <div style="font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--blood); margin-bottom:4px">✗ Does NOT match</div>
+          <div class="sort-bucket" id="ss-no-bucket" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="ssDrop(event,false)"></div>
+        </div>
+      </div>
+      <div style="font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px">Villager Pool — drag or click to sort</div>
+      <div class="villager-pool" id="ss-pool"></div>
+      <div class="mg-feedback" id="ss-feedback"></div>
+    </div>`;
+
+  window._ssRound = 0;
+  window._ssScore = 0;
+  ssStartRound(0);
+}
+
+function ssStartRound(idx) {
+  const round = SAMPLING_DATA.rounds[idx];
+  document.getElementById('ss-round').textContent = idx + 1;
+  document.getElementById('ss-type-banner').textContent = `${round.emoji} ${round.type} Sampling`;
+  document.getElementById('ss-lore').textContent = round.lore;
+  document.getElementById('ss-yes-bucket').innerHTML = '';
+  document.getElementById('ss-no-bucket').innerHTML = '';
+  document.getElementById('ss-feedback').textContent = '';
+  document.getElementById('ss-yes-bucket').className = 'sort-bucket';
+  document.getElementById('ss-no-bucket').className = 'sort-bucket';
+
+  const pool = document.getElementById('ss-pool');
+  pool.innerHTML = '';
+  // shuffle villagers
+  const shuffled = [...round.villagers].sort(() => Math.random() - 0.5);
+  shuffled.forEach((v, i) => {
+    const el = document.createElement('span');
+    el.className = 'sort-villager';
+    el.textContent = v.name;
+    el.draggable = true;
+    el.dataset.correct = v.correct;
+    el.dataset.idx = i;
+    el.ondragstart = e => {
+      e.dataTransfer.setData('text/plain', JSON.stringify({ correct: v.correct, elIdx: i }));
+      el.classList.add('dragging');
+    };
+    el.ondragend = () => el.classList.remove('dragging');
+    // Click to auto-sort (tap friendly)
+    el.onclick = () => {
+      if (el.parentElement.id === 'ss-pool') {
+        document.getElementById('ss-yes-bucket').appendChild(el);
+        ssCheckComplete(idx, true);
+      }
+    };
+    pool.appendChild(el);
+  });
+}
+
+function ssDrop(event, isYes) {
+  event.preventDefault();
+  const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+  const bucket = isYes ? document.getElementById('ss-yes-bucket') : document.getElementById('ss-no-bucket');
+  bucket.classList.remove('dragover');
+
+  // find the dragged element
+  const pool = document.getElementById('ss-pool');
+  const allVillagers = document.querySelectorAll('.sort-villager');
+  allVillagers.forEach(v => {
+    if (v.dataset.correct === String(data.correct) && v.parentElement.id === 'ss-pool') {
+      // move first match
+      bucket.appendChild(v);
+    }
+  });
+  ssCheckComplete(window._ssRound, isYes);
+}
+
+function ssCheckComplete(roundIdx, isYes) {
+  // Auto feedback after each drop
+  const round = SAMPLING_DATA.rounds[roundIdx];
+  const yesBucket = document.getElementById('ss-yes-bucket');
+  const noBucket = document.getElementById('ss-no-bucket');
+  const pool = document.getElementById('ss-pool');
+
+  const sortedCount = yesBucket.children.length + noBucket.children.length;
+  if (sortedCount < round.villagers.length) return; // not done yet
+
+  // Score: each correct assignment = 5 pts
+  let correct = 0;
+  [...yesBucket.children].forEach(v => { if (v.dataset.correct === 'true') correct++; });
+  [...noBucket.children].forEach(v => { if (v.dataset.correct === 'false') correct++; });
+  const pts = correct * 5;
+  window._ssScore += pts;
+  document.getElementById('ss-score').textContent = window._ssScore;
+
+  // Visual feedback
+  [...yesBucket.children].forEach(v => v.style.color = v.dataset.correct === 'true' ? 'var(--sage-bright)' : 'var(--blood)');
+  [...noBucket.children].forEach(v => v.style.color = v.dataset.correct === 'false' ? 'var(--sage-bright)' : 'var(--blood)');
+
+  const fb = document.getElementById('ss-feedback');
+  fb.textContent = `${correct}/${round.villagers.length} correct (+${pts} pts)`;
+  fb.className = `mg-feedback ${correct === round.villagers.length ? 'correct' : 'wrong'}`;
+
+  setTimeout(() => {
+    const next = roundIdx + 1;
+    if (next < SAMPLING_DATA.rounds.length) {
+      window._ssRound = next;
+      ssStartRound(next);
+    } else {
+      // Game over
+      const panel = document.querySelector('.mg-panel');
+      const grade = window._ssScore >= 80 ? '🏆 Grand Sampling Oracle' : window._ssScore >= 50 ? '⚔ Journeyman Researcher' : '📚 Keep studying the Archive';
+      panel.innerHTML = `
+        <button class="mg-close" onclick="closeMiniGame()">✕</button>
+        <div style="text-align:center; padding:1.5rem">
+          <div style="font-size:3rem; margin-bottom:0.5rem">🏘️</div>
+          <div style="font-family:'Cinzel Decorative',serif; font-size:1.3rem; color:var(--gold-bright); margin-bottom:0.3rem">Final Score: ${window._ssScore}</div>
+          <div style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem">${grade}</div>
+          <button class="btn btn-ghost" onclick="closeMiniGame()">Close</button>
+          &nbsp;
+          <button class="btn btn-primary" onclick="closeMiniGame(); openMiniGame('sampling')">Play Again</button>
+        </div>`;
+    }
+  }, 1600);
+}
+
+// ─── GAME 3: GRAPH ORACLE ────────────────────────────────
+const GRAPH_SCENARIOS = [
+  {
+    prompt: 'A hotel recorded <strong>guest nationality</strong> (UK, US, German, French) and wants to show how many guests came from each country.',
+    correct: 'bar',
+    explain: 'One categorical variable → Bar chart (or pie). Shows frequency per category.'
+  },
+  {
+    prompt: 'A researcher measured <strong>revenue per available room</strong> (RevPAR) over 12 months and wants to show change over time.',
+    correct: 'line',
+    explain: 'Continuous variable over time → Line graph. Shows trends.'
+  },
+  {
+    prompt: 'An analyst wants to explore the relationship between <strong>number of online reviews</strong> and <strong>average star rating</strong> — both continuous.',
+    correct: 'scatter',
+    explain: 'Two continuous variables → Scatterplot. Shows correlation & distribution shape.'
+  },
+  {
+    prompt: 'A manager wants to display the <strong>distribution of guest satisfaction scores</strong> (0–100) across 500 responses.',
+    correct: 'histogram',
+    explain: 'One continuous variable, many values → Histogram. Shows frequency distribution.'
+  },
+  {
+    prompt: 'A researcher wants to compare <strong>average room prices</strong> across 5 hotel chains, showing spread and outliers.',
+    correct: 'box',
+    explain: 'One continuous vs. one categorical → Box plot. Shows median, IQR, and outliers.'
+  },
+  {
+    prompt: 'A study recorded whether guests ordered <strong>room service</strong> (yes/no) and <strong>hotel tier</strong> (budget, mid, luxury) — both categorical.',
+    correct: 'clustered',
+    explain: 'Two categorical variables → Clustered or stacked bar chart.'
+  }
+];
+
+const GRAPH_TYPES = [
+  { id: 'bar',      label: 'Bar Chart',    svgPath: buildBarSVG()       },
+  { id: 'line',     label: 'Line Graph',   svgPath: buildLineSVG()      },
+  { id: 'scatter',  label: 'Scatterplot',  svgPath: buildScatterSVG()   },
+  { id: 'histogram',label: 'Histogram',    svgPath: buildHistSVG()      },
+  { id: 'box',      label: 'Box Plot',     svgPath: buildBoxSVG()       },
+  { id: 'clustered',label: 'Clustered Bar',svgPath: buildClusterSVG()   },
+];
+
+function buildBarSVG() {
+  return `<svg width="70" height="50" viewBox="0 0 70 50"><rect x="8" y="20" width="10" height="25" fill="var(--ember)" rx="1"/><rect x="22" y="10" width="10" height="35" fill="var(--rune)" rx="1"/><rect x="36" y="28" width="10" height="17" fill="var(--gold)" rx="1"/><rect x="50" y="15" width="10" height="30" fill="var(--sage-bright)" rx="1"/><line x1="5" y1="45" x2="65" y2="45" stroke="var(--border-bright)" stroke-width="1.5"/></svg>`;
+}
+function buildLineSVG() {
+  return `<svg width="70" height="50" viewBox="0 0 70 50"><polyline points="8,40 18,28 30,32 42,14 55,22 65,10" fill="none" stroke="var(--rune-bright)" stroke-width="2.5" stroke-linejoin="round"/><circle cx="8" cy="40" r="2.5" fill="var(--rune-bright)"/><circle cx="30" cy="32" r="2.5" fill="var(--rune-bright)"/><circle cx="55" cy="22" r="2.5" fill="var(--rune-bright)"/><line x1="5" y1="45" x2="68" y2="45" stroke="var(--border-bright)" stroke-width="1.5"/></svg>`;
+}
+function buildScatterSVG() {
+  return `<svg width="70" height="50" viewBox="0 0 70 50"><circle cx="14" cy="38" r="3" fill="var(--gold)"/><circle cx="22" cy="30" r="3" fill="var(--gold)"/><circle cx="30" cy="25" r="3" fill="var(--gold)"/><circle cx="40" cy="18" r="3" fill="var(--gold)"/><circle cx="48" cy="22" r="3" fill="var(--gold)"/><circle cx="56" cy="12" r="3" fill="var(--gold)"/><circle cx="18" cy="35" r="3" fill="var(--gold)"/><circle cx="35" cy="28" r="3" fill="var(--gold)"/><line x1="5" y1="45" x2="68" y2="45" stroke="var(--border-bright)" stroke-width="1.5"/><line x1="5" y1="45" x2="5" y2="5" stroke="var(--border-bright)" stroke-width="1.5"/></svg>`;
+}
+function buildHistSVG() {
+  return `<svg width="70" height="50" viewBox="0 0 70 50"><rect x="6" y="38" width="9" height="7" fill="var(--ember)" /><rect x="15" y="28" width="9" height="17" fill="var(--ember)"/><rect x="24" y="14" width="9" height="31" fill="var(--ember)"/><rect x="33" y="10" width="9" height="35" fill="var(--ember)"/><rect x="42" y="20" width="9" height="25" fill="var(--ember)"/><rect x="51" y="32" width="9" height="13" fill="var(--ember)"/><line x1="5" y1="45" x2="65" y2="45" stroke="var(--border-bright)" stroke-width="1.5"/></svg>`;
+}
+function buildBoxSVG() {
+  return `<svg width="70" height="50" viewBox="0 0 70 50"><line x1="35" y1="8" x2="35" y2="17" stroke="var(--rune-bright)" stroke-width="1.5"/><rect x="20" y="17" width="30" height="20" fill="none" stroke="var(--rune-bright)" stroke-width="2"/><line x1="35" y1="37" x2="35" y2="46" stroke="var(--rune-bright)" stroke-width="1.5"/><line x1="20" y1="26" x2="50" y2="26" stroke="var(--gold)" stroke-width="2"/><line x1="20" y1="8" x2="50" y2="8" stroke="var(--rune)" stroke-width="1" stroke-dasharray="3,2"/><line x1="20" y1="46" x2="50" y2="46" stroke="var(--rune)" stroke-width="1" stroke-dasharray="3,2"/></svg>`;
+}
+function buildClusterSVG() {
+  return `<svg width="70" height="50" viewBox="0 0 70 50"><rect x="6" y="15" width="8" height="30" fill="var(--ember)" rx="1"/><rect x="15" y="22" width="8" height="23" fill="var(--rune)" rx="1"/><rect x="28" y="10" width="8" height="35" fill="var(--ember)" rx="1"/><rect x="37" y="18" width="8" height="27" fill="var(--rune)" rx="1"/><rect x="50" y="20" width="8" height="25" fill="var(--ember)" rx="1"/><rect x="59" y="28" width="8" height="17" fill="var(--rune)" rx="1"/><line x1="4" y1="45" x2="68" y2="45" stroke="var(--border-bright)" stroke-width="1.5"/></svg>`;
+}
+
+function buildGraphGame(overlay) {
+  window._ggRound = 0;
+  window._ggScore = 0;
+  window._ggSelected = null;
+  overlay.innerHTML = `
+    <div class="mg-panel">
+      <button class="mg-close" onclick="closeMiniGame()">✕</button>
+      <div class="mg-title">📊 Graph Oracle</div>
+      <div class="mg-subtitle">Choose the correct chart type for each scenario</div>
+      <div class="mg-score-display">Question: <span id="gg-round">1</span>/${GRAPH_SCENARIOS.length} &nbsp;|&nbsp; Score: <span id="gg-score">0</span></div>
+      <div id="gg-scenario" class="data-scenario"></div>
+      <div class="graph-hand" id="gg-cards"></div>
+      <div class="mg-feedback" id="gg-feedback"></div>
+      <div style="text-align:center; margin-top:0.5rem">
+        <button class="btn btn-primary" id="gg-confirm" onclick="ggConfirm()" style="display:none">Confirm ›</button>
+      </div>
+    </div>`;
+  ggShowRound(0);
+}
+
+function ggShowRound(idx) {
+  const scenario = GRAPH_SCENARIOS[idx];
+  document.getElementById('gg-round').textContent = idx + 1;
+  document.getElementById('gg-scenario').innerHTML = scenario.prompt;
+  document.getElementById('gg-feedback').textContent = '';
+  document.getElementById('gg-feedback').className = 'mg-feedback';
+  document.getElementById('gg-confirm').style.display = 'none';
+  window._ggSelected = null;
+
+  const cardsDiv = document.getElementById('gg-cards');
+  // Shuffle graph types
+  const shuffled = [...GRAPH_TYPES].sort(() => Math.random() - 0.5);
+  cardsDiv.innerHTML = shuffled.map(g => `
+    <div class="graph-card" id="gg-card-${g.id}" onclick="ggSelect('${g.id}')">
+      ${g.svgPath}
+      <div class="graph-card-label">${g.label}</div>
+    </div>`).join('');
+}
+
+function ggSelect(id) {
+  window._ggSelected = id;
+  document.querySelectorAll('.graph-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById(`gg-card-${id}`);
+  if (card) card.classList.add('selected');
+  document.getElementById('gg-confirm').style.display = 'inline-block';
+}
+
+function ggConfirm() {
+  const idx = window._ggRound;
+  const scenario = GRAPH_SCENARIOS[idx];
+  const sel = window._ggSelected;
+  if (!sel) return;
+
+  const correct = sel === scenario.correct;
+  const pts = correct ? 15 : 0;
+  window._ggScore += pts;
+  document.getElementById('gg-score').textContent = window._ggScore;
+  document.getElementById('gg-confirm').style.display = 'none';
+
+  const card = document.getElementById(`gg-card-${sel}`);
+  const correctCard = document.getElementById(`gg-card-${scenario.correct}`);
+  if (card) card.classList.add(correct ? 'correct-pick' : 'wrong-pick');
+  if (!correct && correctCard) correctCard.classList.add('correct-pick');
+
+  const fb = document.getElementById('gg-feedback');
+  fb.textContent = correct ? `✦ +15 Correct! ${scenario.explain}` : `✗ Not quite. ${scenario.explain}`;
+  fb.className = `mg-feedback ${correct ? 'correct' : 'wrong'}`;
+
+  setTimeout(() => {
+    const next = idx + 1;
+    if (next < GRAPH_SCENARIOS.length) {
+      window._ggRound = next;
+      ggShowRound(next);
+    } else {
+      const panel = document.querySelector('.mg-panel');
+      const grade = window._ggScore >= 75 ? '🏆 The Archive Master bows' : window._ggScore >= 45 ? '⚔ Worthy Analyst' : '📚 Return to the Archive';
+      panel.innerHTML = `
+        <button class="mg-close" onclick="closeMiniGame()">✕</button>
+        <div style="text-align:center; padding:1.5rem">
+          <div style="font-size:3rem; margin-bottom:0.5rem">📊</div>
+          <div style="font-family:'Cinzel Decorative',serif; font-size:1.3rem; color:var(--gold-bright); margin-bottom:0.3rem">Final Score: ${window._ggScore} / ${GRAPH_SCENARIOS.length*15}</div>
+          <div style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem">${grade}</div>
+          <button class="btn btn-ghost" onclick="closeMiniGame()">Close</button>
+          &nbsp;
+          <button class="btn btn-primary" onclick="closeMiniGame(); openMiniGame('graphs')">Play Again</button>
+        </div>`;
+    }
+  }, 1800);
+}
+
+// ─── GAME 4: SHOOT THE TEST ──────────────────────────────
+const TEST_SCENARIOS = [
+  { prompt: 'A hotel manager wants to know if <strong>average guest satisfaction</strong> differs between <em>three room types</em>. Satisfaction is measured 0–100.', correct: 'ANOVA', why: 'One continuous outcome, three independent groups → one-way ANOVA (or Welch\'s ANOVA if variances differ).' },
+  { prompt: 'A researcher tests whether a <strong>new check-in app</strong> improved satisfaction. The <em>same 40 guests</em> rated the experience before and after using it.', correct: 'Paired t-test', why: 'Same participants, two time points, continuous outcome → paired samples t-test.' },
+  { prompt: 'Is there a <strong>relationship</strong> between <em>number of previous stays</em> and <em>money spent on room service</em>? Both variables are continuous.', correct: 'Correlation', why: 'Two continuous variables, testing association → Pearson correlation (or Spearman if non-normal).' },
+  { prompt: 'Are <strong>booking method</strong> (online, phone, walk-in) and <strong>room upgrade acceptance</strong> (yes/no) <em>associated</em>? Both are categorical.', correct: 'Chi-Square', why: 'Two categorical variables, testing association → Chi-Square test of independence.' },
+  { prompt: 'A spa compares <strong>relaxation scores</strong> between <em>guests who used the spa</em> and <em>those who didn\'t</em>. Shapiro-Wilk: p = 0.003 for one group.', correct: 'Mann-Whitney U', why: 'Two independent groups, continuous outcome, normality violated → Mann-Whitney U (non-parametric).' },
+  { prompt: 'A hotel chain tests whether their <strong>average review score</strong> (7.4) differs significantly from the <em>industry benchmark of 7.0</em>. n = 60.', correct: 'One-sample t-test', why: 'One sample compared against a known fixed value → one-sample t-test.' },
+  { prompt: 'Does <strong>nationality</strong> (UK, US, German, Other) predict <em>overall satisfaction score</em> (0–100)?', correct: 'ANOVA', why: 'One categorical predictor (4 groups), one continuous outcome → one-way ANOVA.' },
+  { prompt: 'A researcher compares <strong>response times</strong> across <em>two hotel branches</em>. Levene\'s test: p = 0.09. Both groups are roughly normal. n = 45 per group.', correct: 'Independent t-test', why: 'Two independent groups, normal distribution, equal variances (Levene\'s p > 0.05) → independent samples t-test (Student\'s).' },
+  { prompt: 'Testing whether <strong>meal preference</strong> (vegetarian, meat, fish) is <em>independent of</em> <strong>hotel tier</strong> (budget, luxury).', correct: 'Chi-Square', why: 'Two categorical variables → Chi-Square test of independence.' },
+  { prompt: 'Five hotel properties. Manager wants to know if <strong>average RevPAR</strong> differs. Levene\'s test: p = 0.002.', correct: "Welch's ANOVA", why: 'Multiple groups, unequal variances (Levene\'s p < 0.05) → Welch\'s ANOVA + Games-Howell post-hoc.' },
+];
+
+const ALL_TESTS = ['ANOVA', "Welch's ANOVA", 'Paired t-test', 'Independent t-test', 'One-sample t-test', 'Chi-Square', 'Correlation', 'Mann-Whitney U'];
+
+function buildTestShootGame(overlay) {
+  overlay.innerHTML = `
+    <div class="mg-panel">
+      <button class="mg-close" onclick="closeMiniGame()">✕</button>
+      <div class="mg-title">🔫 Shoot the Test!</div>
+      <div class="mg-subtitle">Read the scenario · Blast the correct statistical test · 8 seconds per round</div>
+      <div class="mg-score-display">Round: <span id="ts-round">—</span>/${TEST_SCENARIOS.length} &nbsp;|&nbsp; Score: <span id="ts-score">0</span></div>
+      <div class="ts-timer-bar"><div class="ts-timer-fill" id="ts-bar" style="width:100%"></div></div>
+      <div id="ts-scenario" class="scenario-card">Press Start to begin your assignment.</div>
+      <div class="test-targets" id="ts-targets"></div>
+      <div class="mg-feedback" id="ts-feedback"></div>
+      <div style="text-align:center; margin-top:0.5rem">
+        <button class="btn btn-primary" id="ts-start" onclick="startTestShoot()">▶ Start</button>
+      </div>
+    </div>`;
+
+  // Pre-render targets
+  const targetsDiv = document.getElementById('ts-targets');
+  ALL_TESTS.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className = 'test-target';
+    btn.textContent = t;
+    btn.dataset.test = t;
+    btn.onclick = () => tsShoot(t);
+    targetsDiv.appendChild(btn);
+  });
+}
+
+function startTestShoot() {
+  document.getElementById('ts-start').style.display = 'none';
+  window._tsRound = 0;
+  window._tsScore = 0;
+  window._tsLocked = false;
+  tsShowRound(0);
+}
+
+function tsShowRound(idx) {
+  if (idx >= TEST_SCENARIOS.length) { tsGameOver(); return; }
+  window._tsLocked = false;
+  const s = TEST_SCENARIOS[idx];
+  document.getElementById('ts-round').textContent = idx + 1;
+  document.getElementById('ts-scenario').innerHTML = s.prompt;
+  document.getElementById('ts-feedback').textContent = '';
+  document.getElementById('ts-feedback').className = 'mg-feedback';
+
+  // Reset all targets
+  document.querySelectorAll('.test-target').forEach(b => {
+    b.className = 'test-target';
+  });
+
+  // Timer bar
+  let pct = 100;
+  const barEl = document.getElementById('ts-bar');
+  if (barEl) { barEl.style.width = '100%'; barEl.className = 'ts-timer-fill'; }
+  clearInterval(window._tsTimer);
+  window._tsTimer = setInterval(() => {
+    pct -= 100 / 80; // 8s at 100ms ticks
+    const bar = document.getElementById('ts-bar');
+    if (bar) {
+      bar.style.width = Math.max(0, pct) + '%';
+      if (pct < 30) bar.className = 'ts-timer-fill urgent';
+    }
+    if (pct <= 0) {
+      clearInterval(window._tsTimer);
+      if (!window._tsLocked) {
+        window._tsLocked = true;
+        const fb = document.getElementById('ts-feedback');
+        if (fb) { fb.textContent = `⏱ Time! The answer was: ${s.correct} — ${s.why}`; fb.className = 'mg-feedback wrong'; }
+        setTimeout(() => { window._tsRound++; tsShowRound(window._tsRound); }, 2200);
+      }
+    }
+  }, 100);
+}
+
+function tsShoot(test) {
+  if (window._tsLocked) return;
+  const idx = window._tsRound;
+  if (idx >= TEST_SCENARIOS.length) return;
+  const s = TEST_SCENARIOS[idx];
+  window._tsLocked = true;
+  clearInterval(window._tsTimer);
+
+  const btn = [...document.querySelectorAll('.test-target')].find(b => b.dataset.test === test);
+  const correctBtn = [...document.querySelectorAll('.test-target')].find(b => b.dataset.test === s.correct);
+  const fb = document.getElementById('ts-feedback');
+
+  if (test === s.correct) {
+    window._tsScore += 15;
+    document.getElementById('ts-score').textContent = window._tsScore;
+    if (btn) btn.className = 'test-target correct-shot';
+    if (fb) { fb.textContent = `+15 ✦ ${s.correct} — ${s.why}`; fb.className = 'mg-feedback correct'; }
+  } else {
+    if (btn) btn.className = 'test-target wrong-shot';
+    if (correctBtn) correctBtn.className = 'test-target correct-shot';
+    if (fb) { fb.textContent = `✗ That was ${s.correct}. ${s.why}`; fb.className = 'mg-feedback wrong'; }
+  }
+
+  setTimeout(() => { window._tsRound++; tsShowRound(window._tsRound); }, 2200);
+}
+
+function tsGameOver() {
+  clearInterval(window._tsTimer);
+  const total = TEST_SCENARIOS.length * 15;
+  const pct = window._tsScore / total;
+  const grade = pct >= 0.85 ? '🏆 Master Statistician' : pct >= 0.6 ? '⚔ Competent Analyst' : '📚 Back to the Archive';
+  const panel = document.querySelector('.mg-panel');
+  if (!panel) return;
+  panel.innerHTML = `
+    <button class="mg-close" onclick="closeMiniGame()">✕</button>
+    <div style="text-align:center; padding:1.5rem">
+      <div style="font-size:3rem; margin-bottom:0.5rem">🔫</div>
+      <div style="font-family:'Cinzel Decorative',serif; font-size:1.3rem; color:var(--gold-bright); margin-bottom:0.3rem">Final Score: ${window._tsScore} / ${total}</div>
+      <div style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem">${grade}</div>
+      <button class="btn btn-ghost" onclick="closeMiniGame()">Close</button>
+      &nbsp;
+      <button class="btn btn-primary" onclick="closeMiniGame(); openMiniGame('testshoot')">Play Again</button>
+    </div>`;
+}
+
+// ─── GAME 5: VALIDITY LAB ────────────────────────────────
+const VALIDITY_ROUNDS = [
+  {
+    concept: 'Construct Validity',
+    color: '#1da0c3',
+    definition: 'The test actually measures what it claims to measure (the theoretical construct).',
+    cards: [
+      { text: 'A "guest loyalty" scale only asks about room satisfaction — not repeat visits, referrals, or emotional attachment.', correct: false, why: 'This is a FAILURE of construct validity — the scale doesn\'t capture loyalty as a construct.' },
+      { text: 'A "service quality" measure scores highly among hotels known for excellent service and low among hotels with poor reviews.', correct: true, why: 'This is EVIDENCE of construct validity — the measure behaves as the construct predicts.' },
+      { text: '"Guest engagement" scores correlate 0.82 with an independent expert assessment of guest behaviour.', correct: true, why: 'High correlation with an authoritative external measure supports construct validity.' },
+      { text: 'A stress scale administered to hotel staff gives identical results at 9am and 4pm with no events in between.', correct: false, why: 'This is evidence of reliability (test-retest), not construct validity.' },
+    ]
+  },
+  {
+    concept: 'Content Validity',
+    color: '#a78bfa',
+    definition: 'The measure covers all dimensions of the construct — nothing important is left out.',
+    cards: [
+      { text: 'An expert panel reviews the questionnaire and confirms it covers all known dimensions of the construct.', correct: true, why: 'Expert review to ensure full coverage is the classic approach to establishing content validity.' },
+      { text: 'A "dining experience" survey only includes questions about food quality, omitting service, atmosphere, and value.', correct: false, why: 'This is a FAILURE of content validity — the measure doesn\'t cover the full domain.' },
+      { text: 'The questionnaire items were derived from a systematic review of all published definitions of the construct.', correct: true, why: 'Grounding item generation in comprehensive literature review supports content validity.' },
+      { text: 'The scale predicts which guests will return within 6 months better than chance.', correct: false, why: 'Prediction of future outcomes is criterion validity (predictive), not content validity.' },
+    ]
+  },
+  {
+    concept: 'Criterion Validity',
+    color: '#d4a820',
+    definition: 'Scores correlate with an external criterion they theoretically should predict.',
+    cards: [
+      { text: 'Satisfaction scores measured on check-out correlate strongly with actual return visit rates 12 months later.', correct: true, why: 'Predicting a future criterion (return visits) is predictive criterion validity.' },
+      { text: 'The new guest loyalty measure correlates r = 0.79 with an established gold-standard loyalty scale.', correct: true, why: 'Correlation with a concurrent established measure is concurrent criterion validity.' },
+      { text: 'A "service quality" questionnaire was developed using 15 focus groups across 6 hotel types.', correct: false, why: 'Rigorous item development supports content validity, not criterion validity.' },
+      { text: 'Scores on the measure show no statistically significant variation across different groups who should logically score differently.', correct: false, why: 'Lack of discriminant differences is a failure of construct (discriminant) validity, not criterion validity.' },
+    ]
+  },
+  {
+    concept: 'Reliability',
+    color: '#2dd474',
+    definition: 'The measure gives consistent results — same results under same conditions.',
+    cards: [
+      { text: 'The same questionnaire given to the same guests two weeks apart (no events in between) yields similar scores (r = 0.88).', correct: true, why: 'High test-retest correlation is direct evidence of temporal reliability.' },
+      { text: 'Cronbach\'s alpha for the scale is 0.91, indicating strong internal consistency.', correct: true, why: 'High Cronbach\'s alpha means items are measuring the same underlying construct consistently.' },
+      { text: 'The scale correlates 0.74 with an independent measure of the same construct administered simultaneously.', correct: false, why: 'Concurrent correlation with another measure is concurrent criterion validity, not reliability.' },
+      { text: 'Different interviewers administering the same structured interview give wildly different scores to the same respondent.', correct: false, why: 'This is a FAILURE of inter-rater reliability — but it\'s evidence about reliability\'s absence, not presence.' },
+    ]
+  }
+];
+
+function buildValidityGame(overlay) {
+  window._vlRound = 0;
+  window._vlScore = 0;
+  overlay.innerHTML = `
+    <div class="mg-panel">
+      <button class="mg-close" onclick="closeMiniGame()">✕</button>
+      <div class="mg-title">🔬 Validity Lab</div>
+      <div class="mg-subtitle">Sort each piece of evidence: does it demonstrate this concept, or not?</div>
+      <div class="mg-score-display">Round: <span id="vl-round">1</span>/4 &nbsp;|&nbsp; Score: <span id="vl-score">0</span></div>
+      <div id="vl-concept" style="font-family:'Cinzel Decorative',serif; font-size:1.1rem; text-align:center; margin-bottom:0.25rem; padding:0.4rem"></div>
+      <div id="vl-definition" style="font-size:0.82rem; color:var(--text-dim); font-style:italic; text-align:center; margin-bottom:0.8rem; min-height:28px"></div>
+      <div class="validity-buckets">
+        <div>
+          <span class="vbucket-label" style="color:var(--sage-bright)">✦ YES — supports this concept</span>
+          <div class="validity-bucket" id="vl-yes"
+            ondragover="event.preventDefault(); this.classList.add('vdragover')"
+            ondragleave="this.classList.remove('vdragover')"
+            ondrop="vlDrop(event, true)"></div>
+        </div>
+        <div>
+          <span class="vbucket-label" style="color:var(--blood)">✗ NO — does not support it</span>
+          <div class="validity-bucket" id="vl-no"
+            ondragover="event.preventDefault(); this.classList.add('vdragover')"
+            ondragleave="this.classList.remove('vdragover')"
+            ondrop="vlDrop(event, false)"></div>
+        </div>
+      </div>
+      <span style="font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px">Evidence Cards — drag or click to sort</span>
+      <div class="vcard-pool" id="vl-pool"></div>
+      <div class="mg-feedback" id="vl-feedback"></div>
+    </div>`;
+  vlStartRound(0);
+}
+
+function vlStartRound(idx) {
+  const round = VALIDITY_ROUNDS[idx];
+  document.getElementById('vl-round').textContent = idx + 1;
+  document.getElementById('vl-concept').innerHTML = `<span style="color:${round.color}">${round.concept}</span>`;
+  document.getElementById('vl-definition').textContent = round.definition;
+  document.getElementById('vl-yes').innerHTML = '';
+  document.getElementById('vl-no').innerHTML = '';
+  document.getElementById('vl-yes').className = 'validity-bucket';
+  document.getElementById('vl-no').className = 'validity-bucket';
+  document.getElementById('vl-feedback').textContent = '';
+  document.getElementById('vl-feedback').className = 'mg-feedback';
+
+  const pool = document.getElementById('vl-pool');
+  pool.innerHTML = '';
+  const shuffled = [...round.cards].sort(() => Math.random() - 0.5);
+  shuffled.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'validity-card';
+    el.textContent = c.text;
+    el.draggable = true;
+    el.dataset.correct = c.correct;
+    el.dataset.why = c.why;
+    el.ondragstart = e => { e.dataTransfer.setData('text/plain', JSON.stringify({ correct: c.correct, why: c.why })); el.classList.add('selected'); };
+    el.ondragend = () => el.classList.remove('selected');
+    el.onclick = () => {
+      if (el.parentElement.id === 'vl-pool') {
+        // Click = yes bucket
+        document.getElementById('vl-yes').appendChild(el);
+        vlCheckDone(idx);
+      }
+    };
+    pool.appendChild(el);
+  });
+}
+
+function vlDrop(event, isYes) {
+  event.preventDefault();
+  const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+  const bucket = document.getElementById(isYes ? 'vl-yes' : 'vl-no');
+  bucket.classList.remove('vdragover');
+  // Move matching card
+  document.querySelectorAll('#vl-pool .validity-card').forEach(el => {
+    if (el.dataset.correct === String(data.correct) && el.dataset.why === data.why) {
+      bucket.appendChild(el);
+    }
+  });
+  vlCheckDone(window._vlRound);
+}
+
+function vlCheckDone(idx) {
+  const round = VALIDITY_ROUNDS[idx];
+  const yesEl = document.getElementById('vl-yes');
+  const noEl = document.getElementById('vl-no');
+  const sorted = yesEl.children.length + noEl.children.length;
+  if (sorted < round.cards.length) return;
+
+  let correct = 0;
+  [...yesEl.children].forEach(el => { if (el.dataset.correct === 'true') { correct++; el.className = 'validity-card correct-val'; } else { el.className = 'validity-card wrong-val'; } });
+  [...noEl.children].forEach(el => { if (el.dataset.correct === 'false') { correct++; el.className = 'validity-card correct-val'; } else { el.className = 'validity-card wrong-val'; } });
+
+  const pts = correct * 8;
+  window._vlScore += pts;
+  document.getElementById('vl-score').textContent = window._vlScore;
+  const fb = document.getElementById('vl-feedback');
+  fb.textContent = `${correct}/${round.cards.length} correct (+${pts} pts)`;
+  fb.className = `mg-feedback ${correct === round.cards.length ? 'correct' : 'wrong'}`;
+
+  setTimeout(() => {
+    const next = idx + 1;
+    if (next < VALIDITY_ROUNDS.length) {
+      window._vlRound = next;
+      vlStartRound(next);
+    } else {
+      const total = VALIDITY_ROUNDS.length * VALIDITY_ROUNDS[0].cards.length * 8;
+      const grade = window._vlScore >= total * 0.85 ? '🏆 Chief Validity Officer' : window._vlScore >= total * 0.6 ? '⚔ Careful Researcher' : '📚 Revisit the Archive scrolls';
+      const panel = document.querySelector('.mg-panel');
+      if (!panel) return;
+      panel.innerHTML = `
+        <button class="mg-close" onclick="closeMiniGame()">✕</button>
+        <div style="text-align:center; padding:1.5rem">
+          <div style="font-size:3rem; margin-bottom:0.5rem">🔬</div>
+          <div style="font-family:'Cinzel Decorative',serif; font-size:1.3rem; color:var(--gold-bright); margin-bottom:0.3rem">Final Score: ${window._vlScore} / ${total}</div>
+          <div style="font-family:'Cinzel',serif; font-size:0.8rem; color:var(--text-dim); margin-bottom:1rem">${grade}</div>
+          <button class="btn btn-ghost" onclick="closeMiniGame()">Close</button>
+          &nbsp;
+          <button class="btn btn-primary" onclick="closeMiniGame(); openMiniGame('validity')">Play Again</button>
+        </div>`;
+    }
+  }, 1800);
 }
 
 // ══════════════════════════════════════════════════════
