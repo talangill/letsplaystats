@@ -5768,7 +5768,7 @@ function buildTestShootGame(overlay) {
     <div class="mg-panel">
       <button class="mg-close" onclick="closeMiniGame()">✕</button>
       <div class="mg-title">🔫 Shoot the Test!</div>
-      <div class="mg-subtitle">Read the scenario · Blast the correct statistical test · 15 seconds per round</div>
+      <div class="mg-subtitle">Read the scenario · Blast the correct statistical test · 20 seconds per round</div>
       <div class="mg-score-display">Round: <span id="ts-round">—</span>/${TEST_SCENARIOS.length} &nbsp;|&nbsp; Score: <span id="ts-score">0</span></div>
       <div class="ts-timer-bar"><div class="ts-timer-fill" id="ts-bar" style="width:100%"></div></div>
       <div id="ts-scenario" class="scenario-card">Press Start to begin your assignment.</div>
@@ -5819,7 +5819,7 @@ function tsShowRound(idx) {
   if (barEl) { barEl.style.width = '100%'; barEl.className = 'ts-timer-fill'; }
   clearInterval(window._tsTimer);
   window._tsTimer = setInterval(() => {
-    pct -= 100 / 150; // 15s at 100ms ticks
+    pct -= 100 / 200; // 20s at 100ms ticks
     const bar = document.getElementById('ts-bar');
     if (bar) {
       bar.style.width = Math.max(0, pct) + '%';
