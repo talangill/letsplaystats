@@ -907,6 +907,154 @@ h1.game-title {
   margin-bottom: 5px; display: block;
 }
 .vcard-pool { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; min-height: 44px; border: 1px solid var(--border); border-radius: 4px; background: rgba(255,255,255,0.01); }
+/* ── STREAK COUNTER ─────────────────────────────── */
+#streak-popup {
+  position: fixed; top: 18%; left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: linear-gradient(135deg, rgba(212,168,32,0.96), rgba(255,200,50,0.92));
+  color: #1a0e00;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(0.95rem, 3vw, 1.25rem);
+  font-weight: 700; padding: 0.5rem 1.3rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(212,168,32,0.5), 0 0 0 2px rgba(255,255,255,0.2);
+  pointer-events: none; z-index: 9999;
+  opacity: 0; transition: opacity 0.18s, transform 0.28s;
+  white-space: nowrap; text-align: center;
+}
+#streak-popup.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+#streak-popup.hiding  { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+.streak-sub {
+  font-family: 'Cinzel', serif; font-size: 0.58em;
+  letter-spacing: 0.08em; display: block; margin-top: 2px;
+  color: rgba(0,0,0,0.45); font-weight: 400;
+}
+#hud-streak {
+  font-family: 'Cinzel', serif; font-size: 0.68rem;
+  color: var(--gold); letter-spacing: 0.06em;
+  display: none; align-items: center; gap: 3px;
+}
+#hud-streak.active { display: flex; }
+#hud-streak.pulse { animation: streakPulse 0.28s ease; }
+@keyframes streakPulse {
+  0%,100% { transform: scale(1); } 50% { transform: scale(1.4); }
+}
+
+/* ── RESEARCH JOURNAL ────────────────────────────── */
+#journal-btn {
+  position: fixed; bottom: 1.3rem; right: 1.3rem;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 2px solid var(--gold); color: var(--gold-bright);
+  font-size: 1.4rem; cursor: pointer; z-index: 500;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  touch-action: manipulation;
+}
+#journal-btn.visible { display: flex; }
+#journal-btn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(212,168,32,0.3); }
+#journal-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: var(--blood); color: #fff;
+  font-family: 'Cinzel', serif; font-size: 0.58rem;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: none; align-items: center; justify-content: center; font-weight: 700;
+}
+#journal-badge.visible { display: flex; }
+#journal-panel {
+  position: fixed; inset: 0; z-index: 800;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0,0,0,0); pointer-events: none;
+  transition: background 0.3s;
+}
+#journal-panel.open { background: rgba(0,0,0,0.65); pointer-events: all; }
+#journal-sheet {
+  width: 100%; max-width: 680px; max-height: 88vh;
+  background: var(--surface); border-top: 2px solid var(--gold);
+  border-radius: 16px 16px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; padding: 1.2rem 1.2rem 2.5rem;
+}
+#journal-panel.open #journal-sheet { transform: translateY(0); }
+.journal-handle {
+  width: 36px; height: 4px; background: var(--border-bright);
+  border-radius: 2px; margin: 0 auto 1rem;
+}
+.journal-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(0.9rem,2.5vw,1.15rem);
+  color: var(--gold-bright); text-align: center; margin-bottom: 0.25rem;
+}
+.journal-subtitle {
+  font-family: 'Cinzel', serif; font-size: 0.58rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); text-align: center; margin-bottom: 1.2rem;
+}
+.journal-cards { display: flex; flex-direction: column; gap: 0.85rem; }
+.journal-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 4px solid var(--gold); border-radius: 6px;
+  padding: 0.9rem 1rem; animation: cardSlideIn 0.35s ease;
+}
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.journal-card-header {
+  display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.5rem;
+}
+.journal-card-icon { font-size: 1.5rem; flex-shrink: 0; }
+.journal-card-topic {
+  font-family: 'Cinzel', serif; font-size: 0.73rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-bright);
+}
+.journal-card-chapter { font-size: 0.62rem; color: var(--text-muted); font-family: 'Cinzel', serif; }
+.journal-card-summary { font-size: 0.82rem; line-height: 1.65; color: var(--text); margin-bottom: 0.5rem; }
+.journal-card-tip {
+  font-size: 0.74rem; color: var(--sage-bright);
+  background: rgba(45,212,116,0.06); border: 1px solid rgba(45,212,116,0.18);
+  border-radius: 4px; padding: 0.4rem 0.65rem; line-height: 1.55;
+}
+.journal-card-tip::before {
+  content: '✦ Exam tip: ';
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65;
+}
+.journal-empty {
+  text-align: center; color: var(--text-muted); font-family: 'Cinzel', serif;
+  font-size: 0.8rem; padding: 2rem 0; letter-spacing: 0.06em;
+}
+.journal-new-badge {
+  background: var(--blood); color: #fff; font-size: 0.53rem;
+  font-family: 'Cinzel', serif; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 3px; margin-left: auto; flex-shrink: 0;
+}
+
+/* ── MOBILE TOUCH POLISH ─────────────────────────── */
+* { -webkit-tap-highlight-color: transparent; }
+button, .choice-btn, .boss-choice, .vn-choice-btn,
+.graph-card, .test-target, .validity-card,
+.minigame-card, .avatar-sil-btn, .avatar-color-btn, .avatar-acc-btn {
+  touch-action: manipulation;
+}
+.vn-choice-btn { min-height: 52px; padding: 0.75rem 1rem; }
+.choice-btn { min-height: 52px; }
+.boss-choice { min-height: 54px; }
+#vn-tap-hint { user-select: none; -webkit-user-select: none; }
+.vn-swipe-ripple {
+  position: absolute; right: 1.2rem; bottom: 4.5rem;
+  width: 40px; height: 40px; border: 2px solid var(--gold);
+  border-radius: 50%; opacity: 0; pointer-events: none;
+  animation: swipeRipple 0.38s ease forwards;
+}
+@keyframes swipeRipple {
+  0%  { opacity: 0.7; transform: scale(0.5); }
+  100%{ opacity: 0;   transform: scale(1.6); }
+}
+
 .quest-node {
   background: var(--surface2);
   border: 2px solid var(--border);
@@ -1829,6 +1977,25 @@ h1.game-title {
   <div class="oracle-body" id="oracle-body"></div>
 </div>
 
+<!-- Streak popup -->
+<div id="streak-popup"></div>
+
+<!-- Research Journal float button + panel -->
+<button id="journal-btn" onclick="toggleJournal()" title="Research Journal">
+  &#x1F4D3;
+  <span id="journal-badge"></span>
+</button>
+<div id="journal-panel" onclick="closeJournal(event)">
+  <div id="journal-sheet">
+    <div class="journal-handle"></div>
+    <div class="journal-title">&#x1F4D3; Research Journal</div>
+    <div class="journal-subtitle">Concepts collected on your journey through the Archive</div>
+    <div class="journal-cards" id="journal-cards-list">
+      <div class="journal-empty">Complete a quest to earn your first concept card.</div>
+    </div>
+  </div>
+</div>
+
 <div id="app">
   <div id="hud">
     <div class="hud-class">⚔ <span id="hud-class-name">—</span></div>
@@ -1841,6 +2008,7 @@ h1.game-title {
       <div class="xp-track"><div class="xp-fill" id="hud-xp-fill" style="width:0%"></div></div>
     </div>
     <div class="hud-quest" id="hud-quest">—</div>
+    <div id="hud-streak"><span id="hud-streak-flame">🔥</span><span id="hud-streak-count"></span></div>
     <div class="hud-controls">
       <button class="hud-btn save-on" id="hud-music-btn" onclick="toggleMusic()" title="Toggle ambient music">🎵 Music</button>
       <button class="hud-btn save-on" id="hud-save-btn" onclick="toggleSave()" title="Toggle progress saving">💾 Saving</button>
@@ -1889,6 +2057,8 @@ const G = {
   currentQuest: null,
   currentScene: null,
   bossTimer: null,
+  streak: 0,
+  journal: [],
   avatar: { silhouette: 'scholar', robe: '#7c3aed', accessory: 'scroll', name: 'Initiate', hair: 'short_dark', hairColor: '#2a1508', skinColor: '#d4a574' },
 };
 
@@ -5106,6 +5276,7 @@ function showMap() {
 
       <div style="margin-top:1.5rem; text-align:center">
         <button class="btn btn-ghost" onclick="showTitle()">↩ Retake Initiation</button>
+        <button class="btn btn-ghost" onclick="toggleJournal()">&#x1F4D3; Journal</button>
       </div>
     </div>`;
   updateHUD();
@@ -6078,6 +6249,7 @@ function startBossTimer() {
     if (bossData.timeLeft <= 10) timerEl.classList.add('urgent');
     if (bossData.timeLeft <= 0) {
       clearInterval(G.bossTimer);
+      recordWrong();
       const dead = takeDamage(20);
       if (!dead) {
         showBossFeedback(null, false, '⏰ Time ran out! The monster attacks for −20 HP. Think faster next time!', () => {
@@ -6094,6 +6266,7 @@ function handleBossChoice(btn, choice) {
   document.querySelectorAll('.boss-choice').forEach(b => b.disabled = true);
 
   if (choice.correct) {
+    recordCorrect();
     bossData.bossHp = Math.max(0, bossData.bossHp - 34);
     const fill = document.getElementById('boss-hp-fill');
     if (fill) fill.style.width = bossData.bossHp + '%';
@@ -6117,6 +6290,7 @@ function handleBossChoice(btn, choice) {
       }
     });
   } else {
+    recordWrong();
     const dead = takeDamage(20);
     showBossFeedback(btn, false, choice.feedback, () => {
       if (!dead) {
@@ -6148,6 +6322,7 @@ function bossVictory() {
   if (!G.questsDone.includes(G.currentQuest)) {
     G.questsDone.push(G.currentQuest);
   }
+  unlockJournalCard(G.currentQuest);
   saveProgress();
   // Give enough XP to guarantee the next level threshold is crossed
   const xpNeeded = (G.level * XP_PER_LEVEL) - G.xp;
@@ -6420,6 +6595,184 @@ function hideOracleButton() {
   document.getElementById('oracle-panel').classList.remove('open');
   _oracleOpen = false;
 }
+
+// ══════════════════════════════════════════════════════
+// STREAK SYSTEM
+// ══════════════════════════════════════════════════════
+const STREAK_MILESTONES = {
+  3:  { label: '3 in a row!',  sub: '+5 XP bonus',   xp: 5,  emoji: '🔥' },
+  5:  { label: '5 streak!',    sub: '+10 XP bonus',  xp: 10, emoji: '⚡' },
+  7:  { label: '7 streak!!',   sub: '+20 XP bonus',  xp: 20, emoji: '💥' },
+  10: { label: '10 STREAK!!!', sub: '+40 XP bonus',  xp: 40, emoji: '👑' },
+};
+let _streakPopTimer = null;
+
+function recordCorrect() {
+  G.streak++;
+  const hudStreak = document.getElementById('hud-streak');
+  const hudCount  = document.getElementById('hud-streak-count');
+  if (hudStreak && hudCount) {
+    hudCount.textContent = `${G.streak}× streak`;
+    hudStreak.classList.add('active');
+    hudStreak.classList.remove('pulse');
+    void hudStreak.offsetWidth; // reflow to restart animation
+    hudStreak.classList.add('pulse');
+  }
+  const milestone = STREAK_MILESTONES[G.streak];
+  if (milestone) {
+    showStreakPopup(milestone.emoji + ' ' + milestone.label, milestone.sub);
+    gainXP(milestone.xp, () => {});
+  }
+}
+
+function recordWrong() {
+  G.streak = 0;
+  const hudStreak = document.getElementById('hud-streak');
+  if (hudStreak) hudStreak.classList.remove('active');
+}
+
+function showStreakPopup(main, sub) {
+  const el = document.getElementById('streak-popup');
+  if (!el) return;
+  el.innerHTML = main + (sub ? `<span class="streak-sub">${sub}</span>` : '');
+  el.classList.remove('hiding');
+  el.classList.add('visible');
+  clearTimeout(_streakPopTimer);
+  _streakPopTimer = setTimeout(() => {
+    el.classList.add('hiding');
+    setTimeout(() => { el.classList.remove('visible','hiding'); }, 320);
+  }, 1800);
+}
+
+// ══════════════════════════════════════════════════════
+// RESEARCH JOURNAL
+// ══════════════════════════════════════════════════════
+const JOURNAL_CARDS = {
+  q0: {
+    icon: '🏛️', topic: 'Research Foundations', chapter: 'Prologue',
+    accentColor: '#a78bfa',
+    summary: 'Measurement levels determine valid statistics: Nominal (labels) → Ordinal (order) → Interval (equal gaps) → Ratio (true zero). p-values express probability of data under H₀ — not proof of your hypothesis. Type I = false positive. Type II = false negative. Probability sampling (systematic, stratified) gives every unit a known selection chance; convenience and snowball do not.',
+    tip: 'When a question gives you a "mean" of a nominal variable (e.g. average room type), that\'s your signal — nominal data cannot be averaged. Eliminate those options immediately.'
+  },
+  q1: {
+    icon: '📈', topic: 'Correlation', chapter: 'Chapter I',
+    accentColor: '#f59e0b',
+    summary: 'Pearson\'s r measures linear association between two continuous variables (−1 to +1). Always plot a scatter first — a curved pattern means the data is non-linear and Spearman\'s rho is more appropriate. A significant r only means the association is unlikely under H₀; it never implies causation.',
+    tip: 'Examiners love "correlation implies causation" traps. Any option that says "therefore X causes Y" from a correlation study is always wrong, no matter how plausible the relationship sounds.'
+  },
+  q2: {
+    icon: '📋', topic: 'Chi-Square', chapter: 'Chapter II',
+    accentColor: '#10b981',
+    summary: 'Chi-Square tests independence between two categorical variables. Expected counts = (row total × column total) / grand total. All expected counts must be ≥ 5; if not, use Fisher\'s Exact Test. A significant result means an association exists — check standardised residuals to see which cells drive it.',
+    tip: 'The expected count rule applies to expected frequencies, not observed ones. A cell with an observed count of 2 is fine if its expected count is ≥ 5.'
+  },
+  q3: {
+    icon: '⚗️', topic: 't-Tests', chapter: 'Chapter III',
+    accentColor: '#ef4444',
+    summary: 'Paired t-test: same subjects measured twice. One-sample t-test: compare group mean to a known value. Independent t-test: two completely separate groups. Levene\'s p < 0.05 → use Welch\'s t (not Student\'s). One-tailed testing requires a pre-registered directional hypothesis — never chosen after seeing results.',
+    tip: 'The word "same" in a scenario almost always signals paired t-test. "Different groups", "independent samples", or "separate branches" signals independent t-test. Commit that to memory.'
+  },
+  q3b: {
+    icon: '🌀', topic: 'Normality & Non-Parametric', chapter: 'Chapter IIIb',
+    accentColor: '#8b5cf6',
+    summary: 'Always inspect histograms before choosing a test. Shapiro-Wilk: W near 1.0 = normal; p < 0.05 = significant departure. Reliable at n = 15–100. Decision tree: both groups normal + Levene\'s passes → Student\'s t. Normal + Levene\'s fails → Welch\'s t. Either group non-normal → Mann-Whitney U (Levene\'s then irrelevant).',
+    tip: 'If Shapiro-Wilk is significant for even one group, go straight to Mann-Whitney U. Don\'t let a "robust to mild departures" argument distract you — that applies to mild skew, not a clearly non-normal histogram.'
+  },
+  q4: {
+    icon: '🏰', topic: 'ANOVA', chapter: 'Chapter IV',
+    accentColor: '#f97316',
+    summary: 'ANOVA compares means across 3+ groups in one omnibus test, preventing false positive inflation from multiple t-tests. Levene\'s significant → Welch\'s ANOVA → Games-Howell post-hoc. Levene\'s non-significant → Fisher\'s ANOVA → Tukey or Bonferroni post-hoc. Significant F = at least one group differs; post-hoc tests identify which pairs.',
+    tip: 'A significant omnibus ANOVA does NOT tell you which groups differ — that\'s what post-hoc tests are for. Any option claiming the F-test identifies specific pairs is a trap.'
+  },
+  q5: {
+    icon: '⚖️', topic: 'Research Audit', chapter: 'Capstone',
+    accentColor: '#f5c842',
+    summary: 'Convenience sampling (e.g. lobby visitors 10am–2pm) systematically excludes segments — large n does not fix this. Nominal codes cannot be averaged (mean room type = meaningless). Running 14 tests without pre-registration gives ~51% family-wise error rate — p = 0.049 becomes a likely false positive. Truncated y-axes exaggerate small effects.',
+    tip: 'In research design questions, ask: who is missing from the sample? A sample taken in one place, one time of day, or one season is almost always biased — regardless of its size.'
+  }
+};
+
+let _journalNewIds = new Set();
+
+function unlockJournalCard(questId) {
+  if (!G.journal.includes(questId) && JOURNAL_CARDS[questId]) {
+    G.journal.push(questId);
+    _journalNewIds.add(questId);
+    // Show journal button
+    const btn = document.getElementById('journal-btn');
+    if (btn) btn.classList.add('visible');
+    // Show badge count
+    updateJournalBadge();
+  }
+}
+
+function updateJournalBadge() {
+  const badge = document.getElementById('journal-badge');
+  if (!badge) return;
+  const n = _journalNewIds.size;
+  if (n > 0) {
+    badge.textContent = n;
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+function toggleJournal() {
+  const panel = document.getElementById('journal-panel');
+  if (!panel) return;
+  if (panel.classList.contains('open')) {
+    closeJournal();
+  } else {
+    renderJournalCards();
+    panel.classList.add('open');
+    // Clear new badges when opened
+    _journalNewIds.clear();
+    updateJournalBadge();
+  }
+}
+
+function closeJournal(e) {
+  if (e && e.target !== document.getElementById('journal-panel')) return;
+  const panel = document.getElementById('journal-panel');
+  if (panel) panel.classList.remove('open');
+}
+
+function renderJournalCards() {
+  const list = document.getElementById('journal-cards-list');
+  if (!list) return;
+  if (G.journal.length === 0) {
+    list.innerHTML = '<div class="journal-empty">Complete a quest to earn your first concept card.</div>';
+    return;
+  }
+  list.innerHTML = G.journal.map(id => {
+    const c = JOURNAL_CARDS[id];
+    if (!c) return '';
+    const isNew = _journalNewIds.has(id);
+    return `<div class="journal-card" style="border-left-color:${c.accentColor}">
+      <div class="journal-card-header">
+        <span class="journal-card-icon">${c.icon}</span>
+        <div>
+          <div class="journal-card-topic" style="color:${c.accentColor}">${c.topic}</div>
+          <div class="journal-card-chapter">${c.chapter}</div>
+        </div>
+        ${isNew ? '<span class="journal-new-badge">New</span>' : ''}
+      </div>
+      <div class="journal-card-summary">${c.summary}</div>
+      <div class="journal-card-tip">${c.tip}</div>
+    </div>`;
+  }).join('');
+}
+
+// Show journal button whenever we have cards (e.g. after load)
+function syncJournalButton() {
+  if (G.journal.length > 0) {
+    const btn = document.getElementById('journal-btn');
+    if (btn) btn.classList.add('visible');
+  }
+}
+
+
 
 
 // ══════════════════════════════════════════════════════
@@ -7018,15 +7371,16 @@ function vnPickChoice(choice) {
   document.getElementById('vn-tap-hint').style.display = '';
 
   if (choice.bad || choice.damage) {
+    recordWrong();
     vnFlash('damage');
     const dead = takeDamage(choice.damage || 10);
     if (dead) return;
-    // Show feedback beat then continue to next scene
     vnFeedbackBeat(choice, () => showScene(choice.next));
   } else if (choice.boss) {
     vnHide();
     showScene(choice.next);
   } else {
+    recordCorrect();
     vnFlash('xp');
     if (choice.xp) {
       gainXP(choice.xp, () => vnFeedbackBeat(choice, () => showScene(choice.next)));
@@ -7644,7 +7998,7 @@ function saveProgress() {
   try {
     localStorage.setItem('otsp_save', JSON.stringify({
       class: G.class, hp: G.hp, maxHp: G.maxHp,
-      xp: G.xp, level: G.level, questsDone: G.questsDone
+      xp: G.xp, level: G.level, questsDone: G.questsDone, journal: G.journal
     }));
   } catch(e) {}
 }
@@ -7657,6 +8011,8 @@ function loadProgress() {
     if (!s.class || !CLASSES[s.class]) return false;
     G.class = s.class; G.hp = s.hp; G.maxHp = s.maxHp;
     G.xp = s.xp; G.level = s.level; G.questsDone = s.questsDone || [];
+    G.journal = s.journal || G.questsDone.filter(id => JOURNAL_CARDS && JOURNAL_CARDS[id]);
+    syncJournalButton();
     return true;
   } catch(e) { return false; }
 }
@@ -7697,6 +8053,136 @@ if (loadProgress()) {
 } else {
   showTitle();
 }
+
+// ══════════════════════════════════════════════════════
+// MOBILE SWIPE & TOUCH POLISH
+// ══════════════════════════════════════════════════════
+(function initTouchSupport() {
+  // Touch state
+  let _tx0 = 0, _ty0 = 0, _tTime = 0;
+  const SWIPE_THRESHOLD   = 45;   // px horizontal to count as swipe
+  const SWIPE_MAX_VERT    = 80;   // max vertical drift allowed
+  const TAP_MAX_DIST      = 12;   // px max movement for a tap
+  const TAP_MAX_TIME      = 250;  // ms max for a tap
+
+  // ── VN dialogue swipe-to-advance ──────────────────
+  function attachVNTouch() {
+    const dialogue = document.getElementById('vn-dialogue');
+    if (!dialogue || dialogue._touchBound) return;
+    dialogue._touchBound = true;
+
+    dialogue.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      _tx0 = t.clientX; _ty0 = t.clientY; _tTime = Date.now();
+    }, { passive: true });
+
+    dialogue.addEventListener('touchend', e => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - _tx0;
+      const dy = t.clientY - _ty0;
+      const dt = Date.now() - _tTime;
+
+      // Swipe right OR tap anywhere that isn't a choice button → advance
+      const isSwipeRight = dx > SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_MAX_VERT;
+      const isTap = Math.abs(dx) < TAP_MAX_DIST && Math.abs(dy) < TAP_MAX_DIST && dt < TAP_MAX_TIME * 2;
+
+      if (isSwipeRight || isTap) {
+        // Don't fire if touching a choice button
+        if (e.target.classList.contains('vn-choice-btn')) return;
+        // Don't advance if choices are visible
+        const choices = document.getElementById('vn-choices');
+        if (choices && choices.classList.contains('visible')) return;
+
+        if (isSwipeRight) {
+          // Show swipe ripple
+          const ripple = document.createElement('div');
+          ripple.className = 'vn-swipe-ripple';
+          dialogue.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 420);
+        }
+        vnAdvance();
+      }
+    }, { passive: true });
+  }
+
+  // ── Choice card swipe-select on touch devices ─────
+  // Swipe right on a choice to select it (mimics click)
+  function attachChoiceSwipe(container) {
+    if (!container || container._touchBound) return;
+    container._touchBound = true;
+
+    let _choiceTx0 = 0, _choiceTy0 = 0;
+    let _swipeTarget = null;
+
+    container.addEventListener('touchstart', e => {
+      const btn = e.target.closest('.choice-btn, .vn-choice-btn, .boss-choice');
+      if (!btn) return;
+      _choiceTx0 = e.touches[0].clientX;
+      _choiceTy0 = e.touches[0].clientY;
+      _swipeTarget = btn;
+      btn.classList.add('swipe-hint');
+    }, { passive: true });
+
+    container.addEventListener('touchmove', e => {
+      if (!_swipeTarget) return;
+      const dx = e.touches[0].clientX - _choiceTx0;
+      if (dx > 20) {
+        _swipeTarget.style.transform = `translateX(${Math.min(dx * 0.4, 16)}px)`;
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchend', e => {
+      if (!_swipeTarget) return;
+      const dx = e.changedTouches[0].clientX - _choiceTx0;
+      const dy = e.changedTouches[0].clientY - _choiceTy0;
+      _swipeTarget.style.transform = '';
+      _swipeTarget.classList.remove('swipe-hint');
+
+      if (dx > SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_MAX_VERT) {
+        // Trigger click on the choice
+        _swipeTarget.click();
+      }
+      _swipeTarget = null;
+    }, { passive: true });
+  }
+
+  // ── Journal sheet swipe-down to close ─────────────
+  function attachJournalSwipe() {
+    const sheet = document.getElementById('journal-sheet');
+    if (!sheet || sheet._touchBound) return;
+    sheet._touchBound = true;
+    let _jy0 = 0;
+
+    sheet.addEventListener('touchstart', e => {
+      _jy0 = e.touches[0].clientY;
+    }, { passive: true });
+
+    sheet.addEventListener('touchend', e => {
+      const dy = e.changedTouches[0].clientY - _jy0;
+      if (dy > 80 && sheet.scrollTop <= 0) {
+        closeJournal();
+      }
+    }, { passive: true });
+  }
+
+  // ── MutationObserver: attach when VN stage or choice divs appear ──
+  const observer = new MutationObserver(() => {
+    attachVNTouch();
+    attachJournalSwipe();
+    // Attach to any choice containers currently in DOM
+    document.querySelectorAll('.choices, #boss-choices, #vn-choices').forEach(attachChoiceSwipe);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    observer.observe(document.getElementById('app') || document.body, {
+      childList: true, subtree: true
+    });
+    attachVNTouch();
+    attachJournalSwipe();
+    document.querySelectorAll('.choices, #boss-choices, #vn-choices').forEach(attachChoiceSwipe);
+  });
+})();
+
 </script>
 </body>
 </html>
