@@ -1466,7 +1466,7 @@ const QUESTS = {
     bossName: 'The Ghost of Bad Research Past',
     bossIcon: '💀',
     bossSub: 'It haunts the Archive with every methodological error ever published',
-    scenes: ['q0_intro','q0_levels','q0_charts','q0_hypothesis','q0_pvalue','q0_errors','q0_validity','q0_sampling','q0_boss_intro'],
+    scenes: ['q0_intro','q0_levels','q0_charts','q0_hypothesis','q0_pvalue','q0_errors','q0_validity','q0_validity_types','q0_reliability_validity','q0_confidence_intervals','q0_sampling','q0_boss_intro'],
     boss: 'boss_q0'
   },
     q1: {
@@ -1565,10 +1565,10 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: "She raises an eyebrow. What is the problem?" }
     ],
     choices: [
-      { text: 'The average of 1.8 is fine — numbers are numbers. If the categories have labels 1, 2, 3 then arithmetic on them is valid and the board can interpret the result sensibly.', next: 'q0_levels_wrong', damage: 15, bad: true },
-      { text: 'Room types 1, 2, 3 are just labels — nominal data. You can count how many guests chose each type, but averaging the labels produces a number that means nothing. The manager has been reporting nonsense.', next: 'q0_levels', xp: 10 },
-      { text: 'The variable is ordinal — room type has a natural order from Standard to Suite — so calculating a mean is acceptable as long as the board understands the scale.', next: 'q0_levels_wrong', damage: 15, bad: true },
-      { text: 'The problem is not the mean itself, but the sample size. With a larger guest database the average room type would become more meaningful and stable.', next: 'q0_levels_wrong', damage: 15, bad: true }
+      { text: 'The average of 1.8 is fine — numbers are numbers, and the board can interpret it as a position on the 1–3 scale. Arithmetic on numeric codes is always valid provided the original categories had a clear direction.', next: 'q0_levels_wrong', damage: 15, bad: true },
+      { text: 'Room types are nominal labels. Averaging them is meaningless.', next: 'q0_levels', xp: 10 },
+      { text: 'Room type is ordinal — Standard, Deluxe, Suite have a natural order — so a mean is defensible as a summary of the typical tier. Ordinal means the categories are ranked, and the average conveys roughly where most guests sit on that ranking.', next: 'q0_levels_wrong', damage: 15, bad: true },
+      { text: 'The problem is sample size, not measurement level. With a larger guest database the average of 1.8 would stabilise and become more reliable. The mean itself is a perfectly appropriate statistic here regardless of how the room types were coded.', next: 'q0_levels_wrong', damage: 15, bad: true }
     ]
   },
 
@@ -1602,10 +1602,10 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">The Four Measurement Levels</span><strong>Nominal</strong> — categories, no order (room type, nationality).<br><strong>Ordinal</strong> — ordered, unequal gaps (satisfaction scales, star ratings).<br><strong>Interval</strong> — equal gaps, no true zero (temperature in Celsius).<br><strong>Ratio</strong> — equal gaps, true zero (revenue, age, weight).</div>' }
     ],
     choices: [
-      { text: 'Yes — the satisfaction scale 1-2-3 has a clear order and the gaps feel equal enough. Treating it as interval for the purposes of a t-test is standard practice in hospitality research.', next: 'q0_levels_debate', xp: 5 },
-      { text: 'Technically no — satisfaction ratings are ordinal, not interval. The gap between Dissatisfied and Neutral may not equal the gap between Neutral and Satisfied. A t-test on these scores is questionable.', next: 'q0_levels_debate', xp: 10 },
-      { text: 'Yes, and it is entirely uncontroversial. As long as the scale has a logical direction (1 = low, 3 = high), a t-test is always appropriate regardless of how many scale points there are.', next: 'q0_levels_wrong', damage: 10, bad: true },
-      { text: 'No, and you should never use means or t-tests on any scale with fewer than 7 response options. Only scales of 7 or more points can be treated as interval.', next: 'q0_levels_wrong', damage: 10, bad: true }
+      { text: 'Yes — the scale has order and the gaps feel equal enough. Treating short Likert-style scales as interval is standard practice in hospitality research, so the t-test is defensible here without further justification.', next: 'q0_levels_debate', xp: 5 },
+      { text: 'Technically no — the gaps may not be equal.', next: 'q0_levels_debate', xp: 10 },
+      { text: 'Yes, entirely uncontroversially. Any scale with a logical direction (1 = low, 3 = high) qualifies as interval data — scale length and gap equality are irrelevant once the categories have a defined order and numeric labels.', next: 'q0_levels_wrong', damage: 10, bad: true },
+      { text: 'No — you should never use means or t-tests on any scale with fewer than 7 response options. Below 7 points the gaps between categories are too coarse to treat as equal, so all short scales require non-parametric alternatives.', next: 'q0_levels_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1643,10 +1643,10 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Chart Selection</span><strong>One categorical</strong> — Bar or pie chart<br><strong>Two categorical</strong> — Clustered or stacked bar<br><strong>One continuous</strong> — Histogram<br><strong>Two continuous</strong> — Scatterplot or line graph<br><strong>One of each</strong> — Bar chart, error bar plot, or box plot</div>' }
     ],
     choices: [
-      { text: 'Pie charts are versatile — as long as the data is divided into sensible price bands, a pie chart of spending is a legitimate way to show the proportions in each band.', next: 'q0_charts_wrong', damage: 10, bad: true },
-      { text: 'Nightly spend is continuous data. A pie chart cannot show the shape of the distribution — where most guests cluster, whether it is skewed, whether there are outliers. He needs a histogram.', next: 'q0_hypothesis', xp: 10 },
-      { text: 'A bar chart would be better than a pie chart here, since bar charts work well with both categorical and continuous data and are easier to read.', next: 'q0_charts_wrong', damage: 10, bad: true },
-      { text: 'A scatterplot would be the correct choice, since nightly spend involves two variables: the amount and the date it was recorded.', next: 'q0_charts_wrong', damage: 10, bad: true }
+      { text: 'Pie charts are flexible enough for continuous data provided you divide it into sensible price bands first. The proportions in each band are meaningful, and a well-labelled pie chart communicates the spending distribution to a non-technical audience just as clearly as a histogram would.', next: 'q0_charts_wrong', damage: 10, bad: true },
+      { text: 'He needs a histogram — a pie chart hides the distribution shape.', next: 'q0_hypothesis', xp: 10 },
+      { text: 'A bar chart would be better, since bar charts handle both categorical and continuous data and are always easier to read than pie charts regardless of the variable type being displayed.', next: 'q0_charts_wrong', damage: 10, bad: true },
+      { text: 'A scatterplot is the correct choice. Nightly spend is recorded over time, so each observation has two dimensions — the amount and the date — making this a two-variable dataset that scatterplots are specifically designed to display.', next: 'q0_charts_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1675,10 +1675,10 @@ const SCENES = {
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "She is asking you to sign off on the report. What is wrong with her hypothesis?" }
     ],
     choices: [
-      { text: 'The hypothesis is fine — it is specific and directional, which is better than a vague two-sided hypothesis. Specificity improves the power of the test.', next: 'q0_hyp_wrong', damage: 15, bad: true },
-      { text: 'The hypothesis was written after seeing the data — it describes what she found rather than predicting what she expected. A valid hypothesis must be committed to before data collection, not derived from it.', next: 'q0_pvalue', xp: 10 },
-      { text: 'The hypothesis is missing a null hypothesis. You cannot sign off until she adds H₀: there is no difference in response times between branches.', next: 'q0_hyp_wrong', damage: 10, bad: true },
-      { text: 'The hypothesis uses μ instead of π. Since response time is a continuous variable we should be comparing proportions, so π is the correct notation.', next: 'q0_hyp_wrong', damage: 10, bad: true }
+      { text: 'The hypothesis is fine — directional hypotheses like this are more statistically powerful than vague two-sided ones, and specificity is always a virtue in research design.', next: 'q0_hyp_wrong', damage: 15, bad: true },
+      { text: 'It was written after seeing the data — that makes it a description, not a prediction.', next: 'q0_pvalue', xp: 10 },
+      { text: 'The hypothesis is missing H₀. Without an explicit null hypothesis stating no difference between branches, the statistical test has no baseline to compare against and the p-value cannot be correctly interpreted.', next: 'q0_hyp_wrong', damage: 10, bad: true },
+      { text: 'The hypothesis uses the wrong notation. Response time is continuous so the correct parameter is μ for the mean — but the hypothesis as written implies we are comparing proportions, which would require π and a different test entirely.', next: 'q0_hyp_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1709,10 +1709,10 @@ const SCENES = {
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "Three people in the Archive wince simultaneously. What is actually wrong with his interpretation — and what does p = 0.03 actually mean?" }
     ],
     choices: [
-      { text: 'He is close enough — p = 0.03 means the result is unlikely to be due to chance, and "97% certain" is a reasonable way to communicate this to a non-technical audience.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
-      { text: 'p = 0.03 means: if the package had no effect, we would only see a result this large 3% of the time by chance. That is not the same as "97% certain the package works" — p is about the data under H₀, not the probability H₁ is true.', next: 'q0_errors', xp: 10 },
-      { text: 'p = 0.03 is below 0.05 so H₁ is proven true. The director is right to recommend rollout — the confidence interval confirms the package increases satisfaction.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
-      { text: 'The director is wrong because p = 0.03 is too close to the borderline. Only p < 0.01 provides genuine statistical confidence — a result this marginal should be treated as inconclusive.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'He is close enough. p = 0.03 means the result is very unlikely to be due to chance, and communicating this as 97% certainty is a reasonable simplification for non-technical audiences making a business decision.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'p is about the data under H₀, not the probability H₁ is true.', next: 'q0_errors', xp: 10 },
+      { text: 'p = 0.03 is below 0.05 so H₁ is proven true. The director is right — statistical significance at the 5% level is the accepted scientific standard for confirming that an effect is real and worth acting on.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'The director is wrong because p = 0.03 is dangerously close to the 0.05 boundary. In commercial research only p < 0.01 provides robust enough confidence to justify rollout costs — anything between 0.01 and 0.05 should be treated as provisional and requiring replication first.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
     ]
   },
 
@@ -1746,10 +1746,10 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Error Types</span><strong>Type I (false positive)</strong> — rejecting H0 when it is true. Probability = alpha.<br><strong>Type II (false negative)</strong> — failing to reject H0 when it is false.<br><strong>Type III</strong> — correct rejection, but wrong reasoning or methodology.</div>' }
     ],
     choices: [
-      { text: 'The original study made a Type II error — it failed to detect a real effect because the sample was too small, which is why the replication also found nothing.', next: 'q0_errors_wrong', damage: 10, bad: true },
-      { text: 'The original study made a Type I error — it found a significant result that was not real. With p = 0.04 and α = 0.05, there was a 4% chance of this happening even if the training had no effect at all.', next: 'q0_validity', xp: 10 },
-      { text: 'The original study made a Type III error — it used the right statistical test but the wrong research question, measuring behaviour immediately after training rather than on-the-job performance months later.', next: 'q0_errors_wrong', damage: 10, bad: true },
-      { text: 'Both studies are equally flawed — the replication made a Type II error by failing to find the real effect the first study correctly identified, because it used a smaller sample.', next: 'q0_errors_wrong', damage: 10, bad: true }
+      { text: 'A Type II error — the study failed to detect a real effect because the sample was too small. That is why the replication also found nothing: both studies were underpowered, and the original lucky p = 0.04 was simply the result of noise amplified by insufficient participants.', next: 'q0_errors_wrong', damage: 10, bad: true },
+      { text: 'A Type I error — a false positive. It found an effect that was not real.', next: 'q0_validity', xp: 10 },
+      { text: 'A Type III error — the correct test was applied but the wrong research question was being answered. By measuring behaviour immediately after training rather than on-the-job performance months later, the study generated a technically valid result for the wrong outcome entirely.', next: 'q0_errors_wrong', damage: 10, bad: true },
+      { text: 'Both studies are equally flawed. The original correctly identified a real effect, while the replication made a Type II error by failing to find it — most likely because it used a smaller sample that lacked the statistical power to detect the same genuine signal.', next: 'q0_errors_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1780,10 +1780,10 @@ const SCENES = {
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "Problem B: The same hotel ran the questionnaire twice with the same guests a week apart. Scores shifted dramatically with no change in conditions. Which concept does each violate?" }
     ],
     choices: [
-      { text: 'Problem A violates reliability — the questionnaire gives inconsistent results. Problem B violates validity — the loyalty score doesn\&#39;t actually measure loyalty.', next: 'q0_validity_wrong', damage: 10, bad: true },
-      { text: 'Problem A violates validity — specifically construct validity, because the items measure satisfaction not loyalty. Problem B violates reliability — the scores are inconsistent across administrations with no real change.', next: 'q0_sampling', xp: 10 },
-      { text: 'Problem A violates external validity — the questionnaire results cannot be generalised beyond this specific hotel. Problem B violates face validity — the questionnaire does not appear credible to respondents.', next: 'q0_validity_wrong', damage: 10, bad: true },
-      { text: 'Both problems violate reliability. Problem A gives inconsistent item content and Problem B gives inconsistent scores over time — both are forms of measurement inconsistency.', next: 'q0_validity_wrong', damage: 10, bad: true }
+      { text: 'Problem A violates reliability — different questions covering different ground produce inconsistent results from the same respondents. Problem B violates validity — specifically criterion validity, since scores shift between administrations with no real-world change to justify it.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Problem A violates construct validity; Problem B violates reliability.', next: 'q0_validity_types', xp: 10 },
+      { text: 'Problem A violates external validity — using room satisfaction items means the findings cannot be generalised to loyalty behaviour outside this specific property. Problem B violates face validity — the dramatic score swings will make respondents doubt whether the questionnaire is measuring anything meaningful at all.', next: 'q0_validity_wrong', damage: 10, bad: true },
+      { text: 'Both problems violate reliability in different ways — Problem A through inconsistent item content and Problem B through inconsistent scores over time. Validity is a separate concept entirely and is not implicated by either scenario.', next: 'q0_validity_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -1793,6 +1793,113 @@ const SCENES = {
     narrative: `<p class="npc-speech">"You have them backwards. Validity asks: are we measuring the right thing? Reliability asks: are we measuring it consistently? A questionnaire about room satisfaction cannot be a valid measure of loyalty — regardless of how consistently it gives wrong answers."</p>
     <div class="box box-danger"><span class="box-title">⚔ −10 HP</span><strong>Validity</strong> = measuring what you claim to measure (Problem A — wrong construct). <strong>Reliability</strong> = getting consistent results under stable conditions (Problem B — inconsistent scores). A measure must be reliable to be valid, but reliability alone does not make something valid.</div>`,
     choices: [{ text: '↩ Understood — try again', next: 'q0_validity' }]
+  },
+
+
+  q0_validity_types: {
+    bg: 'archive',
+    icon: '🔍', chapter: 'Prologue · The Foundations',
+    title: 'Three Kinds of Validity',
+    narrative: `<p>The Archive Master pulls out a second folder. <em>"Validity is not one thing. You need to know the three types that come up most often in hospitality research."</em></p>
+    <div class="box box-lore"><span class="box-title">📜 Validity: Three Types</span>
+    <strong>Construct validity</strong> — does the questionnaire actually measure the theoretical construct it claims to? (e.g. does your "loyalty" scale measure loyalty, or really satisfaction?)<br>
+    <strong>Content validity</strong> — do the items cover the full range of the construct? A loyalty scale with only attitudinal items but no behavioural items has poor content validity.<br>
+    <strong>Criterion validity</strong> — do scores on the measure correlate with an external criterion they should predict? (e.g. do high loyalty scores predict return bookings?)<br>
+    <em>Concurrent</em> validity: measured at the same time as the criterion. <em>Predictive</em> validity: criterion measured in the future.</div>
+    <p class="npc-speech">"A hotel claims their new 'guest engagement' score predicts future spend. They validate it by asking guests how likely they are to return — measured at the same time as the engagement score. Which type of validity are they establishing — and what is missing?"</p>`,
+    hints: {
+      formula: 'Criterion validity = correlation with an external criterion. Concurrent = criterion measured simultaneously. Predictive = criterion measured later. If they want to claim the score "predicts" spend, they need to actually wait and measure spend.',
+      assumption: 'Construct validity requires theoretical grounding — does the concept of "guest engagement" map to a clear, distinct theoretical construct? Content validity requires coverage — are all dimensions of engagement represented in the items?',
+      interpretation: 'The hotel is establishing concurrent criterion validity at best — they correlated their score with another self-report taken at the same time. To claim predictive validity they would need to track actual future bookings and spending.'
+    },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Validity is not one thing. You need to know the three types that appear most often in hospitality research." },
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Validity Types</span><strong>Construct</strong> — measuring the right theoretical thing.<br><strong>Content</strong> — covering all dimensions of the construct.<br><strong>Criterion</strong> — correlating with an external benchmark it should predict.<br><em>Concurrent:</em> same time. <em>Predictive:</em> future outcome.</div>' },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A hotel validates their 'guest engagement' score by correlating it with guests' stated likelihood to return — measured at the same moment. Which validity type is this, and what is missing?" }
+    ],
+    choices: [
+      { text: 'Content validity — they have checked that the engagement items cover the right dimensions of the construct by comparing them with guests\' stated intentions, which are the external criterion the construct should theoretically represent.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
+      { text: 'Concurrent criterion validity — but without tracking actual future spend, they cannot claim predictive validity.', next: 'q0_reliability_validity', xp: 10 },
+      { text: 'Predictive criterion validity — the engagement score will predict future spend, and correlating it with stated return likelihood at the same time is a valid proxy for the future behaviour they cannot yet observe.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
+      { text: 'Construct validity — they have demonstrated that the engagement scale measures a meaningful theoretical construct by showing it correlates with a related construct (return intention), which is the standard method for establishing convergent construct validity in the absence of a hard behavioural criterion.', next: 'q0_validity_types_wrong', damage: 10, bad: true }
+    ]
+  },
+
+  q0_validity_types_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Validity Mix-Up',
+    narrative: `<p class="npc-speech">"Criterion validity means comparing against an external criterion — a separate, real-world variable the score should predict. Correlating two self-reports taken at the same moment is concurrent criterion validity. Calling it predictive requires waiting to see whether future bookings and spend actually follow."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span><strong>Concurrent</strong> criterion validity: score compared with a criterion measured now. <strong>Predictive</strong> criterion validity: score compared with a criterion measured in the future. Stated return intention is not actual return behaviour — the hotel is claiming more than their data supports.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_validity_types' }]
+  },
+
+  q0_reliability_validity: {
+    bg: 'archive',
+    icon: '🎯', chapter: 'Prologue · The Foundations',
+    title: 'Which Is Worse?',
+    narrative: `<p>The Archive Master sets two broken instruments on the desk.</p>
+    <p><strong>Instrument A</strong> is a thermometer that always reads 4°C too high. It gives the same wrong answer every single time.</p>
+    <p><strong>Instrument B</strong> is a thermometer that gives a different reading every time you check the same patient — swinging unpredictably between correct and wildly wrong.</p>
+    <p class="npc-speech">"One of these is reliable but not valid. The other is neither. Which is which — and which is worse for a researcher to have?"</p>`,
+    hints: {
+      formula: 'Reliable = consistent results. Valid = measures the true value. Instrument A is consistent (same wrong answer always) = reliable, not valid. Instrument B is inconsistent = neither reliable nor valid.',
+      assumption: 'A reliable but invalid instrument can sometimes be corrected — if you know the systematic error (bias), you can adjust for it. An unreliable instrument cannot be corrected because you do not know which readings to trust.',
+      interpretation: 'In survey research: a scale with consistent bias (e.g. social desirability always inflating scores) is reliable but invalid — the bias is at least stable and potentially estimable. A scale where respondents interpret questions differently each time is unreliable — and therefore necessarily invalid too.'
+    },
+    beats: [
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Instrument A always reads 4 degrees too high. Same wrong answer, every single time." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Instrument B gives a different reading every time you check the same thing — swinging randomly between correct and wildly wrong." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Which is reliable but not valid — and which is worse to have as a researcher?" }
+    ],
+    choices: [
+      { text: 'A is neither reliable nor valid because a consistent systematic error proves the instrument is broken in a fundamental way. B is reliable but not valid — the variation is random noise, which at least averages out over large samples and does not introduce bias.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
+      { text: 'A is reliable but not valid. B is worse — unreliable instruments cannot be corrected.', next: 'q0_confidence_intervals', xp: 10 },
+      { text: 'Both are equally problematic. A systematic error of 4°C is just as damaging to research conclusions as random error of the same magnitude, and there is no principled basis for treating one as less severe than the other.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
+      { text: 'B is reliable but not valid — it measures something consistently, just not the right thing. A is worse because systematic errors compound across repeated measurements whereas random errors cancel out, making consistent wrongness more dangerous over time than random variability.', next: 'q0_rel_val_wrong', damage: 10, bad: true }
+    ]
+  },
+
+  q0_rel_val_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Arrow That Never Lands Twice',
+    narrative: `<p class="npc-speech">"Instrument A is reliable — same answer every time — but not valid. You could even correct for the 4°C bias if you knew about it. Instrument B is the nightmare: unreliable. You cannot know which readings to trust, so you cannot correct it, cannot average it away, cannot reason about it. Unreliable means necessarily invalid — but not the other way around."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span>Reliability is a <em>necessary condition</em> for validity — you cannot validly measure something you cannot measure consistently. The archery analogy: reliable = tight grouping. Valid = hitting the target. Reliable but invalid = tight grouping, wrong target (fixable if you can move the target). Unreliable = arrows scattered everywhere (nothing to fix).</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_reliability_validity' }]
+  },
+
+  q0_confidence_intervals: {
+    bg: 'archive',
+    icon: '📏', chapter: 'Prologue · The Foundations',
+    title: 'The Width of Uncertainty',
+    narrative: `<p>A chain hotel's analytics team has run the same survey study twice — once with 30 guests, once with 300. Both studies asked the same question and found the same mean satisfaction score of 7.2 out of 10.</p>
+    <p>The 95% confidence intervals came back as:</p>
+    <div class="box box-lore"><span class="box-title">📊 Results</span>
+    <strong>Study 1 (n = 30):</strong> Mean = 7.2, 95% CI [5.9, 8.5]<br>
+    <strong>Study 2 (n = 300):</strong> Mean = 7.2, 95% CI [6.9, 7.5]</div>
+    <p class="npc-speech">"The director says both studies prove satisfaction is above 7.0, since both means are 7.2. Is she right — and what does the difference in confidence intervals tell you about sample size?"</p>`,
+    hints: {
+      formula: 'CI width ≈ 2 × (z × σ/√n). As n increases, √n increases, so the CI gets narrower. Larger samples give more precise estimates — the point estimate (mean) stays the same but uncertainty shrinks.',
+      assumption: 'Study 1 CI [5.9, 8.5] includes values well below 7.0 — the true score could be as low as 5.9. Study 2 CI [6.9, 7.5] sits almost entirely above 7.0, giving much stronger grounds to conclude true satisfaction exceeds 7.0.',
+      interpretation: 'The mean alone does not tell you how confident to be. A CI is a range of plausible true values — the wider it is, the less precise your estimate. n = 30 means the data is consistent with a very wide range of true values.'
+    },
+    beats: [
+      { char: 'analyst', left: 'analyst', right: 'player', text: "We ran the study twice. Thirty guests first, then three hundred. Both gave a mean of 7.2. Both prove satisfaction is above 7.0 — the director is very pleased." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "Study 1 returned a 95% CI of 5.9 to 8.5. Study 2 returned a CI of 6.9 to 7.5. Is the director right — and what does the difference tell you?" }
+    ],
+    choices: [
+      { text: 'The director is right. Both studies found the same mean, which is the best estimate of true satisfaction. The confidence intervals are just a technical formality — the point estimate of 7.2 is what matters for the business decision.', next: 'q0_ci_wrong', damage: 10, bad: true },
+      { text: 'Study 1 cannot confirm satisfaction is above 7.0 — its CI includes 5.9. Study 2 is much more convincing. Larger samples produce narrower CIs.', next: 'q0_sampling', xp: 15 },
+      { text: 'The director is right about Study 2 but not Study 1. However, this is a minor technical detail — in practice, a mean of 7.2 is reported as 7.2 regardless of sample size, and both studies would support the same management conclusion when presented to a non-statistical audience.', next: 'q0_ci_wrong', damage: 10, bad: true },
+      { text: 'Neither study proves satisfaction is above 7.0. Confidence intervals never confirm that a value is above or below a threshold — they only describe a range of plausible estimates, and a formal one-sample t-test against the threshold of 7.0 would be required before any directional claim could be made.', next: 'q0_ci_wrong', damage: 10, bad: true }
+    ]
+  },
+
+  q0_ci_wrong: {
+    icon: '💀', chapter: 'Prologue · Setback',
+    title: 'The Narrow Miss',
+    narrative: `<p class="npc-speech">"Study 1's interval runs from 5.9 to 8.5 — the true satisfaction score could be as low as 5.9. That CI does not let you claim anything above 7.0. Study 2 is different: 6.9 to 7.5 sits almost entirely above 7.0 and gives you a defensible claim. Same mean, very different certainty — and the difference is entirely down to n."</p>
+    <div class="box box-danger"><span class="box-title">⚔ −10 HP</span>Sample size determines the <em>precision</em> of your estimate, not the estimate itself. Larger n → narrower CI → more confident conclusions. The point estimate (mean) tells you where the centre is. The CI tells you how far the truth might actually be from that centre. Never report a mean without a CI.</div>`,
+    choices: [{ text: '↩ Understood — try again', next: 'q0_confidence_intervals' }]
   },
 
   q0_sampling: {
@@ -1816,10 +1923,10 @@ const SCENES = {
       { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">The Four Scenarios</span><strong>A.</strong> Surveyed every 10th guest to check in over a month.<br><strong>B.</strong> Asked guests to share the survey link with other guests they met during their stay.<br><strong>C.</strong> Divided guests by nationality in the same proportions as the full guest population, then randomly selected within each group.<br><strong>D.</strong> Interviewed whoever was in the hotel lobby on a Tuesday afternoon because the researcher had a free afternoon.</div>' }
     ],
     choices: [
-      { text: 'A = Convenience, B = Snowball, C = Stratified, D = Systematic. The probability methods are B and D.', next: 'q0_sampling_wrong', damage: 10, bad: true },
-      { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. The probability methods are A and C — both give every guest a known chance of selection.', next: 'q0_boss_intro', xp: 15 },
-      { text: 'A = Systematic, B = Quota, C = Stratified, D = Convenience. The probability methods are A and C, but B is quota rather than snowball because it involves passing surveys to other guests.', next: 'q0_sampling_wrong', damage: 10, bad: true },
-      { text: 'A = Cluster, B = Snowball, C = Quota, D = Convenience. None of the four methods are true probability sampling since none involve a fully randomised draw from the complete guest list.', next: 'q0_sampling_wrong', damage: 10, bad: true }
+      { text: 'A = Convenience, B = Snowball, C = Stratified, D = Systematic. The probability methods are B and D — snowball is a form of random recruitment through networks, and systematic sampling gives every listed guest a defined chance of selection depending on their position in the register.', next: 'q0_sampling_wrong', damage: 10, bad: true },
+      { text: 'A = Systematic, B = Snowball, C = Stratified, D = Convenience. Probability methods: A and C.', next: 'q0_boss_intro', xp: 15 },
+      { text: 'A = Systematic, B = Quota, C = Stratified, D = Convenience. The probability methods are A and C. B is quota sampling rather than snowball because it fills pre-defined category targets — the fact that guests recruit each other is incidental to the defining feature, which is the fixed segment quotas.', next: 'q0_sampling_wrong', damage: 10, bad: true },
+      { text: 'A = Cluster, B = Snowball, C = Quota, D = Convenience. None of the four methods qualify as true probability sampling because none of them involve a fully randomised draw from a complete and exhaustive list of every guest who stayed during the period.', next: 'q0_sampling_wrong', damage: 10, bad: true }
     ]
   },
 
@@ -2600,10 +2707,10 @@ const BOSS_BATTLES = {
         </div>
         <p><span style="color:var(--blood)">"Two methodological problems are buried in this design. What are they?"</span></p>`,
         choices: [
-          { text: "The sampling method is convenience-based (surveys only to guests passing the desk) so the sample is likely unrepresentative. Additionally, gym usage coded 1-2-3 is ordinal data — calculating its mean and using it in a t-test treats it as interval, which is not valid.", correct: true, feedback: "Exactly right. Convenience sampling at the front desk over-represents departing guests who had time to linger — likely a biased subset. And ordinal gym usage codes cannot be averaged meaningfully. The Ghost shudders." },
-          { text: "The sample of 63 is too small to be meaningful, and the t-test is the wrong test since the researcher should have used ANOVA to compare the three gym usage groups against satisfaction.", correct: false, feedback: "Sample size of 63 may be adequate depending on effect size — that's not the primary problem here. And the issue isn't the choice between t-test and ANOVA. The problems are in the sampling method (convenience) and measurement level (ordinal coded as interval)." },
-          { text: "The study has no control group, so it cannot establish whether gym use causes higher satisfaction. The researcher should have randomly assigned guests to use or not use the gym.", correct: false, feedback: "Causality concerns are valid in experimental design, but this is a correlational study — not a trial. The specific errors here are in the sampling method and the measurement level of the gym usage variable, not the absence of random assignment." },
-          { text: "The satisfaction scores were collected at checkout when guests are tired and rushed, which biases the responses downward. The researcher should have surveyed guests on their final morning instead.", correct: false, feedback: "Timing of data collection can affect results, but this is not the primary methodological error in the brief. The Ghost is looking for the sampling bias (convenience method) and the measurement level violation (ordinal data treated as interval)." }
+          { text: "Convenience sampling and ordinal data treated as interval.", correct: true, feedback: "Exactly right. Convenience sampling at the front desk over-represents departing guests who had time to linger — likely a biased subset. And ordinal gym usage codes cannot be averaged meaningfully. The Ghost shudders." },
+          { text: "The sample of 63 is too small to yield meaningful results for this kind of research. A gym usage study requires at least 150 participants to detect a moderate effect size with adequate power, and the researcher should also have used ANOVA rather than a t-test to properly compare the three distinct gym usage groups against satisfaction scores.", correct: false, feedback: "Sample size of 63 may be adequate depending on effect size — that's not the primary problem here. And the issue isn't the choice between t-test and ANOVA. The problems are in the sampling method (convenience) and measurement level (ordinal coded as interval)." },
+          { text: "The study lacks a control group, which means it cannot establish whether gym use actually causes higher satisfaction rather than merely correlating with it. Proper causal inference would require randomly assigning guests to use or avoid the gym — something only a randomised controlled trial design could achieve in this context.", correct: false, feedback: "Causality concerns are valid in experimental design, but this is a correlational study — not a trial. The specific errors here are in the sampling method and the measurement level of the gym usage variable, not the absence of random assignment." },
+          { text: "The satisfaction scores were collected at checkout when guests are tired and cognitively depleted from travel, which systematically biases responses downward relative to their true feelings. A morning-of-departure survey administered at breakfast, before the stress of packing and transit, would produce more accurate and less negatively biased satisfaction data.", correct: false, feedback: "Timing of data collection can affect results, but this is not the primary methodological error in the brief. The Ghost is looking for the sampling bias (convenience method) and the measurement level violation (ordinal data treated as interval)." }
         ]
       },
       {
@@ -2618,10 +2725,10 @@ const BOSS_BATTLES = {
         </div>
         <p><span style="color:var(--blood)">"How many errors can you identify in the researcher's conclusion?"</span></p>`,
         choices: [
-          { text: "Three errors: p = 0.074 is not a probability of H₁ being true. For a one-sided hypothesis the two-tailed p should be halved (p = 0.037, which is significant) — but that switch needed to be pre-specified. And the confidence interval includes zero, meaning no difference is plausible.", correct: true, feedback: "Perfect. p is not a probability of the hypothesis. The one-sided/two-tailed mismatch is a real issue — you cannot switch after seeing results. And a CI including zero means the result is not significant at the two-tailed level. The Ghost recoils violently." },
-          { text: "One error: the researcher should report p = 0.037 (one-sided) because the hypothesis was directional, which makes the result significant and justifies the rollout recommendation.", correct: false, feedback: "Switching from two-tailed to one-tailed after seeing p = 0.074 is p-hacking — the direction was chosen because it makes the result significant. The pre-registration requirement for one-sided tests exists precisely to prevent this. There are also two other errors in the conclusion." },
-          { text: "One error: the confidence interval includes zero, which means the result is not significant and the conclusion is unjustified. Everything else in the write-up is standard practice.", correct: false, feedback: "The CI including zero is one error — but the misinterpretation of p as a probability of H₁ being true, and the post-hoc one-sided switching, are also genuine errors. The Ghost is looking for all three." },
-          { text: "The conclusion is reasonable — p = 0.074 is close to 0.05 and with a one-sided hypothesis the result is significant. Recommending further investigation rather than full rollout would be more cautious, but the interpretation is broadly acceptable.", correct: false, feedback: "None of this is acceptable. p is not a probability of the hypothesis being true under any framing. The one-sided switch is not valid post-hoc. And the CI including zero directly contradicts the confident rollout recommendation." }
+          { text: "Three errors: p misinterpreted, illegal one-sided switch post-hoc, and the CI includes zero.", correct: true, feedback: "Perfect. p is not a probability of the hypothesis. The one-sided/two-tailed mismatch is a real issue — you cannot switch after seeing results. And a CI including zero means the result is not significant at the two-tailed level. The Ghost recoils violently." },
+          { text: "One error: the researcher should report p = 0.037 by halving the two-tailed p because their hypothesis was pre-specified as directional. This makes the result significant at the 5% level and fully justifies both the conclusion and the rollout recommendation the director is making to the hotel board.", correct: false, feedback: "Switching from two-tailed to one-tailed after seeing p = 0.074 is p-hacking — the direction was chosen because it makes the result significant. The pre-registration requirement for one-sided tests exists precisely to prevent this. There are also two other errors in the conclusion." },
+          { text: "One error: the confidence interval spans from −4.2 to +0.3 minutes, which includes zero, meaning the data is consistent with no reduction in waiting times at all. This single error alone invalidates the rollout recommendation, and it is the only problem worth flagging to the researcher.", correct: false, feedback: "The CI including zero is one error — but the misinterpretation of p as a probability of H₁ being true, and the post-hoc one-sided switching, are also genuine errors. The Ghost is looking for all three." },
+          { text: "The conclusion is reasonable given the context. p = 0.074 is very close to the conventional threshold, and with a directional hypothesis the effective p is 0.037 which clears the bar. Recommending further pilot testing rather than full rollout would be more cautious, but the core statistical interpretation and the business recommendation are both broadly acceptable and defensible to a non-technical audience.", correct: false, feedback: "None of this is acceptable. p is not a probability of the hypothesis being true under any framing. The one-sided switch is not valid post-hoc. And the CI including zero directly contradicts the confident rollout recommendation." }
         ]
       },
       {
@@ -2633,10 +2740,10 @@ const BOSS_BATTLES = {
         </div>
         <p><span style="color:var(--blood)">"The researcher claims to have used stratified sampling. Is this correct — and is the large sample size argument valid?"</span></p>`,
         choices: [
-          { text: "This is not true stratified sampling. Within each segment, participants were selected by lobby convenience — not randomly. Proportional segment sizes do not make sampling stratified; random selection within each stratum does. And large sample size does not guarantee representativeness — a large biased sample is still biased.", correct: true, feedback: "Perfectly identified. Stratified sampling requires random selection within each stratum — not convenient selection in the right proportions. And the sample size argument is a classic error: representativeness is about how you sample, not how many. n = 10,000 lobby guests at 9am is still a biased sample. The Ghost dissolves!" },
-          { text: "The researcher is correct — stratified sampling requires proportional representation of subgroups, which they have achieved by using the 60/40 business/leisure split. The large sample size further validates the approach.", correct: false, feedback: "Proportional representation of strata is necessary but not sufficient for stratified sampling. The defining requirement is random selection within each stratum. Selecting 'the first available person in the lobby' is convenience sampling within quotas — this is actually quota sampling, not stratified random sampling." },
-          { text: "The approach is valid because the 60/40 split matches the population proportions. The 'lobby convenience' selection method introduces minor bias but is acceptable given the large total sample size.", correct: false, feedback: "Large sample size does not compensate for biased selection. A biased sampling method with n = 1,000 gives you 1,000 biased observations. The lobby at 9am over-represents guests with morning free time — a specific and non-random subset regardless of how many are collected." },
-          { text: "The only real problem is that leisure guests in the lobby at 9am may be underrepresented. The researcher could fix this by sampling at different times of day to catch both segment types equally.", correct: false, feedback: "Sampling at different times would reduce one source of convenience bias, but this is still not stratified random sampling. The fundamental issue is the absence of random selection within strata — and the researcher's incorrect claim that proportional quotas make the method stratified." }
+          { text: "Not stratified sampling, and large n does not guarantee representativeness.", correct: true, feedback: "Perfectly identified. Stratified sampling requires random selection within each stratum — not convenient selection in the right proportions. And the sample size argument is a classic error: representativeness is about how you sample, not how many. n = 10,000 lobby guests at 9am is still a biased sample. The Ghost dissolves!" },
+          { text: "The researcher is correct on both counts. Stratified sampling requires proportional representation of the target subgroups in the same ratios as the underlying population — which they have achieved perfectly with the 60/40 business-to-leisure split drawn directly from their guest database. The large final sample of 120 independently confirms that the resulting data is representative.", correct: false, feedback: "Proportional representation of strata is necessary but not sufficient for stratified sampling. The defining requirement is random selection within each stratum. Selecting 'the first available person in the lobby' is convenience sampling within quotas — this is actually quota sampling, not stratified random sampling." },
+          { text: "The approach is substantially valid. The 60/40 segment split correctly mirrors the known population proportions, and while the lobby selection method introduces some minor inconvenience bias, this is an acceptable practical compromise in field research settings. The sample size of 120 is large enough that any residual convenience bias will be diluted across respondents.", correct: false, feedback: "Large sample size does not compensate for biased selection. A biased sampling method with n = 1,000 gives you 1,000 biased observations. The lobby at 9am over-represents guests with morning free time — a specific and non-random subset regardless of how many are collected." },
+          { text: "The only real problem is lobby timing. Sampling only in the morning under-represents leisure guests who sleep later, creating a slight business-traveller overrepresentation within the leisure stratum. Spreading data collection across morning, afternoon and evening slots would resolve the issue while keeping the stratified structure intact.", correct: false, feedback: "Sampling at different times would reduce one source of convenience bias, but this is still not stratified random sampling. The fundamental issue is the absence of random selection within strata — and the researcher's incorrect claim that proportional quotas make the method stratified." }
         ]
       }
     ]
