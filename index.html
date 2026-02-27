@@ -1372,6 +1372,7 @@ h1.game-title {
     </div>
     <div class="hud-quest" id="hud-quest">—</div>
     <div class="hud-controls">
+      <button class="hud-btn" id="hud-music-btn" onclick="toggleMusic()" title="Toggle ambient music">🎵 Music</button>
       <button class="hud-btn save-on" id="hud-save-btn" onclick="toggleSave()" title="Toggle progress saving">💾 Saving</button>
       <button class="hud-btn" onclick="showMap()">🗺 Map</button>
       <button class="hud-btn danger" onclick="confirmReset()">↺ Reset</button>
@@ -3205,6 +3206,7 @@ function showSortingResult() {
 }
 
 function selectClass(classKey) {
+  if (!AUDIO.started) { audioInit(); }
   G.class = classKey;
   const cls = CLASSES[classKey];
   G.hp = cls.hp;
@@ -3218,6 +3220,7 @@ function selectClass(classKey) {
 function showMap() {
   hideOracleButton();
   vnHide();
+  audioSceneChange('map');
   G.currentQuest = null;
   G.currentScene = null;
   const el = document.getElementById('main-content');
@@ -3367,6 +3370,7 @@ function handleChoice(choice) {
 let bossData = null;
 
 function startBoss(questId) {
+  audioSceneChange('boss');
   const quest = QUESTS[questId];
   const battle = BOSS_BATTLES[quest.boss];
   bossData = {
@@ -4099,6 +4103,7 @@ function vnHide() {
 function vnSetBackground(key) {
   const bg = document.getElementById('vn-bg');
   bg.className = BG_CLASS[key] || BG_CLASS.archive;
+  audioSceneChange(key);
 }
 
 function vnSetChar(side, charKey, active) {
@@ -4334,6 +4339,315 @@ function vnPlayScene(scene, sceneId) {
     if (document.getElementById('vn-choices').classList.contains('visible')) return;
     vnAdvance();
   };
+}
+
+
+// ══════════════════════════════════════════════════════
+// AMBIENT MUSIC ENGINE — Web Audio API
+// Procedural synthesis, no external files
+// ══════════════════════════════════════════════════════
+
+const AUDIO = {
+  ctx: null,
+  master: null,        // master gain
+  reverb: null,        // convolver
+  reverbGain: null,
+  dryGain: null,
+  enabled: false,
+  started: false,      // AudioContext started (needs user gesture)
+  currentScene: null,
+  nodes: [],           // active oscillators/sources to clean up
+  seqTimer: null,      // melody sequencer timeout
+  fadeTimer: null,
+};
+
+// ── Scale definitions (MIDI note numbers) ─────────────────────────────────
+const SCALES = {
+  // D minor pentatonic — haunting, fits archive/cellar
+  dark:   [38, 41, 43, 45, 48, 50, 53, 55, 57, 60, 62, 65],
+  // A minor pentatonic — warmer, fits lobby/banquet
+  warm:   [33, 36, 38, 40, 45, 48, 52, 55, 57, 60],
+  // B diminished feel — tense, boss
+  boss:   [35, 38, 41, 44, 47, 50, 53, 56, 59, 62],
+  // E minor pentatonic — open, castle/spa
+  open:   [28, 31, 33, 35, 40, 43, 47, 52, 55, 59],
+};
+
+function midiToHz(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+// ── Scene → music config ───────────────────────────────────────────────────
+const SCENE_MUSIC = {
+  archive: { scale: 'dark',  tempo: 2800, drone: [29, 36], melodyRange: [5,10], filterFreq: 900,  reverbMix: 0.65, masterVol: 0.38 },
+  lobby:   { scale: 'warm',  tempo: 2200, drone: [28, 35], melodyRange: [4, 9], filterFreq: 1400, reverbMix: 0.50, masterVol: 0.35 },
+  banquet: { scale: 'warm',  tempo: 1900, drone: [31, 38], melodyRange: [5,10], filterFreq: 1800, reverbMix: 0.45, masterVol: 0.36 },
+  cellar:  { scale: 'dark',  tempo: 3200, drone: [26, 33], melodyRange: [3, 8], filterFreq: 700,  reverbMix: 0.72, masterVol: 0.40 },
+  spa:     { scale: 'open',  tempo: 3500, drone: [30, 37], melodyRange: [6,11], filterFreq: 2200, reverbMix: 0.60, masterVol: 0.30 },
+  castle:  { scale: 'open',  tempo: 2600, drone: [24, 31], melodyRange: [4, 9], filterFreq: 1100, reverbMix: 0.58, masterVol: 0.42 },
+  boss:    { scale: 'boss',  tempo: 1400, drone: [22, 29], melodyRange: [2, 7], filterFreq: 600,  reverbMix: 0.80, masterVol: 0.50 },
+  map:     { scale: 'dark',  tempo: 3000, drone: [31, 38], melodyRange: [5,10], filterFreq: 1000, reverbMix: 0.60, masterVol: 0.28 },
+};
+
+// ── Build impulse response for reverb ─────────────────────────────────────
+function makeReverb(ctx, duration=3.5, decay=2.2) {
+  const rate = ctx.sampleRate;
+  const len  = rate * duration;
+  const buf  = ctx.createBuffer(2, len, rate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < len; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    }
+  }
+  return buf;
+}
+
+// ── Init AudioContext (must be called from user gesture) ──────────────────
+function audioInit() {
+  if (AUDIO.ctx) return;
+  AUDIO.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const ctx = AUDIO.ctx;
+
+  // Master gain
+  AUDIO.master = ctx.createGain();
+  AUDIO.master.gain.value = 0;
+  AUDIO.master.connect(ctx.destination);
+
+  // Reverb (convolver)
+  AUDIO.reverb = ctx.createConvolver();
+  AUDIO.reverb.buffer = makeReverb(ctx);
+
+  AUDIO.reverbGain = ctx.createGain();
+  AUDIO.reverbGain.gain.value = 0.5;
+  AUDIO.reverb.connect(AUDIO.reverbGain);
+  AUDIO.reverbGain.connect(AUDIO.master);
+
+  AUDIO.dryGain = ctx.createGain();
+  AUDIO.dryGain.gain.value = 0.5;
+  AUDIO.dryGain.connect(AUDIO.master);
+
+  AUDIO.started = true;
+}
+
+// ── Create a drone oscillator ─────────────────────────────────────────────
+function makeDrone(hz, vol=0.12, wave='sine') {
+  const ctx = AUDIO.ctx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  osc.type = wave;
+  osc.frequency.value = hz;
+  // Gentle detune wobble for organic feel
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+  lfo.frequency.value = 0.18 + Math.random() * 0.12;
+  lfoGain.gain.value = 1.5;
+  lfo.connect(lfoGain);
+  lfoGain.connect(osc.detune);
+  lfo.start();
+
+  filter.type = 'lowpass';
+  filter.frequency.value = 800;
+  filter.Q.value = 0.8;
+
+  gain.gain.value = 0;
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(AUDIO.dryGain);
+  gain.connect(AUDIO.reverb);
+
+  osc.start();
+  gain.gain.setTargetAtTime(vol, ctx.currentTime, 1.8);
+
+  AUDIO.nodes.push({ osc, gain, lfo });
+  return { osc, gain, lfo };
+}
+
+// ── Noise layer (atmosphere) ──────────────────────────────────────────────
+function makeNoise(vol=0.018, filterHz=400) {
+  const ctx = AUDIO.ctx;
+  const bufLen = ctx.sampleRate * 2;
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = filterHz;
+  filter.Q.value = 0.3;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0;
+
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(AUDIO.reverb);
+
+  src.start();
+  gain.gain.setTargetAtTime(vol, ctx.currentTime, 2.5);
+
+  AUDIO.nodes.push({ osc: src, gain });
+  return { src, gain };
+}
+
+// ── Pluck a single melodic note ───────────────────────────────────────────
+function pluckNote(hz, vol=0.08, duration=1.8) {
+  const ctx = AUDIO.ctx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  osc.type = 'triangle';
+  osc.frequency.value = hz;
+
+  filter.type = 'lowpass';
+  filter.frequency.value = 2200;
+  filter.Q.value = 1.2;
+
+  gain.gain.value = vol;
+  gain.gain.setTargetAtTime(0, ctx.currentTime + 0.05, duration * 0.4);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(AUDIO.dryGain);
+  gain.connect(AUDIO.reverb);
+
+  osc.start();
+  osc.stop(ctx.currentTime + duration * 1.5);
+}
+
+// ── Melody sequencer ──────────────────────────────────────────────────────
+let _seqConfig = null;
+let _lastNoteIdx = 0;
+
+function scheduleNextNote() {
+  if (!AUDIO.enabled || !_seqConfig) return;
+
+  const { scale, tempo, melodyRange } = _seqConfig;
+  const notes = SCALES[scale];
+  const [lo, hi] = melodyRange;
+
+  // Pick a note from the range, biased away from previous
+  let idx;
+  let attempts = 0;
+  do {
+    idx = lo + Math.floor(Math.random() * (hi - lo + 1));
+    attempts++;
+  } while (idx === _lastNoteIdx && attempts < 5);
+  _lastNoteIdx = idx;
+
+  const hz = midiToHz(notes[idx % notes.length]);
+  // Occasional rest (30% chance)
+  if (Math.random() > 0.30) {
+    pluckNote(hz, 0.055 + Math.random() * 0.04, 2.2);
+  }
+
+  // Vary timing slightly for humanised feel
+  const jitter = (Math.random() - 0.5) * tempo * 0.3;
+  AUDIO.seqTimer = setTimeout(scheduleNextNote, tempo + jitter);
+}
+
+// ── Start music for a given scene key ─────────────────────────────────────
+function audioPlayScene(sceneKey) {
+  if (!AUDIO.enabled) return;
+  if (!AUDIO.started) audioInit();
+  if (!AUDIO.ctx) return;
+
+  const key = SCENE_MUSIC[sceneKey] ? sceneKey : 'archive';
+  if (AUDIO.currentScene === key) return; // already playing this scene
+  AUDIO.currentScene = key;
+
+  const cfg = SCENE_MUSIC[key];
+
+  // Fade out existing nodes
+  audioFadeOutAll(() => {
+    if (!AUDIO.enabled) return;
+    _seqConfig = cfg;
+
+    // Update reverb/dry mix
+    AUDIO.reverbGain.gain.setTargetAtTime(cfg.reverbMix, AUDIO.ctx.currentTime, 1.0);
+    AUDIO.dryGain.gain.setTargetAtTime(1 - cfg.reverbMix * 0.4, AUDIO.ctx.currentTime, 1.0);
+
+    // Fade master in
+    AUDIO.master.gain.setTargetAtTime(cfg.masterVol, AUDIO.ctx.currentTime, 2.0);
+
+    // Drones
+    cfg.drone.forEach((midi, i) => {
+      const hz = midiToHz(midi);
+      const wave = i === 0 ? 'sine' : 'triangle';
+      makeDrone(hz, i === 0 ? 0.14 : 0.08, wave);
+    });
+
+    // Sub-bass pulse (very quiet, just texture)
+    makeDrone(midiToHz(cfg.drone[0] - 12), 0.05, 'sine');
+
+    // Noise atmosphere
+    makeNoise(0.015, cfg.filterFreq * 0.3);
+
+    // Start melody sequencer
+    clearTimeout(AUDIO.seqTimer);
+    const firstDelay = cfg.tempo * (1 + Math.random());
+    AUDIO.seqTimer = setTimeout(scheduleNextNote, firstDelay);
+  });
+}
+
+function audioFadeOutAll(cb) {
+  clearTimeout(AUDIO.seqTimer);
+  if (!AUDIO.ctx) { if (cb) cb(); return; }
+
+  // Fade master quickly
+  AUDIO.master.gain.setTargetAtTime(0, AUDIO.ctx.currentTime, 0.6);
+
+  // Stop and discard all nodes after fade
+  const toStop = [...AUDIO.nodes];
+  AUDIO.nodes = [];
+  setTimeout(() => {
+    toStop.forEach(n => {
+      try { n.osc.stop(); } catch(e) {}
+      try { n.lfo && n.lfo.stop(); } catch(e) {}
+    });
+    if (cb) cb();
+  }, 1800);
+}
+
+// ── Toggle music on/off ────────────────────────────────────────────────────
+function toggleMusic() {
+  if (!AUDIO.started) audioInit();
+
+  AUDIO.enabled = !AUDIO.enabled;
+  const btn = document.getElementById('hud-music-btn');
+
+  if (AUDIO.enabled) {
+    btn.textContent = '🎵 Music';
+    btn.classList.add('save-on');
+    // Resume context if suspended (browser autoplay policy)
+    if (AUDIO.ctx && AUDIO.ctx.state === 'suspended') {
+      AUDIO.ctx.resume();
+    }
+    // Play current scene
+    const scene = AUDIO.currentScene || 'map';
+    AUDIO.currentScene = null; // force restart
+    audioPlayScene(scene);
+    showTooltip('Ambient music on — volume in your browser controls.');
+  } else {
+    btn.textContent = '🎵 Off';
+    btn.classList.remove('save-on');
+    AUDIO.currentScene = null;
+    audioFadeOutAll();
+    showTooltip('Ambient music off.');
+  }
+}
+
+// ── Hook into scene/map transitions ───────────────────────────────────────
+// Called by vnSetBackground and showMap
+function audioSceneChange(key) {
+  if (AUDIO.enabled) audioPlayScene(key);
 }
 
 // ── SAVE TOGGLE ──────────────────────────────────────────────────────────────
