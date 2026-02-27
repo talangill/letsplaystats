@@ -753,6 +753,14 @@ h1.game-title {
 }
 .treasure-listen-btn.bc { background: rgba(26,99,138,0.18); color: #1da0c3; border-color: #1da0c3; }
 .treasure-listen-btn.bc:hover { background: rgba(26,99,138,0.35); color: #fff; }
+.treasure-track-list { display: flex; flex-direction: column; gap: 6px; margin: 0.4rem 0; text-align: left; }
+.treasure-track-link {
+  display: block; padding: 0.35rem 0.7rem;
+  background: rgba(26,99,138,0.1); border: 1px solid rgba(26,99,138,0.3); border-radius: 4px;
+  color: #1da0c3; font-family: 'Crimson Pro', serif; font-size: 0.9rem;
+  text-decoration: none; transition: all 0.18s;
+}
+.treasure-track-link:hover { background: rgba(26,99,138,0.25); color: #fff; border-color: #1da0c3; padding-left: 1rem; }
 
 .scroll-item {
   opacity: 0; transform: translateY(12px);
@@ -3900,10 +3908,14 @@ function bossVictory() {
 // ══════════════════════════════════════════════════════
 const BOSS_TREASURES = {
   q0: {
-    title: 'Statistical Hypotheses',
-    artist: 'StatsLearn — A Significant Party',
-    note: 'The Ghost of Bad Research Past dissolves. Someone left this here — a track about the very thing it got wrong. H₀ and H₁, written before the data, not after. Name your price on Bandcamp.',
-    bc: 'https://statslearn.bandcamp.com/track/statistical-hypotheses',
+    note: 'The Ghost of Bad Research Past dissolves into the archive dust. Five songs were left behind — one for each foundation of the Prologue. They cover everything the Ghost got wrong.',
+    tracks: [
+      { title: 'Statistical Hypotheses', bc: 'https://statslearn.bandcamp.com/track/statistical-hypotheses' },
+      { title: 'Type 1 and Type 2 Errors', bc: 'https://statslearn.bandcamp.com/track/type-1-and-type-2-errors' },
+      { title: 'Sampling, Reliability, Validity', bc: 'https://statslearn.bandcamp.com/track/sampling-reliability-validity' },
+      { title: 'Confident in my Interval', bc: 'https://statslearn.bandcamp.com/track/confident-in-my-interval' },
+      { title: 'The p value', bc: 'https://statslearn.bandcamp.com/track/the-p-value' }
+    ],
     free: false
   },
   q1: {
@@ -3959,24 +3971,42 @@ function openChest(questId) {
 function buildTreasureChest(questId) {
   const t = BOSS_TREASURES[questId];
   if (!t) return '';
-  const freeLabel = t.free
-    ? '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--sage-bright); letter-spacing:0.08em; text-transform:uppercase">✦ Free download</span>'
-    : '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase">♦ Name your price on Bandcamp</span>';
+  const priceTag = t.free
+    ? '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--sage-bright); letter-spacing:0.08em; text-transform:uppercase">\u2756 Free download</span>'
+    : '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase">\u2666 Name your price on Bandcamp</span>';
+
+  let tracksHtml;
+  if (t.tracks) {
+    const trackList = t.tracks.map(tr =>
+      `<a href="${tr.bc}" target="_blank" rel="noopener" class="treasure-track-link">\u266b ${tr.title}</a>`
+    ).join('');
+    tracksHtml = `
+      <div class="treasure-track-list">${trackList}</div>
+      <div class="treasure-link-row" style="align-items:center; gap:10px; margin-top:0.7rem">
+        ${priceTag}
+        <a href="https://statslearn.bandcamp.com/album/a-significant-party" target="_blank" rel="noopener" class="treasure-listen-btn bc">\u266b Full album on Bandcamp</a>
+      </div>`;
+  } else {
+    tracksHtml = `
+      <div class="treasure-song-title">${t.title}</div>
+      <div class="treasure-song-artist">${t.artist}</div>
+      <div class="treasure-link-row" style="align-items:center; gap:10px; margin-top:0.5rem">
+        ${priceTag}
+        <a href="${t.bc}" target="_blank" rel="noopener" class="treasure-listen-btn bc">\u266b Open on Bandcamp</a>
+      </div>`;
+  }
+
+  const chestLabel = t.tracks ? 'Songs were left behind...' : 'A song was left behind...';
   return `
     <div style="text-align:center; margin: 1.5rem 0 0.5rem">
       <div class="treasure-chest" id="chest-${questId}" onclick="openChest('${questId}')">
-        <span class="chest-icon">🎵</span>
-        <span class="chest-label">A song was left behind...</span>
+        <span class="chest-icon">\ud83c\udfb5</span>
+        <span class="chest-label">${chestLabel}</span>
       </div>
       <div class="treasure-reveal" id="chest-reveal-${questId}">
-        <div style="font-family:Cinzel,serif; font-size:0.6rem; letter-spacing:0.15em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.5rem">🎵 Reward — StatsLearn · A Significant Party</div>
-        <div class="treasure-song-title">${t.title}</div>
-        <div class="treasure-song-artist">${t.artist}</div>
+        <div style="font-family:Cinzel,serif; font-size:0.6rem; letter-spacing:0.15em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.6rem">\ud83c\udfb5 Reward \u2014 StatsLearn \u00b7 A Significant Party</div>
         <div class="treasure-song-note">${t.note}</div>
-        <div class="treasure-link-row" style="align-items:center; gap:10px">
-          ${freeLabel}
-          <a href="${t.bc}" target="_blank" rel="noopener" class="treasure-listen-btn bc">♫ Open on Bandcamp</a>
-        </div>
+        ${tracksHtml}
       </div>
     </div>`;
 }
