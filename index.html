@@ -1475,6 +1475,7 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 }
 
 /* ── Lore panel (same drawer pattern as journal) ─────── */
+/* ── Lore chooser panel (bottom drawer) ──────────────── */
 #lore-panel {
   position: fixed; inset: 0; z-index: 800;
   display: flex; align-items: flex-end; justify-content: center;
@@ -1494,14 +1495,13 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 }
 #lore-panel.open #lore-sheet { transform: translateY(0); }
 
-/* ── Tome cards ──────────────────────────────────────── */
+/* ── Tome chooser cards ───────────────────────────────── */
 .lore-tome-card {
   display: flex; gap: 1rem; align-items: flex-start;
   background: rgba(45,212,116,0.05);
   border: 1px solid rgba(45,212,116,0.2);
   border-radius: 10px; padding: 1.1rem 1.2rem;
-  margin-bottom: 0.5rem;
-  transition: border-color 0.2s;
+  margin-bottom: 0.5rem; transition: border-color 0.2s;
 }
 .lore-tome-card:hover { border-color: rgba(45,212,116,0.4); }
 .lore-tome-card.lore-deep {
@@ -1513,8 +1513,7 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 .lore-tome-body { flex: 1; }
 .lore-tome-title {
   font-family: 'Cinzel', serif; font-size: 0.9rem;
-  color: var(--gold-bright); font-weight: 600; margin-bottom: 0.3rem;
-  line-height: 1.3;
+  color: var(--gold-bright); font-weight: 600; margin-bottom: 0.3rem; line-height: 1.3;
 }
 .lore-tome-sub {
   font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;
@@ -1527,35 +1526,185 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
   font-family: 'Cinzel', serif; font-size: 0.7rem;
   letter-spacing: 0.1em; text-transform: uppercase;
   text-decoration: none; font-weight: 600;
-  transition: all 0.2s; cursor: pointer;
+  transition: all 0.2s; cursor: pointer; border: none;
 }
 .lore-lang-btn.eng {
-  background: rgba(45,212,116,0.12); border: 1px solid rgba(45,212,116,0.4);
-  color: var(--sage-bright);
+  background: rgba(45,212,116,0.12); border: 1px solid rgba(45,212,116,0.4); color: var(--sage-bright);
 }
-.lore-lang-btn.eng:hover {
-  background: rgba(45,212,116,0.22); border-color: var(--sage-bright);
-}
+.lore-lang-btn.eng:hover { background: rgba(45,212,116,0.22); border-color: var(--sage-bright); }
 .lore-lang-btn.nl {
-  background: rgba(232,98,26,0.12); border: 1px solid rgba(232,98,26,0.4);
-  color: #f09060;
+  background: rgba(232,98,26,0.12); border: 1px solid rgba(232,98,26,0.4); color: #f09060;
 }
-.lore-lang-btn.nl:hover {
-  background: rgba(232,98,26,0.22); border-color: var(--ember);
-  color: var(--ember);
-}
+.lore-lang-btn.nl:hover { background: rgba(232,98,26,0.22); border-color: var(--ember); color: var(--ember); }
 .lore-lang-btn.deep {
-  background: rgba(139,92,246,0.14); border: 1px solid rgba(139,92,246,0.4);
-  color: var(--rune-bright);
+  background: rgba(139,92,246,0.14); border: 1px solid rgba(139,92,246,0.4); color: var(--rune-bright);
 }
-.lore-lang-btn.deep:hover {
-  background: rgba(139,92,246,0.26); border-color: var(--rune-bright);
-}
+.lore-lang-btn.deep:hover { background: rgba(139,92,246,0.26); border-color: var(--rune-bright); }
 .lore-divider {
   text-align: center; font-family: 'Cinzel', serif;
-  color: var(--border-bright); letter-spacing: 0.4em;
-  font-size: 0.75rem; margin: 0.8rem 0;
+  color: var(--border-bright); letter-spacing: 0.4em; font-size: 0.75rem; margin: 0.8rem 0;
 }
+
+/* ── Full-screen handbook reader ─────────────────────── */
+#handbook-reader {
+  position: fixed; inset: 0; z-index: 900;
+  background: #0e0c0f;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.32,0.72,0,1);
+}
+#handbook-reader.open { transform: translateY(0); }
+#handbook-reader-bar {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8rem 1.2rem;
+  background: #16121a;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+}
+#handbook-reader-title {
+  font-family: 'Cinzel', serif; font-size: 0.8rem;
+  color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase;
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#handbook-reader-close {
+  flex-shrink: 0;
+  background: rgba(212,168,32,0.1); border: 1px solid var(--gold-dim);
+  color: var(--gold); border-radius: 20px; padding: 0.35rem 1rem;
+  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.1em;
+  cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+}
+#handbook-reader-close:hover { background: rgba(212,168,32,0.2); border-color: var(--gold); }
+#handbook-reader-body {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 1.5rem 1.2rem 3rem; max-width: 760px; width: 100%; margin: 0 auto;
+}
+
+/* ── Handbook content styles ─────────────────────────── */
+.hb-cover {
+  text-align: center; padding: 2rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--border); margin-bottom: 2rem;
+}
+.hb-cover-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  color: var(--gold-bright); line-height: 1.3; margin-bottom: 0.5rem;
+}
+.hb-cover-sub {
+  font-family: 'Cinzel', serif; font-size: 0.75rem;
+  color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase;
+}
+.hb-section {
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.hb-section-header {
+  font-family: 'Cinzel', serif; font-size: 1rem;
+  color: var(--gold-bright); font-weight: 700;
+  background: rgba(212,168,32,0.08);
+  padding: 0.8rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
+}
+.hb-section-body { padding: 1rem 1.1rem; }
+.hb-p {
+  font-family: 'Crimson Pro', serif; font-size: 1.05rem;
+  color: var(--text); line-height: 1.8; margin-bottom: 0.9rem;
+}
+.hb-p:last-child { margin-bottom: 0; }
+.hb-note {
+  background: rgba(212,168,32,0.07); border-left: 3px solid var(--gold);
+  padding: 0.7rem 1rem; border-radius: 0 6px 6px 0;
+  font-family: 'Crimson Pro', serif; font-size: 1rem;
+  color: var(--text); line-height: 1.7; margin: 0.8rem 0;
+}
+.hb-alert {
+  background: rgba(192,24,44,0.08); border-left: 3px solid var(--blood);
+  padding: 0.7rem 1rem; border-radius: 0 6px 6px 0;
+  font-family: 'Crimson Pro', serif; font-size: 1rem;
+  color: var(--text); line-height: 1.7; margin: 0.8rem 0;
+}
+.hb-h3 {
+  font-family: 'Cinzel', serif; font-size: 0.85rem;
+  color: var(--sage-bright); letter-spacing: 0.1em;
+  text-transform: uppercase; margin: 1.2rem 0 0.5rem;
+}
+.hb-tree {
+  background: var(--surface2); border-radius: 8px;
+  padding: 1rem 1.1rem; margin: 0.6rem 0;
+  font-family: 'Crimson Pro', serif; font-size: 0.98rem;
+  color: var(--text); line-height: 2;
+}
+.hb-tree .branch { padding-left: 1.5rem; color: var(--text-dim); }
+.hb-tree .leaf { padding-left: 3rem; color: var(--text-muted); font-style: italic; }
+.hb-tag {
+  display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px;
+  font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; margin: 0 2px;
+  vertical-align: middle;
+}
+.hb-tag.nom { background: rgba(45,212,116,0.15); color: var(--sage-bright); }
+.hb-tag.ord { background: rgba(232,98,26,0.15); color: var(--ember); }
+.hb-tag.int { background: rgba(59,130,246,0.15); color: #93c5fd; }
+.hb-tag.rat { background: rgba(212,168,32,0.15); color: var(--gold); }
+.hb-tag.prob { background: rgba(45,212,116,0.15); color: var(--sage-bright); }
+.hb-tag.nonprob { background: rgba(192,24,44,0.15); color: #f87171; }
+.hb-tag.key { background: rgba(139,92,246,0.15); color: var(--rune-bright); }
+.hb-formula {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.6rem 1rem; margin: 0.5rem 0;
+  font-family: monospace; font-size: 0.95rem; color: var(--gold-bright);
+  text-align: center;
+}
+.hb-table {
+  width: 100%; border-collapse: collapse; margin: 0.8rem 0;
+  font-family: 'Crimson Pro', serif; font-size: 0.95rem;
+}
+.hb-table th {
+  background: rgba(212,168,32,0.1); color: var(--gold);
+  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 0.5rem 0.8rem; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.hb-table td {
+  padding: 0.5rem 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--text); vertical-align: top; line-height: 1.5;
+}
+.hb-table tr:last-child td { border-bottom: none; }
+.hb-table tr:hover td { background: rgba(255,255,255,0.02); }
+.hb-checklist { list-style: none; padding: 0; margin: 0.5rem 0; }
+.hb-checklist li {
+  font-family: 'Crimson Pro', serif; font-size: 1rem;
+  color: var(--text); line-height: 1.7; padding: 0.2rem 0 0.2rem 1.6rem;
+  position: relative;
+}
+.hb-checklist li::before {
+  content: '✦'; position: absolute; left: 0;
+  color: var(--gold); font-size: 0.7rem; top: 0.45rem;
+}
+.hb-checklist li.good::before { content: '✓'; color: var(--sage-bright); font-size: 0.9rem; top: 0.3rem; }
+.hb-checklist li.bad::before { content: '✗'; color: var(--blood); font-size: 0.9rem; top: 0.3rem; }
+.hb-divider {
+  text-align: center; font-family: 'Cinzel', serif;
+  color: var(--border-bright); letter-spacing: 0.4em;
+  font-size: 0.75rem; margin: 1.5rem 0;
+}
+.hb-lang-switcher {
+  display: flex; gap: 8px; justify-content: center;
+  margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.hb-lang-switch-btn {
+  padding: 0.4rem 1.2rem; border-radius: 20px;
+  font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em;
+  text-transform: uppercase; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text-muted); transition: all 0.2s;
+}
+.hb-lang-switch-btn.active {
+  background: rgba(212,168,32,0.15); border-color: var(--gold); color: var(--gold);
+}
+.hb-lang-switch-btn:hover { border-color: var(--gold-dim); color: var(--gold-bright); }
 
 #oracle-panel {
   position: fixed;
@@ -2276,6 +2425,8 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 
 <!-- Lore button + panel -->
 <button id="lore-btn" onclick="toggleLore()" title="Consult the Lore — Official Handbooks">📚<span id="lore-label">Consult the Lore</span></button>
+
+<!-- Lore chooser drawer -->
 <div id="lore-panel" onclick="closeLorePanel(event)">
   <div id="lore-sheet">
     <div class="journal-handle"></div>
@@ -2283,25 +2434,17 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
     <div class="journal-subtitle">Official tomes of the Order — consult before battle</div>
     <div style="padding: 1rem 0 0.5rem">
 
-<div class="lore-tome-card">
-  <div class="lore-tome-icon">📖</div>
-  <div class="lore-tome-body">
-    <div class="lore-tome-title">Concise but Significant Handbook to M5 Statistics</div>
-    <div class="lore-tome-sub">HMSM Team Research Skills · Version 0226 · Hotel Management School Maastricht</div>
-    <div class="lore-tome-langs">
-      <a class="lore-lang-btn eng" 
-         href="https://raw.githubusercontent.com/talangill/letsplaystats/main/HANDBOOK%20MOD5%20ENG%20FEB2026.pdf" 
-         target="_blank" 
-         rel="noopener">🇬🇧 English</a>
-
-      <a class="lore-lang-btn nl" 
-         href="https://raw.githubusercontent.com/talangill/letsplaystats/main/HANDBOEK%20MOD5%20NL%20FEB2026.pdf" 
-         target="_blank" 
-         rel="noopener">🇳🇱 Nederlands</a>
-    </div>
-  </div>
-</div>
-
+      <div class="lore-tome-card">
+        <div class="lore-tome-icon">📖</div>
+        <div class="lore-tome-body">
+          <div class="lore-tome-title">Concise but Significant Handbook to M5 Statistics</div>
+          <div class="lore-tome-sub">HMSM Team Research Skills · Version 0226 · Hotel Management School Maastricht</div>
+          <div class="lore-tome-langs">
+            <button class="lore-lang-btn eng" onclick="openHandbook('eng')">🇬🇧 English</button>
+            <button class="lore-lang-btn nl" onclick="openHandbook('nl')">🇳🇱 Nederlands</button>
+          </div>
+        </div>
+      </div>
 
       <div class="lore-divider">✦ ✦ ✦</div>
 
@@ -2318,6 +2461,15 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 
     </div>
   </div>
+</div>
+
+<!-- Full-screen handbook reader -->
+<div id="handbook-reader">
+  <div id="handbook-reader-bar">
+    <div id="handbook-reader-title">Handbook</div>
+    <button id="handbook-reader-close" onclick="closeHandbook()">✕ Close</button>
+  </div>
+  <div id="handbook-reader-body"></div>
 </div>
 
 <!-- Streak popup -->
@@ -7031,19 +7183,444 @@ function toggleOracle() {
 }
 
 function toggleLore() {
-  const panel = document.getElementById('lore-panel');
-  const isOpen = panel.classList.contains('open');
-  if (isOpen) {
-    panel.classList.remove('open');
-  } else {
-    panel.classList.add('open');
-  }
+  document.getElementById('lore-panel').classList.toggle('open');
 }
 
 function closeLorePanel(e) {
   if (e && e.target !== document.getElementById('lore-panel')) return;
   document.getElementById('lore-panel').classList.remove('open');
 }
+
+function openHandbook(lang) {
+  document.getElementById('lore-panel').classList.remove('open');
+  const reader = document.getElementById('handbook-reader');
+  const body   = document.getElementById('handbook-reader-body');
+  const title  = document.getElementById('handbook-reader-title');
+  title.textContent = lang === 'eng'
+    ? '📖 Concise but Significant Handbook to M5 Statistics — English'
+    : '📖 Beknopt maar Significant Handboek voor M5 Statistiek — Nederlands';
+  body.innerHTML = lang === 'eng' ? HANDBOOK_ENG() : HANDBOOK_NL();
+  body.scrollTop = 0;
+  reader.classList.add('open');
+}
+
+function closeHandbook() {
+  document.getElementById('handbook-reader').classList.remove('open');
+}
+
+function HANDBOOK_ENG() { return `
+<div class="hb-cover">
+  <div class="hb-cover-title">Concise but Significant Handbook<br>to M5 Statistics</div>
+  <div class="hb-cover-sub" style="margin-top:0.5rem">HMSM Team Research Skills · Version 0226ENG · Hotel Management School Maastricht</div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">1 · What Measurement Level?</div>
+  <div class="hb-section-body">
+    <div class="hb-tree">
+      <div><strong>Variable / data</strong></div>
+      <div class="branch">📦 <strong>Categorical</strong> — Labels, making groups, distinct categories</div>
+      <div class="leaf"><span class="hb-tag nom">Nominal</span> Categories are equal ( = and ≠ ) · e.g. eye colour, gender, room type</div>
+      <div class="leaf"><span class="hb-tag ord">Ordinal</span> There is an order to the categories ( &gt; and &lt; ) · e.g. satisfaction rating, Likert scale</div>
+      <div class="branch">🔢 <strong>Continuous</strong> — Measured, scale, ranges, values</div>
+      <div class="leaf"><span class="hb-tag int">Interval</span> Equal distance between the values ( + and − ) · e.g. temperature in °C, years</div>
+      <div class="leaf"><span class="hb-tag rat">Ratio</span> There is an absolute 0 point ( × and ÷ ) · e.g. height, weight, revenue</div>
+    </div>
+    <div class="hb-note">The measurement level of your variable determines which statistics and tests are valid. Getting this wrong invalidates everything that follows.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">2 · Which Chart to Use?</div>
+  <div class="hb-section-body">
+    <table class="hb-table">
+      <tr><th>Variable(s)</th><th>Chart type</th></tr>
+      <tr><td><span class="hb-tag nom">Categorical</span> — 1 variable</td><td>Bar chart or pie chart</td></tr>
+      <tr><td><span class="hb-tag nom">Categorical</span> — 2 variables</td><td>Clustered or stacked bar chart</td></tr>
+      <tr><td>1 of each (categorical + continuous)</td><td>Bar chart, error bar plot, or box plot</td></tr>
+      <tr><td><span class="hb-tag rat">Continuous</span> — 1 variable</td><td>Histogram</td></tr>
+      <tr><td><span class="hb-tag rat">Continuous</span> — 2 variables</td><td>Scatterplot, or line graph (over time)</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">3 · Making Hypotheses</div>
+  <div class="hb-section-body">
+    <p class="hb-p">A research hypothesis is a concise statement about the expected result of an experiment or project.</p>
+    <table class="hb-table">
+      <tr><th>Type</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><strong>H₀</strong> Null</td><td>Standard reality — assumed true until disproved</td><td>H₀: μ<sub>test</sub> = μ<sub>control</sub> · drug has no effect</td></tr>
+      <tr><td><strong>H₁ / Hₐ</strong> Alternative</td><td>What we are looking for — something out of the ordinary</td><td>H₁: μ<sub>test</sub> ≠ μ<sub>control</sub> · drug does something</td></tr>
+    </table>
+    <div class="hb-h3">Two-sided vs One-sided</div>
+    <p class="hb-p"><strong>Two-sided:</strong> H₁: μ<sub>test</sub> ≠ μ<sub>control</sub> — any difference, either direction.<br>
+    <strong>One-sided:</strong> H₁: μ<sub>test</sub> &gt; μ<sub>control</sub> — specific direction. Only valid with a pre-registered directional hypothesis. Never chosen after seeing results.</p>
+    <div class="hb-note">When testing means: use <strong>μ</strong>. When testing proportions/shares: use <strong>π</strong>.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">4 · Hypotheses, p, and Distribution</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Statistical tests calculate the probability that H₀ is true — the probability you would find your study's observations if H₀ were true.</p>
+    <div class="hb-note"><strong>Critical rule:</strong> If p of H₀ is below the critical value (e.g. 0.05), <strong>reject H₀ and accept H₁</strong>.</div>
+    <p class="hb-p">We normally use a critical p-value of <strong>0.05</strong>: at least 95% of observed data must fall within the 95% confidence interval to assume a significant difference.</p>
+    <div class="hb-alert">⚠ If you test <strong>one-sided</strong>, divide the test's p-value by 2. In Jamovi tick the box; in SPSS read the "one-sided" column.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">5 · Types of Error</div>
+  <div class="hb-section-body">
+    <table class="hb-table">
+      <tr><th>Error</th><th>Also called</th><th>What happened</th></tr>
+      <tr><td><strong>Type I</strong></td><td>False positive</td><td>Rejected H₀ when it was actually true. Accepted H₁ when you shouldn't have.</td></tr>
+      <tr><td><strong>Type II</strong></td><td>False negative</td><td>Did not reject H₀ when it was false. Missed a real effect.</td></tr>
+      <tr><td><strong>Type III</strong></td><td>Wrong reason</td><td>Rejected H₀ by the numbers, but with wrong reasoning. e.g. a directional conclusion from a two-tailed test.</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">6 · Validity and Reliability</div>
+  <div class="hb-section-body">
+    <div class="hb-h3">Validity — are you measuring the right thing?</div>
+    <table class="hb-table">
+      <tr><th>Type</th><th>Question it answers</th></tr>
+      <tr><td><strong>Face validity</strong></td><td>Does it make sense at first sight, also to participants?</td></tr>
+      <tr><td><strong>Content validity</strong></td><td>Does the test cover everything it should?</td></tr>
+      <tr><td><strong>Criterion validity</strong></td><td>Does it accurately predict or correlate with the criterion outcome?</td></tr>
+      <tr><td><strong>Construct validity</strong></td><td>Does a set of indicators represent a concept not directly measurable?</td></tr>
+      <tr><td><strong>Internal validity</strong></td><td>Does the study design answer the research question without bias?</td></tr>
+      <tr><td><strong>External validity</strong></td><td>Can findings be generalised to other contexts?</td></tr>
+    </table>
+    <div class="hb-h3">Reliability — measuring it consistently?</div>
+    <ul class="hb-checklist">
+      <li><strong>Quantitative:</strong> Sample size (N), test-retest, standardisation, pilots, peer feedback, reporting</li>
+      <li><strong>Qualitative:</strong> Intersubjectivity, triangulation, iteration</li>
+      <li>Internal consistency expressed with <strong>Cronbach's alpha α</strong></li>
+    </ul>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">7 · Sampling</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Get a sample as <strong>random</strong> and <strong>representative</strong> as possible of your target population.</p>
+    <div class="hb-h3"><span class="hb-tag prob">Probability sampling</span> — based on randomisation</div>
+    <ul class="hb-checklist">
+      <li><strong>Simple random:</strong> Any subject from the target population at random</li>
+      <li><strong>Stratified:</strong> Randomly sample within relative subpopulations (same proportions as population)</li>
+      <li><strong>Clustered:</strong> Divide into clusters, select whole clusters</li>
+      <li><strong>Systematic:</strong> Use a pattern — e.g. every 10th guest</li>
+    </ul>
+    <div class="hb-h3"><span class="hb-tag nonprob">Non-probability sampling</span> — subjective selection</div>
+    <ul class="hb-checklist">
+      <li><strong>Snowball:</strong> Any subject can nominate the next</li>
+      <li><strong>Quota:</strong> Sample within set subpopulations until quota met — not randomly</li>
+      <li><strong>Self-selection:</strong> People volunteer themselves</li>
+      <li><strong>Convenience:</strong> Whoever is available. Very "not random."</li>
+    </ul>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">8 · Which Test to Use?</div>
+  <div class="hb-section-body">
+    <table class="hb-table">
+      <tr><th>Goal</th><th>Variable types</th><th>Test</th></tr>
+      <tr><td>Check a relationship</td><td>2 categorical</td><td><strong>Chi² test</strong> — Expected counts ≥ 5!</td></tr>
+      <tr><td>Check a relationship</td><td>2 continuous</td><td><strong>Correlation</strong> — linear data only</td></tr>
+      <tr><td>Compare means — 1 group vs known value</td><td>1 continuous + 1 categorical</td><td><strong>One-sample t-test</strong></td></tr>
+      <tr><td>Compare means — same group, 2 moments</td><td>1 continuous + 1 categorical</td><td><strong>Paired samples t-test</strong></td></tr>
+      <tr><td>Compare means — 2 separate groups</td><td>1 continuous + 1 categorical</td><td><strong>Independent t-test</strong> (or Mann-Whitney U if assumptions violated)</td></tr>
+      <tr><td>Compare means — 3+ groups</td><td>1 continuous + 1 categorical</td><td><strong>ANOVA</strong> (Fisher's or Welch's)</td></tr>
+    </table>
+    <div class="hb-note">Grouping variable is always nominal/ordinal; test variable is interval/ratio.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">9 · Chi² Test</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Used to see if there is a relationship between <strong>two categorical variables</strong>. Works with frequencies, not means.</p>
+    <ul class="hb-checklist">
+      <li class="good">All expected counts ≥ 5 — if not, use <strong>Fisher's Exact Test</strong></li>
+      <li class="good">Independent measures</li>
+    </ul>
+    <div class="hb-formula">Expected count = (row total × column total) / N</div>
+    <p class="hb-p">In Jamovi: <em>Analyses → Frequencies → Independent Samples χ² of association</em></p>
+    <p class="hb-p">Key outputs: <strong>χ²</strong>, <strong>df</strong>, <strong>p</strong> · <strong>Cramer's V</strong> for strength (0 to 1)</p>
+    <div class="hb-alert">Significant result = association exists — but examine standardised residuals to see which cells drive it.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">10 · Correlation</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Used to see if there is a relationship between <strong>two continuous variables</strong>.</p>
+    <ul class="hb-checklist">
+      <li class="good">Data must be reasonably linear — check with a scatterplot first</li>
+      <li class="bad">Outliers can distort the result — inspect carefully</li>
+    </ul>
+    <p class="hb-p">In Jamovi: <em>Exploration → Scatterplot</em> · <em>Analyses → Regression → Correlation Matrix</em></p>
+    <p class="hb-p">Key outputs: <strong>Pearson's r</strong> (−1 to +1) · <strong>p</strong> · <strong>df</strong></p>
+    <div class="hb-note"><strong>Significant ≠ causal.</strong> Correlation never implies causation. If data are not linear, use <strong>Spearman's rho</strong>.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">11 · T-Test</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Compares means (μ's) to see if there is a significant difference between groups.</p>
+    <table class="hb-table">
+      <tr><th>Type</th><th>When to use</th></tr>
+      <tr><td><strong>One-sample</strong></td><td>Your group's mean vs a known/literature value</td></tr>
+      <tr><td><strong>Independent</strong></td><td>Two completely separate groups</td></tr>
+      <tr><td><strong>Paired samples</strong></td><td>One group at two different moments — same people both times!</td></tr>
+    </table>
+    <div class="hb-h3">Data checks (tick both in Jamovi)</div>
+    <table class="hb-table">
+      <tr><th>Shapiro-Wilk</th><th>Levene's</th><th>Use</th></tr>
+      <tr><td>✓ p &gt; 0.05</td><td>✓ p &gt; 0.05</td><td><strong>Student's t-test</strong></td></tr>
+      <tr><td>✓ p &gt; 0.05</td><td>✗ p &lt; 0.05</td><td><strong>Welch's t-test</strong></td></tr>
+      <tr><td>✗ p &lt; 0.05 (either group)</td><td>Either</td><td><strong>Mann-Whitney U</strong> (uses medians)</td></tr>
+    </table>
+    <p class="hb-p">Key outputs: <strong>p</strong> · <strong>Cohen's d</strong> effect size (t-test) · <strong>Rank biserial correlation</strong> (Mann-Whitney U)</p>
+    <div class="hb-alert">One-sided testing only valid with a pre-registered directional hypothesis — never chosen after seeing results.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">12 · ANOVA</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Compares means across <strong>three or more groups</strong> in one test — prevents false positive inflation from multiple t-tests.</p>
+    <table class="hb-table">
+      <tr><th>Levene's result</th><th>ANOVA to use</th><th>Post-hoc test</th></tr>
+      <tr><td>p &gt; 0.05 (homogeneity met)</td><td><strong>Fisher's ANOVA</strong></td><td>Tukey or Bonferroni</td></tr>
+      <tr><td>p &lt; 0.05 (violated)</td><td><strong>Welch's ANOVA</strong></td><td>Games-Howell</td></tr>
+    </table>
+    <p class="hb-p">Significant F = at least one group differs. Post-hoc tests reveal which specific pairs differ.</p>
+    <ul class="hb-checklist">
+      <li><strong>Tukey:</strong> Less strict — higher Type I risk, lower Type II risk. Only option in Jamovi.</li>
+      <li><strong>Bonferroni:</strong> Stricter — lower Type I risk, higher Type II risk.</li>
+      <li><strong>Games-Howell:</strong> When variances are unequal (after Welch's ANOVA).</li>
+    </ul>
+    <p class="hb-p">In Jamovi: <em>Analyses → ANOVA → One-way ANOVA</em>. Tick Homogeneity test (Levene's). Use descriptives to report which group scored higher.</p>
+  </div>
+</div>
+
+<div class="hb-divider">✦ · · · · · · · · · · · · · ✦</div>
+<p style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--text-muted);text-align:center;letter-spacing:0.1em;text-transform:uppercase;">HMSM Team Research Skills (2026) · Version 0226ENG · Hotel Management School Maastricht</p>
+`; }
+
+function HANDBOOK_NL() { return `
+<div class="hb-cover">
+  <div class="hb-cover-title">Beknopt maar Significant Handboek<br>voor M5 Statistiek</div>
+  <div class="hb-cover-sub" style="margin-top:0.5rem">HMSM Team Research Skills · Version 0226NL · Hotel Management School Maastricht</div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">1 · Welk Meetniveau?</div>
+  <div class="hb-section-body">
+    <div class="hb-tree">
+      <div><strong>Variabele / data</strong></div>
+      <div class="branch">📦 <strong>Categorisch</strong> — Labels, groepen, onderscheidende categorieën</div>
+      <div class="leaf"><span class="hb-tag nom">Nominaal</span> Categorieën zijn evenwaardig ( = en ≠ ) · bijv. oogkleur, geslacht, kamertype</div>
+      <div class="leaf"><span class="hb-tag ord">Ordinaal</span> Er is een volgorde in de categorieën ( &gt; en &lt; ) · bijv. tevredenheid, Likertschaal</div>
+      <div class="branch">🔢 <strong>Continu</strong> — Gemeten, schaal, intervallen, waarden</div>
+      <div class="leaf"><span class="hb-tag int">Interval</span> Gelijke afstanden tussen waarden ( + en − ) · bijv. temperatuur in °C, jaren</div>
+      <div class="leaf"><span class="hb-tag rat">Ratio</span> Gelijke afstanden én absoluut 0-punt ( × en ÷ ) · bijv. lengte, gewicht, omzet</div>
+    </div>
+    <div class="hb-note">Het meetniveau bepaalt welke statistieken en toetsen geldig zijn. Dit fout doen maakt alles wat volgt ongeldig.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">2 · Welk Diagram?</div>
+  <div class="hb-section-body">
+    <table class="hb-table">
+      <tr><th>Variabele(n)</th><th>Type diagram</th></tr>
+      <tr><td><span class="hb-tag nom">Categorisch</span> — 1 variabele</td><td>Staafdiagram of taartdiagram</td></tr>
+      <tr><td><span class="hb-tag nom">Categorisch</span> — 2 variabelen</td><td>Geclusterd of gestapeld staafdiagram</td></tr>
+      <tr><td>1 van elk (categorisch + continu)</td><td>Staafdiagram, error bar plot of boxplot</td></tr>
+      <tr><td><span class="hb-tag rat">Continu</span> — 1 variabele</td><td>Histogram</td></tr>
+      <tr><td><span class="hb-tag rat">Continu</span> — 2 variabelen</td><td>Scatterplot of lijndiagram (tijdsverloop)</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">3 · Hypotheses Opstellen</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Een hypothese is een beknopt statement over het verwachte resultaat van een experiment of project.</p>
+    <table class="hb-table">
+      <tr><th>Type</th><th>Betekenis</th><th>Voorbeeld</th></tr>
+      <tr><td><strong>H₀</strong> Nulhypothese</td><td>Standaard realiteit — aangenomen als waar totdat weerlegd</td><td>H₀: μ<sub>test</sub> = μ<sub>control</sub> · medicijn heeft geen effect</td></tr>
+      <tr><td><strong>H₁ / Hₐ</strong> Alternatief</td><td>Wat we zoeken — iets buitengewoons</td><td>H₁: μ<sub>test</sub> ≠ μ<sub>control</sub> · medicijn doet iets</td></tr>
+    </table>
+    <div class="hb-h3">Tweezijdig vs Éénzijdig</div>
+    <p class="hb-p"><strong>Tweezijdig:</strong> H₁: μ<sub>test</sub> ≠ μ<sub>control</sub> — elk verschil, elke richting.<br>
+    <strong>Éénzijdig:</strong> H₁: μ<sub>test</sub> &gt; μ<sub>control</sub> — specifieke richting. Alleen geldig met vooraf geregistreerde hypothese. Nooit achteraf kiezen.</p>
+    <div class="hb-note">Bij gemiddelden: gebruik <strong>μ</strong>. Bij proporties/aandelen: gebruik <strong>π</strong>.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">4 · Hypotheses, p en Distributie</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Statistische toetsen berekenen de kans dat H₀ waar is — de kans dat je jouw observaties zou vinden als H₀ waar zou zijn.</p>
+    <div class="hb-note"><strong>Kritieke regel:</strong> Als p van H₀ lager is dan de kritieke waarde (bijv. 0.05), <strong>verwerp H₀ en accepteer H₁</strong>.</div>
+    <p class="hb-p">Kritische p-waarde = <strong>0.05</strong>: ten minste 95% van de geobserveerde data moet binnen het 95%-betrouwbaarheidsinterval vallen.</p>
+    <div class="hb-alert">⚠ Bij <strong>éénzijdig</strong> toetsen: p-waarde delen door 2. In Jamovi vakje aanvinken; in SPSS kolom "éénzijdig" aflezen.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">5 · Soorten Fouten</div>
+  <div class="hb-section-body">
+    <table class="hb-table">
+      <tr><th>Fout</th><th>Ook wel</th><th>Wat er gebeurde</th></tr>
+      <tr><td><strong>Type I</strong></td><td>Vals-positief</td><td>H₀ verworpen terwijl die waar was. H₁ geaccepteerd terwijl dat niet mocht.</td></tr>
+      <tr><td><strong>Type II</strong></td><td>Vals-negatief</td><td>H₀ niet verworpen terwijl die onjuist was. Een echt effect gemist.</td></tr>
+      <tr><td><strong>Type III</strong></td><td>Verkeerde reden</td><td>H₀ correct verworpen op basis van cijfers, maar met foute redenering. Bijv. directionele conclusie uit tweezijdige toets.</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">6 · Validiteit en Betrouwbaarheid</div>
+  <div class="hb-section-body">
+    <div class="hb-h3">Validiteit — meet je het juiste?</div>
+    <table class="hb-table">
+      <tr><th>Type</th><th>Vraag die het beantwoordt</th></tr>
+      <tr><td><strong>Indruksvaliditeit</strong></td><td>Is het op het eerste gezicht logisch, ook voor deelnemers?</td></tr>
+      <tr><td><strong>Inhoudsvaliditeit</strong></td><td>Dekt de test alles wat het zou moeten?</td></tr>
+      <tr><td><strong>Criteriumvaliditeit</strong></td><td>Correleert of voorspelt het nauwkeurig de criteriumuitkomst?</td></tr>
+      <tr><td><strong>Constructvaliditeit</strong></td><td>Representeert een set indicatoren een niet-direct-meetbaar concept?</td></tr>
+      <tr><td><strong>Interne validiteit</strong></td><td>Beantwoordt het onderzoeksontwerp de vraag zonder vooroordelen?</td></tr>
+      <tr><td><strong>Externe validiteit</strong></td><td>Zijn resultaten generaliseerbaar naar andere contexten?</td></tr>
+    </table>
+    <div class="hb-h3">Betrouwbaarheid — meet je het consequent?</div>
+    <ul class="hb-checklist">
+      <li><strong>Kwantitatief:</strong> Steekproefgrootte (N), test-hertest, standaardisatie, pilots, peer feedback, rapporteren</li>
+      <li><strong>Kwalitatief:</strong> Intersubjectiviteit, triangulatie, iteratie</li>
+      <li>Interne consistentie uitgedrukt met <strong>Cronbach's alpha α</strong></li>
+    </ul>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">7 · Steekproefvorming</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Vorm een steekproef die zo <strong>willekeurig</strong> en <strong>representatief</strong> mogelijk is voor je doelpopulatie.</p>
+    <div class="hb-h3"><span class="hb-tag prob">A-selecte steekproef</span> — gebaseerd op willekeur</div>
+    <ul class="hb-checklist">
+      <li><strong>Simple random:</strong> Elke willekeurige onderzoekseenheid uit de doelgroep</li>
+      <li><strong>Stratified:</strong> Willekeurig samplen binnen relatieve subpopulaties (zelfde verhoudingen)</li>
+      <li><strong>Clustered:</strong> Opdelen in clusters, hele clusters selecteren</li>
+      <li><strong>Systematic:</strong> Op basis van een patroon — bijv. elke 10e gast</li>
+    </ul>
+    <div class="hb-h3"><span class="hb-tag nonprob">Selecte steekproef</span> — subjectieve selectie</div>
+    <ul class="hb-checklist">
+      <li><strong>Sneeuwbal:</strong> Elke onderzoekseenheid wijst de volgende aan</li>
+      <li><strong>Quotum:</strong> Samplen binnen vaste subpopulaties tot quotum bereikt — niet willekeurig</li>
+      <li><strong>Zelf-selectie:</strong> Mensen melden zich vrijwillig aan</li>
+      <li><strong>Gemakssteekproef:</strong> Wie dan ook beschikbaar is. Erg "niet willekeurig."</li>
+    </ul>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">8 · Welke Toets?</div>
+  <div class="hb-section-body">
+    <table class="hb-table">
+      <tr><th>Doel</th><th>Variabelentypen</th><th>Toets</th></tr>
+      <tr><td>Verband onderzoeken</td><td>2 categorisch</td><td><strong>Chi²-toets</strong> — Expected counts ≥ 5!</td></tr>
+      <tr><td>Verband onderzoeken</td><td>2 continu</td><td><strong>Correlatie</strong> — alleen lineaire data</td></tr>
+      <tr><td>Gemiddelden — 1 groep vs bekende waarde</td><td>1 continu + 1 categorisch</td><td><strong>One-sample t-toets</strong></td></tr>
+      <tr><td>Gemiddelden — zelfde groep, 2 momenten</td><td>1 continu + 1 categorisch</td><td><strong>Paired samples t-toets</strong></td></tr>
+      <tr><td>Gemiddelden — 2 aparte groepen</td><td>1 continu + 1 categorisch</td><td><strong>Independent t-toets</strong> (of Mann-Whitney U bij schendingen)</td></tr>
+      <tr><td>Gemiddelden — 3+ groepen</td><td>1 continu + 1 categorisch</td><td><strong>ANOVA</strong> (Fisher of Welch)</td></tr>
+    </table>
+    <div class="hb-note">Groeperingsvariabele is altijd nominaal/ordinaal; testvariabele is interval/ratio.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">9 · Chi²-Toets</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Gebruikt om te kijken of er een verband is tussen <strong>twee categorische variabelen</strong>. Werkt met frequenties, niet gemiddelden.</p>
+    <ul class="hb-checklist">
+      <li class="good">Alle expected counts ≥ 5 — zo niet, gebruik <strong>Fisher's Exact Test</strong></li>
+      <li class="good">Onafhankelijke observaties</li>
+    </ul>
+    <div class="hb-formula">Expected count = (rijtotaal × kolomtotaal) / N</div>
+    <p class="hb-p">In Jamovi: <em>Analyses → Frequencies → Independent Samples χ² of association</em></p>
+    <p class="hb-p">Uitkomsten: <strong>χ²</strong>, <strong>df</strong>, <strong>p</strong> · <strong>Cramer's V</strong> voor sterkte (0 tot 1)</p>
+    <div class="hb-alert">Significant = verband aanwezig — bekijk gestandaardiseerde residuen om te zien welke cellen dit veroorzaken.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">10 · Correlatie</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Gebruikt om te zien of er een relatie is tussen <strong>twee continue variabelen</strong>.</p>
+    <ul class="hb-checklist">
+      <li class="good">Data moet redelijkerwijs lineair zijn — controleer eerst met een scatterplot</li>
+      <li class="bad">Uitbijters kunnen het resultaat verstoren — goed inspecteren</li>
+    </ul>
+    <p class="hb-p">In Jamovi: <em>Exploration → Scatterplot</em> · <em>Analyses → Regressie → Correlatiematrix</em></p>
+    <p class="hb-p">Uitkomsten: <strong>Pearson's r</strong> (−1 tot +1) · <strong>p</strong> · <strong>df</strong></p>
+    <div class="hb-note"><strong>Significant ≠ causaal.</strong> Correlatie impliceert nooit causaliteit. Bij niet-lineaire data: gebruik <strong>Spearman's rho</strong>.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">11 · T-Toets</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Vergelijkt gemiddelden (μ's) om te zien of er een significant verschil is tussen groepen.</p>
+    <table class="hb-table">
+      <tr><th>Type</th><th>Wanneer gebruiken</th></tr>
+      <tr><td><strong>One-sample</strong></td><td>Jouw gemiddelde vs een bekende/literatuurwaarde</td></tr>
+      <tr><td><strong>Independent</strong></td><td>Twee volledig aparte groepen</td></tr>
+      <tr><td><strong>Paired samples</strong></td><td>Één groep op twee momenten — dezelfde mensen beide keren!</td></tr>
+    </table>
+    <div class="hb-h3">Data-checks (beide aanvinken in Jamovi)</div>
+    <table class="hb-table">
+      <tr><th>Shapiro-Wilk</th><th>Levene's</th><th>Gebruik</th></tr>
+      <tr><td>✓ p &gt; 0.05</td><td>✓ p &gt; 0.05</td><td><strong>Student's t-toets</strong></td></tr>
+      <tr><td>✓ p &gt; 0.05</td><td>✗ p &lt; 0.05</td><td><strong>Welch's t-toets</strong></td></tr>
+      <tr><td>✗ p &lt; 0.05 (een van beide groepen)</td><td>Beide</td><td><strong>Mann-Whitney U</strong> (gebruikt medianen)</td></tr>
+    </table>
+    <p class="hb-p">Uitkomsten: <strong>p</strong> · <strong>Cohen's d</strong> effectgrootte (t-toets) · <strong>Rank biserial correlation</strong> (Mann-Whitney U)</p>
+    <div class="hb-alert">Éénzijdig toetsen alleen geldig met vooraf geregistreerde directionele hypothese — nooit achteraf kiezen.</div>
+  </div>
+</div>
+
+<div class="hb-section">
+  <div class="hb-section-header">12 · ANOVA</div>
+  <div class="hb-section-body">
+    <p class="hb-p">Vergelijkt gemiddelden van <strong>drie of meer groepen</strong> in één toets — voorkomt vals-positieven door meerdere t-toetsen.</p>
+    <table class="hb-table">
+      <tr><th>Levene's resultaat</th><th>Te gebruiken ANOVA</th><th>Post-hoc toets</th></tr>
+      <tr><td>p &gt; 0.05 (homogeniteit voldaan)</td><td><strong>Fisher's ANOVA</strong></td><td>Tukey of Bonferroni</td></tr>
+      <tr><td>p &lt; 0.05 (geschonden)</td><td><strong>Welch's ANOVA</strong></td><td>Games-Howell</td></tr>
+    </table>
+    <p class="hb-p">Significante F = minstens één groep verschilt. Post-hoc toetsen laten zien welke specifieke paren verschillen.</p>
+    <ul class="hb-checklist">
+      <li><strong>Tukey:</strong> Minder strikt — hogere Type I kans, lagere Type II kans. Enige optie in Jamovi.</li>
+      <li><strong>Bonferroni:</strong> Strenger — lagere Type I kans, hogere Type II kans.</li>
+      <li><strong>Games-Howell:</strong> Bij ongelijke varianties (na Welch's ANOVA).</li>
+    </ul>
+    <p class="hb-p">In Jamovi: <em>Analyses → ANOVA → One-way ANOVA</em>. Vink Homogeneity test (Levene's) aan. Gebruik descriptives om te rapporteren welke groep hoger scoort.</p>
+  </div>
+</div>
+
+<div class="hb-divider">✦ · · · · · · · · · · · · · ✦</div>
+<p style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--text-muted);text-align:center;letter-spacing:0.1em;text-transform:uppercase;">HMSM Team Research Skills (2026) · Version 0226NL · Hotel Management School Maastricht</p>
+`; }
 
 function oracleTab(el, tab) {
   document.querySelectorAll('.oracle-tab').forEach(t => t.classList.remove('active'));
