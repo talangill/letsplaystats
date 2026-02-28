@@ -3176,7 +3176,7 @@ const SCENES = {
     narrative: `<p>The Archive Master shakes her head slowly.</p>
     <p class="npc-speech">"Room type 2.4. What does that mean? Somewhere between Deluxe and Suite? The numbers are labels — you could just as easily have called them A, B, C, and no one would average letters."</p>
     <div class="box box-danger"><span class="box-title">⚔ −15 HP</span>Measurement level determines which statistics are meaningful. <strong>Nominal</strong> data (labels, categories with no order or quantity) only supports counts and percentages. Calculating a mean requires at minimum <strong>interval</strong> level data — where the distances between values are genuinely equal.</div>`,
-    choices: [{ text: '↩ Understood — try again', next: 'q0_intro' }]
+    choices: [{ text: '↩ Understood — try again', next: 'q0_levels' }]
   },
 
   q0_levels: {
@@ -4470,12 +4470,12 @@ const BOSS_BATTLES = {
           <strong>Conclusion written by researcher:</strong> "p = 0.074 means there is a 92.6% probability that the app reduces waiting times. We are highly confident the app works and recommend full rollout."
         </div>
         ${BOSS_CI_PLOT}
-        <p><span style="color:var(--blood)">"How many errors can you identify in the researcher's conclusion?"</span></p>`,
+        <p><span style="color:var(--blood)">"What is wrong with the researcher's conclusion?"</span></p>`,
         choices: [
-          { text: "Three errors: p misinterpreted, illegal one-sided switch post-hoc, and the CI includes zero.", correct: true, feedback: "Perfect. p is not a probability of the hypothesis. The one-sided/two-tailed mismatch is a real issue — you cannot switch after seeing results. And a CI including zero means the result is not significant at the two-tailed level. The Ghost recoils violently." },
-          { text: "One error: the researcher should report p = 0.037 by halving the two-tailed p because their hypothesis was pre-specified as directional. This makes the result significant at the 5% level and fully justifies both the conclusion and the rollout recommendation the director is making to the hotel board.", correct: false, feedback: "Switching from two-tailed to one-tailed after seeing p = 0.074 is p-hacking — the direction was chosen because it makes the result significant. The pre-registration requirement for one-sided tests exists precisely to prevent this. There are also two other errors in the conclusion." },
-          { text: "One error: the confidence interval spans from −4.2 to +0.3 minutes, which includes zero, meaning the data is consistent with no reduction in waiting times at all. This single error alone invalidates the rollout recommendation, and it is the only problem worth flagging to the researcher.", correct: false, feedback: "The CI including zero is one error — but the misinterpretation of p as a probability of H₁ being true, and the post-hoc one-sided switching, are also genuine errors. The Ghost is looking for all three." },
-          { text: "The conclusion is reasonable given the context. p = 0.074 is very close to the conventional threshold, and with a directional hypothesis the effective p is 0.037 which clears the bar. Recommending further pilot testing rather than full rollout would be more cautious, but the core statistical interpretation and the business recommendation are both broadly acceptable and defensible to a non-technical audience.", correct: false, feedback: "None of this is acceptable. p is not a probability of the hypothesis being true under any framing. The one-sided switch is not valid post-hoc. And the CI including zero directly contradicts the confident rollout recommendation." }
+          { text: "Two errors: p is misinterpreted as a probability of H₁ being true, and the CI includes zero — meaning the data are consistent with no reduction at all. Neither supports a confident rollout recommendation.", correct: true, feedback: "Exactly right. The one-sided hypothesis was pre-specified legitimately — that is not the problem. The errors are in the conclusion: p = 0.074 is not a 92.6% probability that the app works, and a CI of [−4.2, +0.3] crossing zero means the result is not significant. 'Highly confident' is unjustified. The Ghost recoils." },
+          { text: "Three errors: p misinterpreted, an illegal post-hoc switch to one-sided testing, and the CI includes zero.", correct: false, feedback: "The one-sided hypothesis is stated upfront before any results — it was pre-specified, not invented after seeing the data. That is not an error. The real errors are the p misinterpretation and the CI including zero." },
+          { text: "One error only: the p-value is misinterpreted. The CI and the one-sided hypothesis are both fine, so correcting the p interpretation alone would make the conclusion acceptable.", correct: false, feedback: "The p misinterpretation is one real error, but not the only one. The 95% CI of [−4.2, +0.3] includes zero — meaning the result is not statistically significant at the two-tailed level. A CI that crosses zero cannot support a confident rollout recommendation regardless of how p is interpreted." },
+          { text: "The conclusion is defensible. The hypothesis was directional, so the effective one-sided p = 0.037 clears the 5% threshold. With a pre-specified direction, 'highly confident' is a reasonable summary for a non-technical audience.", correct: false, feedback: "The researcher reported a two-tailed p and a two-tailed CI — those are the numbers on the page. The two-tailed CI [−4.2, +0.3] includes zero, which directly contradicts 'highly confident.' And p = 0.074, however framed, is never a 92.6% probability that H₁ is true." }
         ]
       },
       {
@@ -6034,6 +6034,7 @@ function ssStartRound(idx) {
     el.draggable = true;
     el.dataset.correct = v.correct;
     el.dataset.idx = i;
+    el.dataset.elIdx = i;
     el.ondragstart = e => {
       e.dataTransfer.setData('text/plain', JSON.stringify({ correct: v.correct, elIdx: i }));
       el.classList.add('dragging');
@@ -6056,13 +6057,13 @@ function ssDrop(event, isYes) {
   const bucket = isYes ? document.getElementById('ss-yes-bucket') : document.getElementById('ss-no-bucket');
   bucket.classList.remove('dragover');
 
-  // find the dragged element
-  const pool = document.getElementById('ss-pool');
+  // find the specific dragged element by its unique index
   const allVillagers = document.querySelectorAll('.sort-villager');
+  let moved = false;
   allVillagers.forEach(v => {
-    if (v.dataset.correct === String(data.correct) && v.parentElement.id === 'ss-pool') {
-      // move first match
+    if (!moved && v.dataset.elIdx === String(data.elIdx) && v.parentElement.id === 'ss-pool') {
       bucket.appendChild(v);
+      moved = true;
     }
   });
   ssCheckComplete(window._ssRound, isYes);
@@ -6878,11 +6879,11 @@ const BOSS_TREASURES = {
   q0: {
     note: 'The Ghost of Bad Research Past dissolves into the archive dust. Five songs were left behind — one for each foundation of the Prologue. They cover everything the Ghost got wrong.',
     tracks: [
-      { title: 'Statistical Hypotheses', bc: 'https://statslearn.bandcamp.com/track/statistical-hypotheses' },
-      { title: 'Type 1 and Type 2 Errors', bc: 'https://statslearn.bandcamp.com/track/type-1-and-type-2-errors' },
-      { title: 'Sampling, Reliability, Validity', bc: 'https://statslearn.bandcamp.com/track/sampling-reliability-validity' },
-      { title: 'Confident in my Interval', bc: 'https://statslearn.bandcamp.com/track/confident-in-my-interval' },
-      { title: 'The p value', bc: 'https://statslearn.bandcamp.com/track/the-p-value' }
+      { title: 'Statistical Hypotheses', bc: 'https://soundcloud.com/tori-l-957759984/h-null-and-h-alt-2-1' },
+      { title: 'Type 1 and Type 2 Errors', bc: 'https://soundcloud.com/tori-l-957759984/type-1-and-type-2-errors-2' },
+      { title: 'Sampling, Reliability, Validity', bc: 'https://soundcloud.com/tori-l-957759984/sampling-reliability-validity-3' },
+      { title: 'Confident in my Interval', bc: 'https://soundcloud.com/tori-l-957759984/confident-in-my-interval-4' },
+      { title: 'The p value', bc: 'https://soundcloud.com/tori-l-957759984/p-value-5' }
     ],
     free: false
   },
@@ -6890,35 +6891,35 @@ const BOSS_TREASURES = {
     title: 'The Correlation Relation',
     artist: 'StatsLearn — A Significant Party',
     note: 'The Ghost of Spurious Reviews dissolves back into the ledger. A song about r, scatter plots, and the oldest trap in data analysis. Correlation is not causation — but it does make a good chorus.',
-    bc: 'https://statslearn.bandcamp.com/track/the-correlation-relation',
+    bc: 'https://soundcloud.com/tori-l-957759984/the-correlation-relation-7',
     free: false
   },
   q2: {
     title: 'Chi Square',
     artist: 'StatsLearn — A Significant Party',
     note: 'The Wraith of the Contingency Table retreats. Expected counts, observed counts, and the test that tells you whether the difference is real. Someone made this into a song. You deserve to hear it.',
-    bc: 'https://statslearn.bandcamp.com/track/chi-square',
+    bc: 'https://soundcloud.com/tori-l-957759984/chi2-6',
     free: false
   },
   q3: {
     title: 'T-tests and Mann-Whitney U',
     artist: 'StatsLearn — A Significant Party',
     note: 'The Variance Hydra falls, head by head. Three kinds of t-test, Levene’s test, the non-parametric alternative — all in one track. The Hydra would have hated this song.',
-    bc: 'https://statslearn.bandcamp.com/track/t-tests-and-mann-whitney-u',
+    bc: 'https://soundcloud.com/tori-l-957759984/t-test-and-mann-whitney-u-8',
     free: false
   },
   q3b: {
     title: 'T-tests and Mann-Whitney U',
     artist: 'StatsLearn — A Significant Party',
     note: 'The Shapiro-Wilk Wraith dissolves into the shelves. This track covers the exact decision you just had to make — normality, Levene’s, Mann-Whitney U. Someone turned your exam into a banger.',
-    bc: 'https://statslearn.bandcamp.com/track/t-tests-and-mann-whitney-u',
+    bc: 'https://soundcloud.com/tori-l-957759984/t-test-and-mann-whitney-u-8',
     free: false
   },
   q4: {
     title: 'ANOVA',
     artist: 'StatsLearn — A Significant Party',
-    note: 'The Omnibus Concierge steps aside. You have mastered all four seals. This is your victory track — ANOVA, post-hoc tests, and the gates of the Grand Council Hall. Free to download on Bandcamp.',
-    bc: 'https://statslearn.bandcamp.com/track/anova',
+    note: 'The Omnibus Concierge steps aside. You have mastered all four seals. This is your victory track — ANOVA, post-hoc tests, and the gates of the Grand Council Hall. Free to stream on SoundCloud.',
+    bc: 'https://soundcloud.com/tori-l-957759984/anova-9',
     free: false
   }
 };
@@ -6941,7 +6942,7 @@ function buildTreasureChest(questId) {
   if (!t) return '';
   const priceTag = t.free
     ? '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--sage-bright); letter-spacing:0.08em; text-transform:uppercase">\u2756 Free download</span>'
-    : '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase">\u2666 Free to download on Bandcamp</span>';
+    : '<span style="font-family:Cinzel,serif; font-size:0.65rem; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase">\u2666 Free to stream on SoundCloud</span>';
 
   let tracksHtml;
   if (t.tracks) {
@@ -6952,7 +6953,7 @@ function buildTreasureChest(questId) {
       <div class="treasure-track-list">${trackList}</div>
       <div class="treasure-link-row" style="align-items:center; gap:10px; margin-top:0.7rem">
         ${priceTag}
-        <a href="https://statslearn.bandcamp.com/album/a-significant-party" target="_blank" rel="noopener" class="treasure-listen-btn bc">\u266b Full album on Bandcamp</a>
+        <a href="https://soundcloud.com/tori-l-957759984/sets/a-significant-party" target="_blank" rel="noopener" class="treasure-listen-btn bc">\u266b Full playlist on SoundCloud</a>
       </div>`;
   } else {
     tracksHtml = `
@@ -6960,7 +6961,7 @@ function buildTreasureChest(questId) {
       <div class="treasure-song-artist">${t.artist}</div>
       <div class="treasure-link-row" style="align-items:center; gap:10px; margin-top:0.5rem">
         ${priceTag}
-        <a href="${t.bc}" target="_blank" rel="noopener" class="treasure-listen-btn bc">\u266b Open on Bandcamp</a>
+        <a href="${t.bc}" target="_blank" rel="noopener" class="treasure-listen-btn bc">\u266b Open on SoundCloud</a>
       </div>`;
   }
 
