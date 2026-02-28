@@ -1440,6 +1440,123 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
   font-weight: 700;
 }
 
+/* ── Lore button ─────────────────────────────────────── */
+#lore-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 300;
+  height: 52px;
+  padding: 0 18px 0 14px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #1a3a1a, #2d5a2d);
+  border: 2px solid #4a8a4a;
+  box-shadow: 0 0 18px rgba(45,212,116,0.25), 0 2px 8px rgba(0,0,0,0.5);
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  color: var(--text);
+}
+#lore-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 28px rgba(45,212,116,0.45), 0 2px 8px rgba(0,0,0,0.5);
+}
+#lore-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sage-bright);
+  font-weight: 700;
+}
+
+/* ── Lore panel (same drawer pattern as journal) ─────── */
+#lore-panel {
+  position: fixed; inset: 0; z-index: 800;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0,0,0,0); pointer-events: none;
+  transition: background 0.3s;
+}
+#lore-panel.open { background: rgba(0,0,0,0.65); pointer-events: all; }
+#lore-sheet {
+  width: 100%; max-width: 620px; max-height: 72vh;
+  background: var(--surface);
+  border-top: 2px solid #4a8a4a;
+  border-radius: 16px 16px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; padding: 1.2rem 1.4rem 2.5rem;
+}
+#lore-panel.open #lore-sheet { transform: translateY(0); }
+
+/* ── Tome cards ──────────────────────────────────────── */
+.lore-tome-card {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: rgba(45,212,116,0.05);
+  border: 1px solid rgba(45,212,116,0.2);
+  border-radius: 10px; padding: 1.1rem 1.2rem;
+  margin-bottom: 0.5rem;
+  transition: border-color 0.2s;
+}
+.lore-tome-card:hover { border-color: rgba(45,212,116,0.4); }
+.lore-tome-card.lore-deep {
+  background: rgba(139,92,246,0.06);
+  border-color: rgba(139,92,246,0.25);
+}
+.lore-tome-card.lore-deep:hover { border-color: rgba(139,92,246,0.5); }
+.lore-tome-icon { font-size: 2rem; flex-shrink: 0; padding-top: 2px; }
+.lore-tome-body { flex: 1; }
+.lore-tome-title {
+  font-family: 'Cinzel', serif; font-size: 0.9rem;
+  color: var(--gold-bright); font-weight: 600; margin-bottom: 0.3rem;
+  line-height: 1.3;
+}
+.lore-tome-sub {
+  font-size: 0.8rem; color: var(--text-dim); line-height: 1.4;
+  margin-bottom: 0.75rem; font-style: italic;
+}
+.lore-tome-langs { display: flex; gap: 10px; flex-wrap: wrap; }
+.lore-lang-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0.45rem 1rem; border-radius: 20px;
+  font-family: 'Cinzel', serif; font-size: 0.7rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  text-decoration: none; font-weight: 600;
+  transition: all 0.2s; cursor: pointer;
+}
+.lore-lang-btn.eng {
+  background: rgba(45,212,116,0.12); border: 1px solid rgba(45,212,116,0.4);
+  color: var(--sage-bright);
+}
+.lore-lang-btn.eng:hover {
+  background: rgba(45,212,116,0.22); border-color: var(--sage-bright);
+}
+.lore-lang-btn.nl {
+  background: rgba(232,98,26,0.12); border: 1px solid rgba(232,98,26,0.4);
+  color: #f09060;
+}
+.lore-lang-btn.nl:hover {
+  background: rgba(232,98,26,0.22); border-color: var(--ember);
+  color: var(--ember);
+}
+.lore-lang-btn.deep {
+  background: rgba(139,92,246,0.14); border: 1px solid rgba(139,92,246,0.4);
+  color: var(--rune-bright);
+}
+.lore-lang-btn.deep:hover {
+  background: rgba(139,92,246,0.26); border-color: var(--rune-bright);
+}
+.lore-divider {
+  text-align: center; font-family: 'Cinzel', serif;
+  color: var(--border-bright); letter-spacing: 0.4em;
+  font-size: 0.75rem; margin: 0.8rem 0;
+}
+
 #oracle-panel {
   position: fixed;
   bottom: 86px;
@@ -2155,6 +2272,44 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
     <button class="oracle-tab" onclick="oracleTab(this,'stats')">Stats Quick Ref</button>
   </div>
   <div class="oracle-body" id="oracle-body"></div>
+</div>
+
+<!-- Lore button + panel -->
+<button id="lore-btn" onclick="toggleLore()" title="Consult the Lore — Official Handbooks">📚<span id="lore-label">Consult the Lore</span></button>
+<div id="lore-panel" onclick="closeLorePanel(event)">
+  <div id="lore-sheet">
+    <div class="journal-handle"></div>
+    <div class="journal-title">📚 The Ancient Lore</div>
+    <div class="journal-subtitle">Official tomes of the Order — consult before battle</div>
+    <div style="padding: 1rem 0 0.5rem">
+
+      <div class="lore-tome-card">
+        <div class="lore-tome-icon">📖</div>
+        <div class="lore-tome-body">
+          <div class="lore-tome-title">Concise but Significant Handbook to M5 Statistics</div>
+          <div class="lore-tome-sub">HMSM Team Research Skills · Version 0226 · Hotel Management School Maastricht</div>
+          <div class="lore-tome-langs">
+            <a class="lore-lang-btn eng" href="HANDBOOK_MOD5_ENG_FEB2026.pdf" target="_blank" rel="noopener">🇬🇧 English</a>
+            <a class="lore-lang-btn nl" href="HANDBOEK_MOD5_NL_FEB2026.pdf" target="_blank" rel="noopener">🇳🇱 Nederlands</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="lore-divider">✦ ✦ ✦</div>
+
+      <div class="lore-tome-card lore-deep">
+        <div class="lore-tome-icon">🔱</div>
+        <div class="lore-tome-body">
+          <div class="lore-tome-title">Learning Statistics with Jamovi</div>
+          <div class="lore-tome-sub">Navarro &amp; Foxcroft · Full open-access textbook · The Deep Lore</div>
+          <div class="lore-tome-langs">
+            <a class="lore-lang-btn deep" href="https://davidfoxcroft.github.io/lsj-book/" target="_blank" rel="noopener">📖 Open the Deep Lore</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- Streak popup -->
@@ -6865,6 +7020,21 @@ function toggleOracle() {
     panel.classList.remove('open');
     btn.style.transform = '';
   }
+}
+
+function toggleLore() {
+  const panel = document.getElementById('lore-panel');
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) {
+    panel.classList.remove('open');
+  } else {
+    panel.classList.add('open');
+  }
+}
+
+function closeLorePanel(e) {
+  if (e && e.target !== document.getElementById('lore-panel')) return;
+  document.getElementById('lore-panel').classList.remove('open');
 }
 
 function oracleTab(el, tab) {
