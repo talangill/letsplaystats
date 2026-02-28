@@ -3270,13 +3270,13 @@ const SCENES = {
       interpretation: 'If she wrote "Branch A is faster" after seeing that Branch A was faster, her p-value is meaningless. She has used the data to generate and confirm the same hypothesis simultaneously.'
     },
     beats: [
-      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A junior researcher compared room service response times between two branches. After collecting the data, she wrote her hypothesis: Branch A has faster response times than Branch B." },
+      { char: 'archive_master', left: 'archive_master', right: 'player', text: "A junior researcher compared room service response times between two branches. After collecting the data, she wrote her hypothesis: μ Branch A > μ Branch B." },
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "She is asking you to sign off on the report. What is wrong with her hypothesis?" }
     ],
     choices: [
       { text: 'The hypothesis is fine — directional hypotheses like this are more statistically powerful than vague two-sided ones, and specificity is always a virtue in research design.', next: 'q0_hyp_wrong', damage: 15, bad: true },
-      { text: 'The hypothesis is missing H₀. Without an explicit null hypothesis stating no difference between branches, the statistical test has no baseline to compare against and the p-value cannot be correctly interpreted.', next: 'q0_hyp_wrong', damage: 10, bad: true },
-      { text: 'The hypothesis uses the wrong notation. Response time is continuous so the correct parameter is μ for the mean — but the hypothesis as written implies we are comparing proportions, which would require π and a different test entirely.', next: 'q0_hyp_wrong', damage: 10, bad: true },
+      { text: 'The hypothesis does not inlcude a p-value and cannot be correctly interpreted.', next: 'q0_hyp_wrong', damage: 10, bad: true },
+      { text: 'The hypothesis uses the wrong notation. Response time is continuous so π would have been more accurate.', next: 'q0_hyp_wrong', damage: 10, bad: true },
       { text: 'The hypothesis was written after seeing the data, which makes it a description rather than a prediction. A valid hypothesis must be committed to before data collection — not reverse-engineered from the result.', next: 'q0_pvalue', xp: 10 }
     ]
   },
@@ -3309,10 +3309,10 @@ const SCENES = {
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "Three people in the Archive wince simultaneously. What is actually wrong with his interpretation — and what does p = 0.03 actually mean?" }
     ],
     choices: [
-      { text: 'He is close enough. p = 0.03 means the result is very unlikely to be due to chance, and communicating this as 97% certainty is a reasonable simplification for non-technical audiences making a business decision.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'He has no basis for this claim based on only one statistical test.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
       { text: 'p = 0.03 means: if the package had no effect, a result this large would appear only 3% of the time by chance. It says nothing about the probability that H₁ is true — that is a separate question entirely.', next: 'q0_errors', xp: 10 },
       { text: 'p = 0.03 is below 0.05 so H₁ is proven true. The director is right — statistical significance at the 5% level is the accepted scientific standard for confirming that an effect is real and worth acting on.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
-      { text: 'The director is wrong because p = 0.03 is dangerously close to the 0.05 threshold. In commercial contexts only p < 0.01 is robust enough — anything between 0.01 and 0.05 should be treated as provisional evidence requiring replication.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
+      { text: 'The director is wrong because p = 0.03 is dangerously close to the 0.05 threshold. In commercial contexts only p < 0.01 is robust enough — anything between 0.01 and 0.05 means we fail to reject the null hypothesis.', next: 'q0_pvalue_wrong', damage: 10, bad: true },
     ]
   },
 
@@ -3329,7 +3329,7 @@ const SCENES = {
     icon: '⚠️', chapter: 'Prologue · The Foundations',
     title: 'The Costly Mistake',
     narrative: `<p>A hotel chain ran a study testing whether a new staff training programme improved service scores. The result was p = 0.04 — just significant. The chain rolled out the programme across all 12 properties at considerable cost.</p>
-    <p>Two years later, a replication study found no effect. The original result was almost certainly a false positive.</p>
+    <p>Two years later, a replication study found no effect. The original result was almost certainly an error.</p>
     <p class="npc-speech">"What type of error did the original study make — and what is the other type you need to know about?"</p>
     <div class="box box-lore"><span class="box-title">📜 Error Types</span>
     <strong>Type I error (false positive)</strong> — rejecting H₀ when it is actually true. Concluding there is an effect when there isn't one. Probability = α (your significance threshold, e.g. 0.05).<br>
@@ -3421,7 +3421,7 @@ const SCENES = {
     ],
     choices: [
       { text: 'Content validity — they have checked that the engagement items cover the right dimensions of the construct by comparing them with guests\' stated intentions, which are the external criterion the construct should theoretically represent.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
-      { text: 'Predictive criterion validity — the engagement score will predict future spend, and correlating it with stated return likelihood at the same time is a valid proxy for the future behaviour they cannot yet observe.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
+      { text: 'External validity — the engagement score will give an indication to other hotels about their own engagement.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
       { text: 'Construct validity — the score correlates with return intention, which is convergent evidence it measures a real construct. Correlating two self-reports simultaneously is a recognised approach when a hard behavioural criterion is not yet available.', next: 'q0_validity_types_wrong', damage: 10, bad: true },
       { text: 'This is concurrent criterion validity — they compared the score against another measure taken at the same moment. To claim predictive validity they would need to wait and track whether actual future spend follows, which they have not done.', next: 'q0_reliability_validity', xp: 10 }
     ]
@@ -3442,7 +3442,7 @@ const SCENES = {
     narrative: `<p>The Archive Master sets two broken instruments on the desk.</p>
     <p><strong>Instrument A</strong> is a thermometer that always reads 4°C too high. It gives the same wrong answer every single time.</p>
     <p><strong>Instrument B</strong> is a thermometer that gives a different reading every time you check the same patient — swinging unpredictably between correct and wildly wrong.</p>
-    <p class="npc-speech">"One of these is reliable but not valid. The other is neither. Which is which — and which is worse for a researcher to have?"</p>`,
+    <p class="npc-speech">"One of these is reliable but not valid. The other is neither. Which is which?"</p>`,
     hints: {
       formula: 'Reliable = consistent results. Valid = measures the true value. Instrument A is consistent (same wrong answer always) = reliable, not valid. Instrument B is inconsistent = neither reliable nor valid.',
       assumption: 'A reliable but invalid instrument can sometimes be corrected — if you know the systematic error (bias), you can adjust for it. An unreliable instrument cannot be corrected because you do not know which readings to trust.',
@@ -3456,8 +3456,8 @@ const SCENES = {
     choices: [
       { text: 'A is neither reliable nor valid because a consistent systematic error proves the instrument is broken in a fundamental way. B is reliable but not valid — the variation is random noise, which at least averages out over large samples and does not introduce bias.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
       { text: 'Instrument A is reliable but not valid — it gives the same wrong answer every time. Instrument B is worse: unreliable means you cannot know which readings to trust, so you cannot correct it. Unreliable means necessarily invalid.', next: 'q0_confidence_intervals', xp: 10 },
-      { text: 'Both are equally problematic. A systematic error of 4°C is just as damaging to research conclusions as random error of the same magnitude, and there is no principled basis for treating one as less severe than the other.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
-      { text: 'B is reliable but not valid — it measures something consistently, just not the right thing. A is worse because systematic errors compound across repeated measurements whereas random errors cancel out, making consistent wrongness more dangerous over time than random variability.', next: 'q0_rel_val_wrong', damage: 10, bad: true }
+      { text: 'Both are not reliable or valid.', next: 'q0_rel_val_wrong', damage: 10, bad: true },
+      { text: 'A is valid but not reliable. B is reliable but not valid — it measures something consistently, just not the right thing.', next: 'q0_rel_val_wrong', damage: 10, bad: true }
     ]
   },
 
