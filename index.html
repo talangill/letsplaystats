@@ -1420,7 +1420,7 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
   box-shadow: 0 0 18px rgba(139,92,246,0.5), 0 2px 8px rgba(0,0,0,0.5);
   cursor: pointer;
   font-size: 1.3rem;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1454,13 +1454,14 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
   box-shadow: 0 0 18px rgba(45,212,116,0.25), 0 2px 8px rgba(0,0,0,0.5);
   cursor: pointer;
   font-size: 1.2rem;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
   color: var(--text);
 }
+#lore-btn.visible { display: flex; }
 #lore-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 0 28px rgba(45,212,116,0.45), 0 2px 8px rgba(0,0,0,0.5);
@@ -3994,6 +3995,17 @@ const SCENES = {
     choices: [{ text: '↩ Return and interpret correctly', next: 'q4_welch' }]
   },
 
+  q4_posthoc: {
+    bg: 'castle',
+    icon: '🗿', chapter: 'Quest IV · ANOVA',
+    title: 'The Omnibus Concierge Awakens',
+    narrative: `<p>The Games-Howell results arrive. Specific hotel pairs are now mapped — some differences are real, others are noise. The Council nods.</p>
+    <p>But as you prepare to present the final report, a colossal stone figure blocks the Council chamber doors: <strong>The Omnibus Concierge</strong>.</p>
+    <p class="npc-speech">"You have learned the steps. But knowledge of steps is not the same as command of the whole staircase. Three challenges. Each one a fresh scenario. Show me you truly understand when and why the ANOVA workflow holds — or falls apart."</p>
+    <div class="box box-lore"><span class="box-title">⚔ Boss Battle Approaching</span>Three phases under the clock. Each presents a new hotel dataset. Choose the right ANOVA type, interpret the F-test correctly, and select the appropriate post-hoc method. Wrong answers cost HP.</div>`,
+    choices: [{ text: '🗿 Face the Omnibus Concierge', next: 'BOSS_q4', boss: true }]
+  },
+
   q5_intro: {
     bg: 'archive',
     icon: '⚖️', chapter: 'Capstone · The Grand Inquest',
@@ -5708,8 +5720,9 @@ function attachMapEvents() {
 }
 
 function showMap() {
-  hideOracleButton();
   vnHide();
+  showOracleButton();
+  showQuestSidePanels();
   audioSceneChange('map');
   G.currentQuest = null;
   G.currentScene = null;
@@ -6567,6 +6580,7 @@ function startQuest(questId) {
   const cls = CLASSES[G.class];
   G.hp = cls.hp; // restore HP at quest start
   updateHUD();
+  hideQuestSidePanels();
   if (questId === 'q0') _bossQ0NoDamage = true;
   checkTimeAchievement();
   const quest = QUESTS[questId];
@@ -6579,7 +6593,6 @@ let _currentChoices = [];
 let _currentBossChoices = [];
 
 function showScene(sceneId) {
-  showOracleButton();
   G.currentScene = sceneId;
 
   if (sceneId.startsWith('BOSS_')) {
@@ -6962,6 +6975,7 @@ function buildTreasureChest(questId) {
 
 function showQuestComplete(quest) {
   hideOracleButton();
+  showQuestSidePanels();
   vnHide();
   const el = document.getElementById('main-content');
   const summaries = {
@@ -7635,6 +7649,25 @@ function hideOracleButton() {
   document.getElementById('oracle-toggle').classList.remove('visible');
   document.getElementById('oracle-panel').classList.remove('open');
   _oracleOpen = false;
+}
+function hideQuestSidePanels() {
+  // Hide lore button + close lore panel
+  const loreBtn = document.getElementById('lore-btn');
+  if (loreBtn) loreBtn.classList.remove('visible');
+  const lorePanel = document.getElementById('lore-panel');
+  if (lorePanel) lorePanel.classList.remove('open');
+  // Hide journal button + close journal panel
+  const jBtn = document.getElementById('journal-btn');
+  if (jBtn) jBtn.classList.remove('visible');
+  const journalPanel = document.getElementById('journal-panel');
+  if (journalPanel) journalPanel.classList.remove('open');
+}
+function showQuestSidePanels() {
+  // Show lore button
+  const loreBtn = document.getElementById('lore-btn');
+  if (loreBtn) loreBtn.classList.add('visible');
+  // Show journal button only if user has journal entries
+  syncJournalButton();
 }
 
 // ══════════════════════════════════════════════════════
@@ -8427,7 +8460,6 @@ const BG_CLASS = {
 function vnShow() {
   document.getElementById('vn-stage').classList.add('active');
   document.getElementById('main-content').style.display = 'none';
-  showOracleButton();
 }
 
 function vnHide() {
