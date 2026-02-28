@@ -4364,7 +4364,7 @@ Object.assign(SCENES, {
     },
     beats: [
       { char: null, left: 'spa_rep', right: 'player', text: "You plot histograms for both groups. Here is what you see." },
-      { char: null, left: 'spa_rep', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Distribution Shapes</span><strong>Group A (n=38):</strong> Roughly bell-shaped, symmetric.<br><strong>Group B (n=35):</strong> Most guests gave low scores, long tail of very high ratings. Clearly right-skewed.</div>' },
+      { char: null, left: 'spa_rep', right: 'player', html: `<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${HIST_NORMAL}${HIST_RIGHT_SKEW}</div>` },
       { char: 'analyst', left: 'analyst', right: 'player', text: "Group B is just a bit uneven. The t-test is robust, is it not? Does the shape really matter that much at n = 35?" }
     ],
     choices: [
@@ -4399,7 +4399,7 @@ Object.assign(SCENES, {
     },
     beats: [
       { char: null, left: 'spa_rep', right: 'player', text: "You run Shapiro-Wilk on both groups. The output arrives." },
-      { char: null, left: 'spa_rep', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Shapiro-Wilk Normality Test</span>Group A: W = 0.979, p = 0.682 — normal<br>Group B: W = 0.891, p = 0.004 — non-normal</div>' },
+      { char: null, left: 'spa_rep', right: 'player', html: `<div>${JAMOVI_SHAPIRO_FAIL}</div>` },
       { char: 'analyst', left: 'analyst', right: 'player', text: "W = 0.891 is not very far from 1.0. And Shapiro-Wilk can be oversensitive at moderate sample sizes. Does this really matter?" }
     ],
     choices: [
