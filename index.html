@@ -942,7 +942,7 @@ h1.game-title {
 
 /* ── RESEARCH JOURNAL ────────────────────────────── */
 #journal-btn {
-  position: fixed; bottom: 1.3rem; right: 1.3rem;
+  position: fixed; bottom: 5rem; right: 1.3rem;
   width: 54px; height: 54px; border-radius: 50%;
   background: linear-gradient(135deg, var(--surface2), var(--surface3));
   border: 2px solid var(--gold); color: var(--gold-bright);
@@ -1359,28 +1359,37 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
   bottom: 20px;
   right: 20px;
   z-index: 300;
-  width: 52px;
   height: 52px;
-  border-radius: 50%;
+  padding: 0 18px 0 14px;
+  border-radius: 26px;
   background: radial-gradient(circle at 40% 35%, var(--rune-bright), #4a1a8a);
   border: 2px solid var(--gold);
   box-shadow: 0 0 18px rgba(139,92,246,0.5), 0 2px 8px rgba(0,0,0,0.5);
   cursor: pointer;
-  font-size: 1.4rem;
-  display: none;
+  font-size: 1.3rem;
+  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 #oracle-toggle:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   box-shadow: 0 0 28px rgba(139,92,246,0.7), 0 2px 8px rgba(0,0,0,0.5);
 }
 #oracle-toggle.visible { display: flex; }
+#oracle-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  font-weight: 700;
+}
 
 #oracle-panel {
   position: fixed;
-  bottom: 82px;
+  bottom: 86px;
   right: 20px;
   z-index: 299;
   width: 310px;
@@ -1850,6 +1859,124 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 
 
 /* ══════════════════════════════════════════════════════
+   ACHIEVEMENTS SYSTEM
+══════════════════════════════════════════════════════ */
+#ach-toast {
+  position: fixed;
+  bottom: 80px; right: 16px;
+  z-index: 500;
+  max-width: 340px;
+  pointer-events: none;
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#ach-toast.ach-show { transform: translateX(0); }
+#ach-toast.ach-hide { transform: translateX(120%); transition: transform 0.4s ease-in; }
+
+.ach-toast-inner {
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  border-left: 4px solid var(--gold);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+.ach-toast-inner.ach-secret {
+  border-left-color: var(--rune-bright);
+  border-color: rgba(139,92,246,0.4);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(139,92,246,0.08) 100%);
+}
+.ach-toast-icon { font-size: 2rem; flex-shrink: 0; }
+.ach-toast-text { flex: 1; min-width: 0; }
+.ach-toast-label {
+  font-family: 'Cinzel', serif; font-size: 0.55rem;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.2rem;
+}
+.ach-toast-inner.ach-secret .ach-toast-label { color: var(--rune-bright); }
+.ach-toast-title {
+  font-family: 'Cinzel', serif; font-size: 0.85rem;
+  font-weight: 700; color: var(--gold-bright);
+  margin-bottom: 0.15rem;
+}
+.ach-toast-inner.ach-secret .ach-toast-title { color: var(--rune-bright); }
+.ach-toast-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.4; }
+.ach-toast-xp {
+  font-family: 'Cinzel', serif; font-size: 0.7rem;
+  color: var(--sage-bright); font-weight: 700; white-space: nowrap;
+}
+
+.journal-tabs {
+  display: flex; gap: 0; margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-bright);
+}
+.journal-tab-btn {
+  background: transparent; border: none;
+  font-family: 'Cinzel', serif; font-size: 0.7rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); padding: 0.5rem 1rem;
+  cursor: pointer; transition: all 0.2s;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.journal-tab-btn:hover { color: var(--gold); }
+.journal-tab-btn.active { color: var(--gold-bright); border-bottom-color: var(--gold); }
+
+.ach-section-label {
+  font-family: 'Cinzel', serif; font-size: 0.7rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold-bright); margin-bottom: 0.5rem;
+}
+.ach-section-sub {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 0.5rem;
+}
+.ach-progress-bar {
+  height: 6px; background: var(--surface2);
+  border-radius: 3px; overflow: hidden;
+  border: 1px solid var(--border); margin-bottom: 1rem;
+}
+.ach-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+  border-radius: 3px; transition: width 0.5s ease;
+}
+.ach-card {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  background: var(--surface2); border-radius: 6px;
+  padding: 0.8rem; margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+  position: relative;
+}
+.ach-card.ach-earned { border-color: rgba(212,168,32,0.3); }
+.ach-card.ach-card-secret.ach-earned { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.05); }
+.ach-card.ach-locked { opacity: 0.55; border-style: dashed; }
+.ach-card.ach-unearned { opacity: 0.45; }
+.ach-card-icon { font-size: 1.5rem; flex-shrink: 0; line-height: 1.2; }
+.ach-card-body { flex: 1; min-width: 0; }
+.ach-card-title {
+  font-family: 'Cinzel', serif; font-size: 0.78rem;
+  font-weight: 700; color: var(--gold-bright); margin-bottom: 0.2rem;
+}
+.ach-card.ach-card-secret.ach-earned .ach-card-title { color: var(--rune-bright); }
+.ach-secret-badge {
+  font-family: 'Cinzel', serif; font-size: 0.55rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(139,92,246,0.2); color: var(--rune-bright);
+  border: 1px solid rgba(139,92,246,0.4); border-radius: 2px;
+  padding: 0 4px; vertical-align: middle; margin-left: 4px;
+}
+.ach-card-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+.ach-card-hint { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+.ach-card-xp { font-family: 'Cinzel', serif; font-size: 0.65rem; color: var(--sage-bright); margin-top: 0.2rem; }
+.ach-check {
+  position: absolute; top: 8px; right: 10px;
+  font-size: 0.8rem; color: var(--sage-bright); font-weight: 900;
+}
+
+/* ══════════════════════════════════════════════════════
    AVATAR BUILDER
 ══════════════════════════════════════════════════════ */
 .avatar-builder {
@@ -1960,7 +2087,7 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
 <body>
 <div id="bg-layer"></div>
 
-<button id="oracle-toggle" onclick="toggleOracle()" title="Open the Oracle — MC Strategy Guide">🔮</button>
+<button id="oracle-toggle" onclick="toggleOracle()" title="Open the Oracle — MC Strategy Guide">🔮<span id="oracle-label">Oracle</span></button>
 <div id="oracle-panel">
   <div class="oracle-header">
     <div class="oracle-avatar">🔮</div>
@@ -1990,6 +2117,10 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
     <div class="journal-handle"></div>
     <div class="journal-title">&#x1F4D3; Research Journal</div>
     <div class="journal-subtitle">Concepts collected on your journey through the Archive</div>
+    <div class="journal-tabs">
+      <button class="journal-tab-btn active" id="jt-concepts" onclick="journalTab('concepts')">📖 Concepts</button>
+      <button class="journal-tab-btn" id="jt-achievements" onclick="journalTab('achievements')">🏅 Achievements</button>
+    </div>
     <div class="journal-cards" id="journal-cards-list">
       <div class="journal-empty">Complete a quest to earn your first concept card.</div>
     </div>
@@ -2059,6 +2190,7 @@ const G = {
   bossTimer: null,
   streak: 0,
   journal: [],
+  achievements: [],
   avatar: { silhouette: 'scholar', robe: '#7c3aed', accessory: 'scroll', name: 'Initiate', hair: 'short_dark', hairColor: '#2a1508', skinColor: '#d4a574' },
 };
 
@@ -4295,6 +4427,7 @@ function gainXP(amount, callback) {
   G.level = Math.floor(G.xp / XP_PER_LEVEL) + 1;
   updateHUD();
   if (G.level > oldLevel) {
+    if (G.level >= 5) checkAchievement('the_statistician');
     showLevelUp(G.level, callback);
   } else {
     if (callback) callback();
@@ -4329,6 +4462,8 @@ function continueLevelUp() {
 function takeDamage(amount) {
   G.hp = Math.max(0, G.hp - amount);
   updateHUD();
+  // Track if q0 received any damage (for perfect_start achievement)
+  if (G.currentQuest === 'q0') _bossQ0NoDamage = false;
 
   const flash = document.createElement('div');
   flash.className = 'attack-flash';
@@ -4346,6 +4481,7 @@ function takeDamage(amount) {
   setTimeout(() => dmg.remove(), 1200);
 
   if (G.hp <= 0) {
+    checkAchievement('fearless');
     setTimeout(showDeath, 600);
     return true;
   }
@@ -6063,6 +6199,8 @@ function startQuest(questId) {
   const cls = CLASSES[G.class];
   G.hp = cls.hp; // restore HP at quest start
   updateHUD();
+  if (questId === 'q0') _bossQ0NoDamage = true;
+  checkTimeAchievement();
   const quest = QUESTS[questId];
   showScene(quest.scenes[0]);
 }
@@ -6279,6 +6417,9 @@ function handleBossChoice(btn, choice) {
 
     gainXP(10, () => {});
 
+    // Speed learner: answered correctly with >40s left on timer
+    if (bossData.timeLeft > 40) checkAchievement('speed_learner');
+
     const isLastPhase = bossData.phase >= bossData.battle.phases.length - 1;
     showBossFeedback(btn, true, choice.feedback, () => {
       if (isLastPhase) {
@@ -6291,6 +6432,8 @@ function handleBossChoice(btn, choice) {
     });
   } else {
     recordWrong();
+    // Track if q0 was completed with no damage for perfect_start
+    if (G.currentQuest === 'q0') _bossQ0NoDamage = false;
     const dead = takeDamage(20);
     showBossFeedback(btn, false, choice.feedback, () => {
       if (!dead) {
@@ -6324,6 +6467,10 @@ function bossVictory() {
   }
   unlockJournalCard(G.currentQuest);
   saveProgress();
+  // Check quest-based achievements
+  checkQuestAchievements(G.currentQuest);
+  // Check survivor achievement (<=10 HP)
+  if (G.hp > 0 && G.hp <= 10) checkAchievement('survivor');
   // Give enough XP to guarantee the next level threshold is crossed
   const xpNeeded = (G.level * XP_PER_LEVEL) - G.xp;
   const xpToGrant = Math.max(40, xpNeeded > 0 ? xpNeeded : 40);
@@ -6575,6 +6722,7 @@ function toggleOracle() {
     btn.style.transform = 'scale(1.05)';
     const body = document.getElementById('oracle-body');
     if (!body.innerHTML.trim()) body.innerHTML = ORACLE_CONTENT.mc;
+    trackOracleOpen();
   } else {
     panel.classList.remove('open');
     btn.style.transform = '';
@@ -6618,6 +6766,7 @@ function recordCorrect() {
     void hudStreak.offsetWidth; // reflow to restart animation
     hudStreak.classList.add('pulse');
   }
+  if (G.streak >= 10) checkAchievement('streak_hunter');
   const milestone = STREAK_MILESTONES[G.streak];
   if (milestone) {
     showStreakPopup(milestone.emoji + ' ' + milestone.label, milestone.sub);
@@ -6718,12 +6867,31 @@ function updateJournalBadge() {
   }
 }
 
+let _journalActiveTab = 'concepts';
+
+function journalTab(tab) {
+  _journalActiveTab = tab;
+  document.querySelectorAll('.journal-tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`jt-${tab}`);
+  if (btn) btn.classList.add('active');
+  if (tab === 'concepts') {
+    renderJournalCards();
+  } else {
+    const list = document.getElementById('journal-cards-list');
+    if (list) list.innerHTML = renderAchievementsPanel();
+  }
+}
+
 function toggleJournal() {
   const panel = document.getElementById('journal-panel');
   if (!panel) return;
   if (panel.classList.contains('open')) {
     closeJournal();
   } else {
+    _journalActiveTab = 'concepts';
+    document.querySelectorAll('.journal-tab-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('jt-concepts');
+    if (btn) btn.classList.add('active');
     renderJournalCards();
     panel.classList.add('open');
     // Clear new badges when opened
@@ -6762,6 +6930,193 @@ function renderJournalCards() {
       <div class="journal-card-tip">${c.tip}</div>
     </div>`;
   }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// ACHIEVEMENTS SYSTEM
+// Regular + Secret achievements
+// ══════════════════════════════════════════════════════
+const ACHIEVEMENTS = {
+  // ── Regular achievements ────────────────────────────
+  first_blood: {
+    id: 'first_blood', icon: '🗡️', title: 'First Blood',
+    desc: 'Complete your first quest in the Archive.',
+    secret: false, xpReward: 15
+  },
+  scholar: {
+    id: 'scholar', icon: '📚', title: 'Scholar of the Order',
+    desc: 'Complete 3 quests.',
+    secret: false, xpReward: 25
+  },
+  archivist: {
+    id: 'archivist', icon: '🏛️', title: 'Grand Archivist',
+    desc: 'Complete all 7 quests (including the Capstone).',
+    secret: false, xpReward: 100
+  },
+  streak_hunter: {
+    id: 'streak_hunter', icon: '🔥', title: 'Streak Hunter',
+    desc: 'Achieve a 10× answer streak.',
+    secret: false, xpReward: 30
+  },
+  survivor: {
+    id: 'survivor', icon: '❤️', title: 'Last Stand',
+    desc: 'Complete a boss battle with 10 HP or less remaining.',
+    secret: false, xpReward: 40
+  },
+  journal_keeper: {
+    id: 'journal_keeper', icon: '📓', title: 'Journal Keeper',
+    desc: 'Collect 5 concept cards in your Research Journal.',
+    secret: false, xpReward: 20
+  },
+  speed_learner: {
+    id: 'speed_learner', icon: '⚡', title: 'Speed Learner',
+    desc: 'Answer a boss phase correctly with over 40 seconds remaining.',
+    secret: false, xpReward: 20
+  },
+  // ── Secret achievements ─────────────────────────────
+  perfect_start: {
+    id: 'perfect_start', icon: '✨', title: 'Perfect Initiate',
+    desc: 'Complete the Prologue without taking any damage.',
+    secret: true, xpReward: 50,
+    hint: 'Some beginnings are flawless...'
+  },
+  the_statistician: {
+    id: 'the_statistician', icon: '🎓', title: 'The Statistician',
+    desc: 'Reach Level 5.',
+    secret: true, xpReward: 35,
+    hint: 'Numbers whisper to those who truly listen...'
+  },
+  night_owl: {
+    id: 'night_owl', icon: '🦉', title: 'Night Owl',
+    desc: 'Play between midnight and 4am.',
+    secret: true, xpReward: 25,
+    hint: 'The Archive never sleeps...'
+  },
+  fearless: {
+    id: 'fearless', icon: '💀', title: 'Fearless',
+    desc: 'Die (reach 0 HP) and continue your journey.',
+    secret: true, xpReward: 20,
+    hint: 'Failure teaches what success cannot...'
+  },
+  rogue_scholar: {
+    id: 'rogue_scholar', icon: '🗝️', title: 'Rogue Scholar',
+    desc: 'Play as the Guest Experience Director and complete 3 quests.',
+    secret: true, xpReward: 30,
+    hint: 'Some pursue knowledge from the shadows...'
+  },
+  p_hacker: {
+    id: 'p_hacker', icon: '🔮', title: 'P-Hacker Slayer',
+    desc: 'In the Catch the P-Values mini-game, score 100% on your first attempt.',
+    secret: true, xpReward: 40,
+    hint: 'The Oracle sees all significance...'
+  },
+  oracle_devotee: {
+    id: 'oracle_devotee', icon: '🌀', title: 'Oracle Devotee',
+    desc: 'Open the Oracle\'s guidance 10 times.',
+    secret: true, xpReward: 20,
+    hint: 'Knowledge sought is knowledge earned...'
+  },
+};
+
+let _oracleOpenCount = 0;
+let _bossQ0NoDamage = true; // track if q0 was cleared with no damage
+let _bossPhaseStartTime = 0;
+
+function checkAchievement(id) {
+  if (!id || G.achievements.includes(id) || !ACHIEVEMENTS[id]) return;
+  G.achievements.push(id);
+  const ach = ACHIEVEMENTS[id];
+  showAchievementToast(ach);
+  if (ach.xpReward) gainXP(ach.xpReward, () => {});
+  saveProgress();
+}
+
+function showAchievementToast(ach) {
+  const existing = document.getElementById('ach-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'ach-toast';
+  toast.innerHTML = `
+    <div class="ach-toast-inner ${ach.secret ? 'ach-secret' : ''}">
+      <span class="ach-toast-icon">${ach.icon}</span>
+      <div class="ach-toast-text">
+        <div class="ach-toast-label">${ach.secret ? '🔐 Secret Achievement Unlocked!' : '🏅 Achievement Unlocked!'}</div>
+        <div class="ach-toast-title">${ach.title}</div>
+        <div class="ach-toast-desc">${ach.desc}</div>
+      </div>
+      <div class="ach-toast-xp">+${ach.xpReward} XP</div>
+    </div>`;
+  document.body.appendChild(toast);
+  
+  requestAnimationFrame(() => { toast.classList.add('ach-show'); });
+  setTimeout(() => {
+    toast.classList.add('ach-hide');
+    setTimeout(() => toast.remove(), 500);
+  }, 4500);
+}
+
+// Called when quest starts to check time-based achievements
+function checkTimeAchievement() {
+  const h = new Date().getHours();
+  if (h >= 0 && h < 4) checkAchievement('night_owl');
+}
+
+// Called each time oracle is toggled open
+function trackOracleOpen() {
+  _oracleOpenCount++;
+  if (_oracleOpenCount >= 10) checkAchievement('oracle_devotee');
+}
+
+// Check quest-based achievements after any quest completion
+function checkQuestAchievements(questId) {
+  const done = G.questsDone.length;
+  if (done >= 1) checkAchievement('first_blood');
+  if (done >= 3) checkAchievement('scholar');
+  if (done >= 7) checkAchievement('archivist');
+  if (G.journal.length >= 5) checkAchievement('journal_keeper');
+  if (G.class === 'rogue' && done >= 3) checkAchievement('rogue_scholar');
+  if (questId === 'q0' && _bossQ0NoDamage) checkAchievement('perfect_start');
+}
+
+// ── Achievement Panel in Journal ──────────────────────
+function renderAchievementsPanel() {
+  const all = Object.values(ACHIEVEMENTS);
+  const earned = G.achievements || [];
+  
+  const regular = all.filter(a => !a.secret);
+  const secret = all.filter(a => a.secret);
+
+  function makeCard(a) {
+    const isEarned = earned.includes(a.id);
+    if (a.secret && !isEarned) {
+      return `<div class="ach-card ach-locked">
+        <span class="ach-card-icon">🔐</span>
+        <div class="ach-card-body">
+          <div class="ach-card-title">???</div>
+          <div class="ach-card-hint">${a.hint || 'Hidden secret...'}</div>
+        </div>
+      </div>`;
+    }
+    return `<div class="ach-card ${isEarned ? 'ach-earned' : 'ach-unearned'} ${a.secret ? 'ach-card-secret' : ''}">
+      <span class="ach-card-icon">${a.icon}</span>
+      <div class="ach-card-body">
+        <div class="ach-card-title">${a.title}${a.secret && isEarned ? ' <span class="ach-secret-badge">Secret</span>' : ''}</div>
+        <div class="ach-card-desc">${a.desc}</div>
+        ${isEarned ? `<div class="ach-card-xp">+${a.xpReward} XP earned</div>` : ''}
+      </div>
+      ${isEarned ? '<span class="ach-check">✓</span>' : ''}
+    </div>`;
+  }
+
+  return `
+    <div class="ach-section-label">Achievements · ${earned.length}/${all.length} Unlocked</div>
+    <div class="ach-progress-bar"><div class="ach-progress-fill" style="width:${Math.round(earned.length/all.length*100)}%"></div></div>
+    <div class="ach-section-sub">Regular</div>
+    ${regular.map(makeCard).join('')}
+    <div class="ach-section-sub" style="margin-top:1rem">🔐 Secret</div>
+    ${secret.map(makeCard).join('')}
+  `;
 }
 
 // Show journal button whenever we have cards (e.g. after load)
@@ -7998,7 +8353,8 @@ function saveProgress() {
   try {
     localStorage.setItem('otsp_save', JSON.stringify({
       class: G.class, hp: G.hp, maxHp: G.maxHp,
-      xp: G.xp, level: G.level, questsDone: G.questsDone, journal: G.journal
+      xp: G.xp, level: G.level, questsDone: G.questsDone, journal: G.journal,
+      achievements: G.achievements || []
     }));
   } catch(e) {}
 }
@@ -8012,6 +8368,7 @@ function loadProgress() {
     G.class = s.class; G.hp = s.hp; G.maxHp = s.maxHp;
     G.xp = s.xp; G.level = s.level; G.questsDone = s.questsDone || [];
     G.journal = s.journal || G.questsDone.filter(id => JOURNAL_CARDS && JOURNAL_CARDS[id]);
+    G.achievements = s.achievements || [];
     syncJournalButton();
     return true;
   } catch(e) { return false; }
@@ -8019,7 +8376,13 @@ function loadProgress() {
 
 function clearProgress() {
   try { localStorage.removeItem('otsp_save'); } catch(e) {}
-  G.class = null; G.hp = 0; G.maxHp = 0; G.xp = 0; G.level = 1; G.questsDone = [];
+  G.class = null; G.hp = 0; G.maxHp = 0; G.xp = 0; G.level = 1; G.questsDone = []; G.journal = [];
+  _journalNewIds.clear();
+  G.achievements = [];
+  // Hide journal button
+  const jBtn = document.getElementById('journal-btn');
+  if (jBtn) jBtn.classList.remove('visible');
+  updateJournalBadge();
   updateHUD();
   showTitle();
 }
