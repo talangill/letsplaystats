@@ -1431,6 +1431,10 @@ button, .choice-btn, .boss-choice, .vn-choice-btn,
   box-shadow: 0 0 28px rgba(139,92,246,0.7), 0 2px 8px rgba(0,0,0,0.5);
 }
 #oracle-toggle.visible { display: flex; }
+/* Force-hide all floating buttons during quests — overrides any JS state */
+body.in-quest #oracle-toggle,
+body.in-quest #lore-btn,
+body.in-quest #journal-btn { display: none !important; }
 #oracle-label {
   font-family: 'Cinzel', serif;
   font-size: 0.7rem;
@@ -5720,6 +5724,7 @@ function attachMapEvents() {
 }
 
 function showMap() {
+  document.body.classList.remove('in-quest');
   vnHide();
   showOracleButton();
   showQuestSidePanels();
@@ -6576,6 +6581,7 @@ function vlCheckDone(idx) {
 // QUEST FLOW
 // ══════════════════════════════════════════════════════
 function startQuest(questId) {
+  document.body.classList.add('in-quest');
   G.currentQuest = questId;
   const cls = CLASSES[G.class];
   G.hp = cls.hp; // restore HP at quest start
@@ -6974,6 +6980,7 @@ function buildTreasureChest(questId) {
 }
 
 function showQuestComplete(quest) {
+  document.body.classList.remove('in-quest');
   hideOracleButton();
   showQuestSidePanels();
   vnHide();
@@ -7056,6 +7063,7 @@ function launchConfetti() {
 }
 
 function showFinalVictory() {
+  document.body.classList.remove('in-quest');
   vnHide();
   hideOracleButton();
   audioSceneChange('victory');
