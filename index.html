@@ -3164,8 +3164,8 @@ const SCENES = {
     ],
     choices: [
       { text: 'The average of 1.8 is fine — numbers are numbers, and the board can interpret it as a position on the 1–3 scale. Arithmetic on numeric codes is always valid provided the original categories had a clear direction.', next: 'q0_levels_wrong', damage: 15, bad: true },
-      { text: 'Room types 1, 2, 3 are categorical labels, not quantities — nominal data. Averaging them produces a number with no meaning. The manager has been reporting nonsense to the board for two years.', next: 'q0_levels', xp: 10 },
-      { text: 'Room type is ordinal — Standard, Deluxe, Suite have a natural order — so a mean is defensible as a summary of the typical tier. Ordinal means the categories are ranked, and the average conveys roughly where most guests sit on that ranking.', next: 'q0_levels_wrong', damage: 15, bad: true },
+      { text: 'Room types 1, 2, 3 are categorical labels, not quantities — categorical data. Averaging them produces a number with no meaning. The manager has been reporting nonsense to the board for two years.', next: 'q0_levels', xp: 10 },
+      { text: 'Room type is ratio — Standard, Deluxe, Suite have a natural ratio of distribution — so a mean is defensible as a summary of the typical tier. Ordinal means the categories are ranked, and the average conveys roughly where most guests sit on that ranking.', next: 'q0_levels_wrong', damage: 15, bad: true },
       { text: 'The problem is sample size, not measurement level. With a larger guest database the average of 1.8 would stabilise and become more reliable. The mean itself is a perfectly appropriate statistic here regardless of how the room types were coded.', next: 'q0_levels_wrong', damage: 15, bad: true }
     ]
   },
@@ -3186,7 +3186,7 @@ const SCENES = {
     narrative: `<p>Good. The Archive Master nods and pulls out a second folder.</p>
     <p class="npc-speech">"A researcher coded guest satisfaction as: 1 = Dissatisfied, 2 = Neutral, 3 = Satisfied. She then calculated the mean satisfaction as 2.3 and reported a t-test comparing two hotels. Is this valid?"</p>
     <div class="box box-lore"><span class="box-title">📜 The Four Measurement Levels</span>
-    <strong>Nominal</strong> — categories with no order (room type, nationality, gender). Only = and ≠.<br>
+    <strong>Nominal</strong> — categories with no order (eye colour, nationality, gender). Only = and ≠.<br>
     <strong>Ordinal</strong> — categories with order but unequal gaps (satisfaction ratings, star ratings). You can say &gt; and &lt; but not + and −.<br>
     <strong>Interval</strong> — equal gaps, no true zero (temperature in °C, clock time). + and − valid, × and ÷ not.<br>
     <strong>Ratio</strong> — equal gaps with a true zero (revenue, age, weight). All arithmetic valid.</div>`,
