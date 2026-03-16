@@ -10118,7 +10118,7 @@ const LORE_ROOMS = [
     eyebrow: 'Hidden Chamber I · Test Selection',
     title: 'The Vintage Dispute',
     flavour: 'Two rival sommeliers stand in the cellar of the Grand Meridian. One claims the new house wine scores higher with guests than the old one. The other says it\'s just noise.',
-    scenario: `The hotel ran a blind tasting with <strong>30 guests</strong>. Each guest rated <em>only one wine</em> (randomly assigned). Results: new wine mean = <strong>7.4</strong>, old wine mean = <strong>6.8</strong>, p = <strong>0.041</strong>, α = 0.05.
+    scenario: `The hotel ran a blind tasting with <strong>30 guests</strong>. Each guest rated <em>only one wine</em> (randomly assigned). Results: new wine mean = <strong>8.1</strong>, old wine mean = <strong>7.8</strong>, p = <strong>0.041</strong>, α = 0.05.
     <br><br>The research question: <em>"Does the new house wine score significantly higher in guest satisfaction than the old one?"</em>`,
     testQuestion: 'Which statistical test is most appropriate here?',
     tests: ['Independent samples t-test', 'Paired samples t-test', 'One-way ANOVA', 'Pearson correlation', 'Chi-square test'],
@@ -10127,14 +10127,14 @@ const LORE_ROOMS = [
     conclusionQuestion: 'Which conclusion is statistically correct?',
     conclusions: [
       'The new wine is significantly better — p = 0.041 < 0.05, so we reject H₀.',
-      'The difference is not significant — 0.6 points is too small to matter practically.',
+      'The difference is not significant — 0.3 points is too small to matter practically.',
       'We cannot conclude anything — only 30 guests is not enough for any test.',
       'The new wine is proven superior — statistical significance at 5% confirms the effect is real.'
     ],
     correctConclusion: 'The new wine is significantly better — p = 0.041 < 0.05, so we reject H₀.',
     conclusionHint: 'Check p vs α. Be careful about the word "proven" — significance is not proof, but what does p < α mean for H₀?',
     advicePrompt: 'The hotel director asks: "Should we switch to the new wine?" Write 2–3 sentences of evidence-based advice. Think about: what does statistical significance actually tell us here? What else might matter beyond the p-value?',
-    adviceKeywords: ['effect size', 'practical', 'confidence interval', 'cost', 'sample', 'replicate', 'meaningful', 'magnitude', '0.6', 'small'],
+    adviceKeywords: ['yes', 'practical', 'confidence', 'cost', 'sample', 'replicate', 'meaningful', 'magnitude', '0.6', 'small'],
     adviceModelAnswer: 'The difference is statistically significant (p = 0.041), meaning it is unlikely to be due to chance alone. However, the mean difference is only 0.6 points on what is presumably a 10-point scale — this may not be practically meaningful. Before switching, consider: is a 0.6-point gain noticeable to guests? What is the cost difference? Replicating the study with a larger sample would increase confidence.',
     xp: 15,
   },
