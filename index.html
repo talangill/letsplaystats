@@ -569,7 +569,7 @@ h1.game-title {
 .shake { animation: shake 0.4s ease; }
 
 /* ═══════════════════════════════════════════════════
-   WORLD MAP STYLES
+   WORLD MAP STYLES — Pannable Viewport
 ═══════════════════════════════════════════════════ */
 .world-map-wrap {
   position: relative;
@@ -579,10 +579,53 @@ h1.game-title {
   border-radius: 8px;
   overflow: hidden;
   margin-top: 1rem;
+  height: 420px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.world-map-wrap:active { cursor: grabbing; }
+.world-map-wrap.map-panning { cursor: grabbing; }
+.world-map-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  will-change: transform;
+  transform-origin: 0 0;
 }
 .world-map-svg {
-  display: block; width: 100%;
-  height: auto;
+  display: block;
+  width: 900px; height: 700px;
+}
+/* Pan hint overlay */
+.map-pan-hint {
+  position: absolute; bottom: 8px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Cinzel', serif; font-size: 0.58rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(155,143,160,0.55);
+  pointer-events: none; white-space: nowrap;
+  transition: opacity 0.8s;
+  z-index: 10;
+}
+.map-pan-hint.hidden { opacity: 0; }
+/* Mini-map indicator */
+.map-minimap {
+  position: absolute; top: 8px; right: 8px;
+  width: 70px; height: 55px;
+  background: rgba(8,6,8,0.75);
+  border: 1px solid rgba(74,56,96,0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+.map-minimap-viewport {
+  position: absolute;
+  border: 1px solid rgba(212,168,32,0.6);
+  background: rgba(212,168,32,0.08);
+  border-radius: 2px;
+  transition: all 0.1s;
 }
 .map-region {
   cursor: pointer;
@@ -2406,6 +2449,195 @@ body.in-quest #journal-btn { display: none !important; }
   letter-spacing: 0.06em;
 }
 
+/* ══════════════════════════════════════════════════════
+   LORE ROOMS — Hidden Chambers
+══════════════════════════════════════════════════════ */
+.lore-rooms-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+@media(max-width:720px){ .lore-rooms-strip { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width:480px){ .lore-rooms-strip { grid-template-columns: 1fr 1fr; } }
+
+.lore-room-card {
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative; overflow: hidden;
+}
+.lore-room-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(212,168,32,0.13) 0%, transparent 70%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.lore-room-card:hover { transform: translateY(-3px); border-color: var(--gold-dim); }
+.lore-room-card:hover::before { opacity: 1; }
+.lore-room-card.lr-solved { border-color: var(--sage); }
+.lore-room-card.lr-solved::after {
+  content: '✓';
+  position: absolute; top: 7px; right: 9px;
+  color: var(--sage-bright); font-size: 0.85rem;
+}
+.lr-icon { font-size: 2rem; display: block; margin-bottom: 0.35rem; }
+.lr-name {
+  font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold-bright); margin-bottom: 0.2rem;
+}
+.lr-tag {
+  font-size: 0.72rem; color: var(--text-muted); font-style: italic; line-height: 1.3;
+}
+
+/* ── Lore Room Overlay ─────────────────────────────── */
+.lr-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(4,2,6,0.92);
+  display: flex; align-items: flex-start; justify-content: center;
+  animation: fadeIn 0.25s ease;
+  padding: 16px; overflow-y: auto;
+}
+.lr-panel {
+  background: var(--surface);
+  border: 2px solid var(--gold-dim);
+  border-radius: 10px;
+  max-width: 640px; width: 100%;
+  position: relative;
+  padding: 1.8rem 1.6rem 2rem;
+  animation: slideUp 0.3s ease;
+  margin: auto;
+}
+.lr-close {
+  position: absolute; top: 12px; right: 14px;
+  background: transparent; border: none;
+  color: var(--text-muted); font-size: 1.2rem;
+  cursor: pointer; transition: color 0.2s;
+}
+.lr-close:hover { color: var(--gold); }
+.lr-eyebrow {
+  font-family: 'Cinzel', serif; font-size: 0.6rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold-dim); margin-bottom: 0.3rem;
+}
+.lr-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1rem, 3vw, 1.35rem);
+  color: var(--gold-bright); margin-bottom: 0.5rem; line-height: 1.25;
+}
+.lr-flavour {
+  font-family: 'Crimson Pro', serif; font-style: italic;
+  font-size: 0.92rem; color: var(--text-dim); line-height: 1.7;
+  border-left: 3px solid var(--rune); padding-left: 0.8rem;
+  margin-bottom: 1.2rem; background: rgba(139,92,246,0.05);
+  border-radius: 0 4px 4px 0; padding: 0.6rem 0.9rem;
+}
+.lr-scenario {
+  font-family: 'Crimson Pro', serif; font-size: 1rem;
+  line-height: 1.8; color: var(--text); margin-bottom: 1.3rem;
+}
+.lr-scenario strong { color: var(--gold-bright); }
+.lr-scenario em { color: var(--sage-bright); }
+
+/* ── Step labels ─────────────────────────────────────── */
+.lr-step-label {
+  font-family: 'Cinzel', serif; font-size: 0.62rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--rune-bright); margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.lr-step-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Drag-and-drop zones ────────────────────────────── */
+.lr-drag-area {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  margin-bottom: 0.8rem;
+}
+.lr-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border-bright);
+  border-radius: 5px; padding: 0.45rem 0.85rem;
+  font-family: 'Cinzel', serif; font-size: 0.75rem;
+  letter-spacing: 0.06em; color: var(--text);
+  cursor: grab; user-select: none;
+  transition: all 0.18s; touch-action: none;
+}
+.lr-chip:active { cursor: grabbing; opacity: 0.7; }
+.lr-chip.dragging { opacity: 0.35; }
+.lr-chip.lr-correct { border-color: var(--sage-bright); color: var(--sage-bright); background: rgba(45,212,116,0.1); cursor: default; }
+.lr-chip.lr-wrong   { border-color: var(--blood); color: var(--blood); background: rgba(192,24,44,0.1); }
+.lr-chip.lr-placed  { border-color: var(--gold-dim); color: var(--gold-bright); background: rgba(212,168,32,0.1); cursor: grab; }
+
+.lr-drop-zone {
+  min-height: 50px; border: 2px dashed var(--border-bright);
+  border-radius: 6px; padding: 0.5rem 0.8rem;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 1rem; font-size: 0.82rem;
+  color: var(--text-muted); font-style: italic;
+  font-family: 'Crimson Pro', serif;
+}
+.lr-drop-zone.lr-over { border-color: var(--gold); background: rgba(212,168,32,0.06); }
+.lr-drop-zone.lr-filled-correct { border-color: var(--sage-bright); background: rgba(45,212,116,0.07); border-style: solid; }
+.lr-drop-zone.lr-filled-wrong   { border-color: var(--blood); background: rgba(192,24,44,0.07); border-style: solid; }
+.lr-drop-zone.lr-filled-pending { border-color: var(--gold-dim); background: rgba(212,168,32,0.05); border-style: solid; }
+.lr-drop-placeholder { color: var(--text-muted); font-style: italic; font-size: 0.82rem; pointer-events: none; }
+
+/* ── Typed advice field ─────────────────────────────── */
+.lr-advice-field {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border-bright);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: 'Crimson Pro', serif; font-size: 1rem;
+  line-height: 1.6; padding: 0.6rem 0.8rem;
+  outline: none; resize: vertical; min-height: 72px;
+  transition: border-color 0.2s;
+}
+.lr-advice-field:focus { border-color: var(--rune-bright); }
+.lr-advice-field.lr-correct { border-color: var(--sage-bright); background: rgba(45,212,116,0.06); }
+.lr-advice-field.lr-wrong   { border-color: var(--blood); background: rgba(192,24,44,0.06); }
+
+/* ── Feedback / reveal ─────────────────────────────── */
+.lr-feedback {
+  border-radius: 6px; padding: 0.9rem 1.1rem;
+  font-family: 'Crimson Pro', serif; font-size: 0.95rem;
+  line-height: 1.75; margin-top: 1rem; display: none;
+}
+.lr-feedback.show { display: block; animation: fadeUp 0.3s ease; }
+.lr-feedback.lr-fb-good { background: rgba(45,212,116,0.09); border: 1px solid var(--sage); color: var(--text); }
+.lr-feedback.lr-fb-partial { background: rgba(212,168,32,0.08); border: 1px solid var(--gold-dim); color: var(--text); }
+.lr-feedback.lr-fb-bad { background: rgba(192,24,44,0.09); border: 1px solid var(--blood-dim); color: var(--text); }
+.lr-fb-header {
+  font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.12em;
+  text-transform: uppercase; margin-bottom: 0.5rem; display: block;
+}
+.lr-fb-good .lr-fb-header { color: var(--sage-bright); }
+.lr-fb-partial .lr-fb-header { color: var(--gold-bright); }
+.lr-fb-bad .lr-fb-header { color: var(--blood); }
+.lr-model-answer {
+  background: rgba(212,168,32,0.07); border-left: 3px solid var(--gold);
+  padding: 0.5rem 0.8rem; border-radius: 0 4px 4px 0;
+  margin-top: 0.6rem; font-size: 0.9rem; color: var(--text-dim);
+}
+.lr-model-answer strong { color: var(--gold-bright); }
+
+.lr-submit-row {
+  display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; align-items: center;
+}
+.lr-xp-badge {
+  font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--sage-bright);
+  letter-spacing: 0.08em; margin-left: auto;
+}
+
 </style>
 </head>
 <body>
@@ -3334,7 +3566,7 @@ const SCENES = {
     <div class="box box-lore"><span class="box-title">📜 Error Types</span>
     <strong>Type I error (false positive)</strong> — rejecting H₀ when it is actually true. Concluding there is an effect when there isn't one. Probability = α (your significance threshold, e.g. 0.05).<br>
     <strong>Type II error (false negative)</strong> — failing to reject H₀ when it is actually false. Missing a real effect. Related to statistical power.<br>
-    <strong>Type III error</strong> — rejecting H₀ for the right result but the wrong reason (e.g. correct conclusion, flawed methodology).</div>
+    <strong>Type III error</strong> — rejecting H₀ correctly by the numbers, but drawing the wrong conclusion from it. For example: using a two-sided test but reporting a directional conclusion, or correctly finding a significant result but misidentifying which group drove it.</div>
     ${VIZ_ERROR_TABLE}`,
     hints: {
       formula: 'α = 0.05 means you accept a 5% chance of a Type I error. Lowering α (e.g. to 0.01) reduces Type I errors but increases Type II errors. There is always a trade-off.',
@@ -3344,7 +3576,7 @@ const SCENES = {
     beats: [
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "A hotel chain ran a study testing whether a new training programme improved service scores. p = 0.04 — just significant. They rolled out the programme across all 12 properties at considerable cost." },
       { char: 'archive_master', left: 'archive_master', right: 'player', text: "Two years later, a replication study found no effect. The original result was almost certainly a false positive. What type of error did the original study make?" },
-      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Error Types</span><strong>Type I (false positive)</strong> — rejecting H0 when it is true. Probability = alpha.<br><strong>Type II (false negative)</strong> — failing to reject H0 when it is false.<br><strong>Type III</strong> — correct rejection, but wrong reasoning or methodology.</div>' }
+      { char: null, left: 'archive_master', right: 'player', text: '<div class="vn-lore"><span class="vn-lore-title">Error Types</span><strong>Type I (false positive)</strong> — rejecting H0 when it is true. Probability = alpha.<br><strong>Type II (false negative)</strong> — failing to reject H0 when it is false.<br><strong>Type III</strong> — rejecting H0 correctly by the numbers, but drawing the wrong conclusion. E.g. reporting a directional result from a two-sided test.</div>' }
     ],
     choices: [
       { text: 'A Type II error — the study failed to detect a real effect because the sample was too small. The replication found nothing too, meaning both were underpowered and the original p = 0.04 was noise amplified by too few participants.', next: 'q0_errors_wrong', damage: 10, bad: true },
@@ -3632,7 +3864,7 @@ const SCENES = {
     <div class="box box-gold"><span class="box-title">📊 Results Scroll</span><strong>r = −0.74, p = 0.0002, 95% CI [−0.89, −0.47]</strong><br>n = 20 seasons</div>
     <p>Margaux studies it eagerly: <em>"Wonderful! r is negative and p is tiny. Lower prices cause higher occupancy — let's cut rates immediately!"</em></p>`,
     hints: {
-      formula: 'r² = 0.55 — about 55% of occupancy variance is linearly associated with rate variation across seasons.',
+      formula: 'r² = 0.55 — about 55% of the variance in occupancy is explained by its linear relationship with room rate.',
       assumption: 'The CI [−0.89, −0.47] excludes zero — additional evidence the relationship is real, not just a fluke.',
       interpretation: 'p = 0.0002 answers: "If the true correlation were zero, how likely is seeing r = −0.74 with n=20?" Very unlikely. But that says nothing about causation.'
     },
@@ -3767,9 +3999,17 @@ const SCENES = {
     choices: [
       { text: "Yes — significant Chi-Square identifies which specific event type gets which specific satisfaction rating more often.", next: 'q2_bad_interpret', damage: 25, bad: true },
       { text: "No — Chi-Square is an omnibus test. It says the overall association is non-random, but not which specific cells drive it. Standardised residuals are needed to identify the key cells.", next: 'q2_result', xp: 10 },
-      { text: "Yes — Cramer's V gives the direction of the association, so combined with the significant p-value we can report exactly which event types rate highest.", next: 'q2_bad_interpret', damage: 20, bad: true },
+      { text: "Yes — Cramer's V gives the direction of the association, so combined with the significant p-value we can report exactly which event types rate highest.", next: 'q2_bad_interpret_cramers', damage: 20, bad: true },
       { text: "No — to compare specific event types we would need to run a separate Chi-Square test for each pair of event types after finding the omnibus result significant.", next: 'q2_bad_interpret', damage: 15, bad: true },
     ]
+  },
+
+  q2_bad_interpret_cramers: {
+    icon: '💀', chapter: 'Quest II · Setback',
+    title: 'Cramer\'s V Does Not Give Direction',
+    narrative: `<p>The analyst stops you. <em>"Cramer's V cannot tell you which event type rates higher."</em></p>
+    <div class="box box-danger"><span class="box-title">⚔ −20 HP</span>Two things are wrong here. First: <strong>Cramer's V measures the <em>strength</em> of association</strong> — it ranges from 0 (no association) to 1 (perfect association). It has no sign and gives no direction. Second: even if it did, a significant omnibus result still cannot identify which specific cells drive the pattern. For that you need to examine <strong>standardised residuals</strong> (|z| > 2).</div>`,
+    choices: [{ text: '↩ Return and interpret correctly', next: 'q2_assumption' }]
   },
 
   q2_bad_interpret: {
@@ -3865,7 +4105,7 @@ const SCENES = {
     narrative: `<p>Welch's t-test on Study C: <strong>t(51.3) = 2.6, p (two-tailed) = 0.012</strong>. The aged reserve scores significantly higher.</p>
     <p>The estate owner strides in: <em>"Excellent! But we always predicted the aged reserve would be superior — not just different. Shouldn't we use a one-tailed test? Our p would be 0.006 — an even stronger result to show the investors!"</em></p>`,
     hints: {
-      formula: "One-tailed p = two-tailed p / 2 when testing in the direction the data went. That halving is exactly the problem — you're exploiting prior knowledge of the result.",
+      formula: "One-tailed p = two-tailed p / 2 — but only when the directional hypothesis was committed to before data collection. Halving after seeing which direction the data went is p-hacking, not legitimate one-tailed testing.",
       assumption: 'One-tailed testing requires the directional hypothesis to be committed to BEFORE data collection — ideally pre-registered in writing.',
       interpretation: "p = 0.012 (two-tailed) is already convincing. The cosmetic gain of one-tailed testing isn't worth the integrity cost if direction was chosen after seeing results."
     },
@@ -3926,7 +4166,7 @@ const SCENES = {
     icon: '💀', chapter: 'Quest IV · Setback',
     title: 'The Multiple Comparisons Plague',
     narrative: `<p>You run 10 t-tests. Four come back "significant." You publish rankings. Three turn out to be false positives. The Ivory Tower threatens legal action.</p>
-    <div class="box box-danger"><span class="box-title">⚔ −20 HP</span>At α = 0.05, each t-test has a 5% false-positive rate. Run 10 and the family-wise error rate ≈ 40%. ANOVA solves this: one F-test, all groups, α = 0.05 maintained. Then post-hoc tests identify specific differences.</div>`,
+    <div class="box box-danger"><span class="box-title">⚔ −20 HP</span>At α = 0.05, each t-test has a 5% false-positive rate. Run 10 and the family-wise error rate ≈ 40%. <strong>ANOVA</strong> solves this cleanly: one F-test, all groups, family-wise α = 0.05 maintained throughout.<br><br>A Bonferroni correction (dividing α by the number of tests) <em>is</em> a legitimate technique — it would reduce the false-positive rate. But it is more conservative than ANOVA, loses statistical power, and is the wrong tool when the question is "do any of these groups differ?" rather than "which of these pre-specified pairs differ?" ANOVA is the right starting point here.</div>`,
     choices: [{ text: '↩ Return to the Council chamber', next: 'q4_intro' }]
   },
 
@@ -4015,7 +4255,7 @@ const SCENES = {
     icon: '⚖️', chapter: 'Capstone · The Grand Inquest',
     title: 'The Audit',
     narrative: `<p>A sealed letter arrives from the Order's High Council. Three words on the outside: <em>"Fix this. Now."</em></p>
-    <p>Inside: a 40-page research report from the Sovereign Crown Hotel Group — six properties, a five-year guest satisfaction programme, and a final board presentation in 48 hours. The report is riddled with errors. Someone used convenience sampling and called it representative. Someone ran a t-test on ordinal data. Someone reported p = 0.049 as "highly significant."</p>
+    <p>Inside: a 40-page research report from the Sovereign Crown Hotel Group — six properties, a five-year guest satisfaction programme, and a final board presentation in 48 hours. The report is riddled with errors. Someone used convenience sampling and called it representative. Someone calculated a mean and ran a t-test on <strong>nominal</strong> data. Someone reported p = 0.049 as "highly significant."</p>
     <p class="npc-speech">"The Research Director commissioned this. She has defended every decision in it. She is standing outside this door right now, and she is not happy you are here."</p>
     <p>The Archive Master drops the report on the desk. <em>"You have read every scroll in this Archive. Sampling, measurement, hypothesis testing, charts, t-tests, chi-square, ANOVA. All of it. This is where it counts."</em></p>
     <div class="box box-danger"><span class="box-title">⚖ Capstone Quest</span>This audit weaves together everything. Four cascading crises — each one revealing another error in the Crown Group's research. Dismantle every bad decision. Then face the Research Director herself.</div>`,
@@ -5578,32 +5818,42 @@ function selectClass(classKey) {
 }
 
 // ══════════════════════════════════════════════════════
-// WORLD MAP DATA — positions of quest nodes on the SVG
+// WORLD MAP DATA — expanded 900×700 canvas
+// Main quest nodes sit in the central region (roughly 150–550 x, 80–500 y)
+// Lore room nodes are scattered in the outer wilderness
 // ══════════════════════════════════════════════════════
 const MAP_NODES = {
-  q0:  { cx: 200, cy: 130, r: 28, label: 'The Archive', color: '#8b5cf6', terrain: 'tower' },
-  q1:  { cx: 105, cy: 220, r: 26, label: 'The Inn',    color: '#e8621a', terrain: 'inn' },
-  q2:  { cx: 320, cy: 200, r: 26, label: 'Banquet Hall', color: '#d4a820', terrain: 'hall' },
-  q3:  { cx: 145, cy: 320, r: 26, label: "Sommelier's Cellar", color: '#c0182c', terrain: 'cellar' },
-  q3b: { cx: 265, cy: 330, r: 25, label: 'Cursed Crypt', color: '#1a7a4a', terrain: 'crypt' },
-  q4:  { cx: 390, cy: 290, r: 30, label: 'Grand Hotel', color: '#a78bfa', terrain: 'castle' },
-  q5:  { cx: 250, cy: 415, r: 34, label: 'The Grand Inquest', color: '#f5c842', terrain: 'inquest' }
+  q0:  { cx: 310, cy: 160, r: 28, label: 'The Archive',        color: '#8b5cf6', terrain: 'tower' },
+  q1:  { cx: 200, cy: 260, r: 26, label: 'The Inn',            color: '#e8621a', terrain: 'inn' },
+  q2:  { cx: 430, cy: 230, r: 26, label: 'Banquet Hall',       color: '#d4a820', terrain: 'hall' },
+  q3:  { cx: 240, cy: 370, r: 26, label: "Sommelier's Cellar", color: '#c0182c', terrain: 'cellar' },
+  q3b: { cx: 370, cy: 375, r: 25, label: 'Cursed Crypt',       color: '#1a7a4a', terrain: 'crypt' },
+  q4:  { cx: 510, cy: 320, r: 30, label: 'Grand Hotel',        color: '#a78bfa', terrain: 'castle' },
+  q5:  { cx: 355, cy: 490, r: 34, label: 'The Grand Inquest',  color: '#f5c842', terrain: 'inquest' }
 };
+
+// Lore room positions — placed in outer wilderness regions
+const LORE_ROOM_NODES = [
+  { idx: 0, cx: 90,  cy: 100, r: 22, icon: '🍷', name: 'Wine Cellar',  color: '#c0182c', region: 'NW borderlands' },
+  { idx: 1, cx: 780, cy: 130, r: 22, icon: '🏋️', name: 'The Gym',      color: '#2dd474', region: 'NE highlands' },
+  { idx: 2, cx: 80,  cy: 540, r: 22, icon: '🗳️', name: 'Ballot Room',  color: '#f5c842', region: 'SW marshes' },
+  { idx: 3, cx: 800, cy: 490, r: 22, icon: '🏨', name: 'Boardroom',    color: '#a78bfa', region: 'SE provinces' },
+  { idx: 4, cx: 450, cy: 620, r: 22, icon: '📈', name: 'Observatory',  color: '#1da0c3', region: 'Southern reach' },
+];
 
 const TERRAIN_ICONS = {
   tower: '🏛️', inn: '🏨', hall: '🍽️', cellar: '🍷', crypt: '📊', castle: '🏰'
 };
 
 function buildMapSVG() {
-  const W = 500, H = 460;
+  const W = 900, H = 700;
   const nodes = MAP_NODES;
 
-  // Build path connections between quests
+  // Path connections between main quests
   const paths = [
     [nodes.q0, nodes.q1], [nodes.q0, nodes.q2],
     [nodes.q1, nodes.q3], [nodes.q2, nodes.q4],
     [nodes.q3, nodes.q3b], [nodes.q3b, nodes.q4],
-    // All roads lead to the Inquest
     [nodes.q1, nodes.q5], [nodes.q3, nodes.q5],
     [nodes.q3b, nodes.q5], [nodes.q4, nodes.q5], [nodes.q2, nodes.q5]
   ];
@@ -5613,28 +5863,65 @@ function buildMapSVG() {
       stroke="rgba(74,56,96,0.6)" stroke-width="2.5" stroke-dasharray="6,4"/>`
   ).join('');
 
-  // terrain details (decorative blobs)
+  // Faint dotted trails leading from main region toward lore rooms
+  const loreTrails = LORE_ROOM_NODES.map(lr => {
+    // anchor trail to nearest main-quest edge
+    const anchors = { 0: nodes.q1, 1: nodes.q2, 2: nodes.q3, 3: nodes.q4, 4: nodes.q5 };
+    const a = anchors[lr.idx];
+    const mx = (a.cx + lr.cx) / 2, my = (a.cy + lr.cy) / 2;
+    return `<path d="M${a.cx},${a.cy} Q${mx + (Math.random()*40-20)},${my + (Math.random()*40-20)} ${lr.cx},${lr.cy}"
+      stroke="rgba(212,168,32,0.18)" stroke-width="1.5" stroke-dasharray="4,6" fill="none"/>`;
+  }).join('');
+
+  // Terrain blobs — expanded across 900×700
   const terrainBlobs = `
-    <ellipse cx="200" cy="230" rx="120" ry="60" fill="rgba(26,122,74,0.07)"/>
-    <ellipse cx="350" cy="160" rx="80" ry="45" fill="rgba(139,92,246,0.05)"/>
-    <ellipse cx="120" cy="340" rx="90" ry="35" fill="rgba(192,24,44,0.05)"/>
-    <!-- capstone glow platform -->
-    <ellipse cx="250" cy="420" rx="85" ry="22" fill="rgba(245,200,66,0.06)" stroke="rgba(245,200,66,0.12)" stroke-width="1"/>
-    <!-- mountains top right -->
-    <polygon points="410,60 430,25 450,60" fill="rgba(74,56,96,0.35)"/>
-    <polygon points="440,65 465,22 488,65" fill="rgba(74,56,96,0.28)"/>
-    <!-- forest bottom left -->
-    <circle cx="50" cy="320" r="18" fill="rgba(26,122,74,0.18)"/>
-    <circle cx="68" cy="310" r="14" fill="rgba(26,122,74,0.15)"/>
-    <circle cx="38" cy="305" r="12" fill="rgba(26,122,74,0.12)"/>
-    <!-- water top left -->
-    <ellipse cx="50" cy="80" rx="45" ry="22" fill="rgba(29,160,195,0.09)" stroke="rgba(29,160,195,0.18)" stroke-width="1"/>
-    <text x="50" y="83" text-anchor="middle" font-family="Crimson Pro,serif" font-size="8" fill="rgba(29,160,195,0.45)" font-style="italic">Null Sea</text>
-    <!-- title scroll top -->
-    <rect x="155" y="6" width="190" height="26" rx="3" fill="rgba(8,6,8,0.7)" stroke="rgba(74,56,96,0.5)" stroke-width="1"/>
-    <text x="250" y="24" text-anchor="middle" font-family="Cinzel Decorative,serif" font-size="10" fill="rgba(212,168,32,0.7)" letter-spacing="1">Kingdom of Statistica</text>
+    <!-- Central heartland -->
+    <ellipse cx="350" cy="310" rx="160" ry="90" fill="rgba(26,122,74,0.07)"/>
+    <ellipse cx="480" cy="200" rx="100" ry="55" fill="rgba(139,92,246,0.05)"/>
+    <ellipse cx="230" cy="390" rx="110" ry="45" fill="rgba(192,24,44,0.05)"/>
+    <!-- Capstone glow -->
+    <ellipse cx="355" cy="495" rx="95" ry="25" fill="rgba(245,200,66,0.06)" stroke="rgba(245,200,66,0.12)" stroke-width="1"/>
+
+    <!-- NW wilderness -->
+    <ellipse cx="90" cy="200" rx="75" ry="120" fill="rgba(29,160,195,0.05)" stroke="rgba(29,160,195,0.08)" stroke-width="1"/>
+    <circle cx="55" cy="130" r="25" fill="rgba(26,122,74,0.13)"/>
+    <circle cx="75" cy="155" r="18" fill="rgba(26,122,74,0.10)"/>
+    <circle cx="40" cy="155" r="14" fill="rgba(26,122,74,0.08)"/>
+    <ellipse cx="90" cy="80" rx="55" ry="28" fill="rgba(29,160,195,0.09)" stroke="rgba(29,160,195,0.18)" stroke-width="1"/>
+    <text x="90" y="83" text-anchor="middle" font-family="Crimson Pro,serif" font-size="9" fill="rgba(29,160,195,0.45)" font-style="italic">Null Sea</text>
+
+    <!-- NE highlands / mountains -->
+    <polygon points="700,40 725,5 750,40"  fill="rgba(74,56,96,0.38)"/>
+    <polygon points="735,45 762,8  788,45"  fill="rgba(74,56,96,0.30)"/>
+    <polygon points="768,48 798,10 826,48"  fill="rgba(74,56,96,0.25)"/>
+    <ellipse cx="780" cy="220" rx="70" ry="100" fill="rgba(45,212,116,0.05)" stroke="rgba(45,212,116,0.08)" stroke-width="1"/>
+
+    <!-- SW marshes -->
+    <ellipse cx="90" cy="560" rx="80" ry="60" fill="rgba(212,168,32,0.06)" stroke="rgba(212,168,32,0.10)" stroke-width="1"/>
+    <circle cx="50" cy="500" r="20" fill="rgba(26,122,74,0.14)"/>
+    <circle cx="72" cy="520" r="15" fill="rgba(26,122,74,0.11)"/>
+    <circle cx="42" cy="528" r="11" fill="rgba(26,122,74,0.09)"/>
+    <text x="90" y="600" text-anchor="middle" font-family="Crimson Pro,serif" font-size="8.5" fill="rgba(212,168,32,0.35)" font-style="italic">Bias Bog</text>
+
+    <!-- SE provinces -->
+    <ellipse cx="810" cy="510" rx="75" ry="90" fill="rgba(167,139,250,0.05)" stroke="rgba(167,139,250,0.10)" stroke-width="1"/>
+    <polygon points="850,420 870,388 890,420" fill="rgba(74,56,96,0.30)"/>
+    <polygon points="870,425 895,390 898,425" fill="rgba(74,56,96,0.22)"/>
+
+    <!-- Southern reach -->
+    <ellipse cx="455" cy="640" rx="100" ry="45" fill="rgba(29,160,195,0.06)" stroke="rgba(29,160,195,0.12)" stroke-width="1"/>
+    <text x="455" y="682" text-anchor="middle" font-family="Crimson Pro,serif" font-size="8.5" fill="rgba(29,160,195,0.35)" font-style="italic">Correlation Coast</text>
+
+    <!-- "Hidden Chambers" label band -->
+    <rect x="0" y="655" width="${W}" height="20" fill="rgba(8,6,8,0.35)"/>
+    <text x="${W/2}" y="668" text-anchor="middle" font-family="Cinzel,serif" font-size="8" fill="rgba(212,168,32,0.35)" letter-spacing="3">✦  HIDDEN CHAMBERS — DRAG TO EXPLORE  ✦</text>
+
+    <!-- Title scroll -->
+    <rect x="255" y="8" width="210" height="28" rx="3" fill="rgba(8,6,8,0.7)" stroke="rgba(74,56,96,0.5)" stroke-width="1"/>
+    <text x="360" y="27" text-anchor="middle" font-family="Cinzel Decorative,serif" font-size="11" fill="rgba(212,168,32,0.75)" letter-spacing="1">Kingdom of Statistica</text>
   `;
 
+  // Main quest nodes
   const questEntries = Object.entries(QUESTS);
   const nodesSVG = questEntries.map(([key, q]) => {
     const n = nodes[key];
@@ -5663,9 +5950,26 @@ function buildMapSVG() {
       </g>`;
   }).join('');
 
-  // Compass rose
+  // Lore room nodes
+  const loreNodesSVG = LORE_ROOM_NODES.map(lr => {
+    const solved = G.loreRoomsDone && G.loreRoomsDone.includes(lr.idx);
+    const ringColor = solved ? '#2dd474' : lr.color;
+    const glowColor = lr.color.replace('#','');
+    return `
+      <g class="map-lore-region" data-lore="${lr.idx}" style="cursor:pointer">
+        <!-- Glow halo -->
+        <circle cx="${lr.cx}" cy="${lr.cy}" r="${lr.r+8}" fill="none" stroke="${ringColor}" stroke-width="1" opacity="0.18" stroke-dasharray="3,4"/>
+        <circle cx="${lr.cx}" cy="${lr.cy}" r="${lr.r}" fill="rgba(8,6,8,0.82)" stroke="${ringColor}" stroke-width="2"/>
+        <text x="${lr.cx}" y="${lr.cy+2}" text-anchor="middle" dominant-baseline="middle" font-size="${lr.r*0.85}">${lr.icon}</text>
+        ${solved ? `<text x="${lr.cx+lr.r-2}" y="${lr.cy-lr.r+6}" text-anchor="middle" font-size="10" fill="#2dd474">✓</text>` : ''}
+        <text x="${lr.cx}" y="${lr.cy+lr.r+13}" text-anchor="middle" font-family="Cinzel,serif" font-size="7.5" fill="${solved ? 'rgba(45,212,116,0.7)' : 'rgba(212,168,32,0.7)'}" letter-spacing="0.3">${lr.name}</text>
+        <text x="${lr.cx}" y="${lr.cy+lr.r+23}" text-anchor="middle" font-family="Crimson Pro,serif" font-size="7" fill="rgba(155,143,160,0.55)" font-style="italic">${lr.region}</text>
+      </g>`;
+  }).join('');
+
+  // Compass rose — upper right of expanded map
   const compass = `
-    <g transform="translate(462,55)">
+    <g transform="translate(858,55)">
       <text x="0" y="-18" text-anchor="middle" font-family="Cinzel,serif" font-size="9" fill="rgba(212,168,32,0.5)">N</text>
       <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(212,168,32,0.35)" stroke-width="1.5"/>
       <line x1="-14" y1="0" x2="14" y2="0" stroke="rgba(212,168,32,0.25)" stroke-width="1"/>
@@ -5673,7 +5977,12 @@ function buildMapSVG() {
       <circle cx="0" cy="0" r="2" fill="rgba(212,168,32,0.4)"/>
     </g>`;
 
-  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="world-map-svg">
+  // Grid lines across expanded canvas
+  const gridLines =
+    Array.from({length:18},(_,i)=>`<line x1="${i*W/17}" y1="0" x2="${i*W/17}" y2="${H}" stroke="rgba(46,36,56,0.12)" stroke-width="0.5"/>`).join('') +
+    Array.from({length:14},(_,i)=>`<line x1="0" y1="${i*H/13}" x2="${W}" y2="${i*H/13}" stroke="rgba(46,36,56,0.12)" stroke-width="0.5"/>`).join('');
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="world-map-svg" width="${W}" height="${H}">
     <defs>
       <filter id="mapglow">
         <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -5681,11 +5990,12 @@ function buildMapSVG() {
       </filter>
     </defs>
     <rect width="${W}" height="${H}" fill="#0c1510"/>
-    ${Array.from({length:10},(_,i)=>`<line x1="${i*W/9}" y1="0" x2="${i*W/9}" y2="${H}" stroke="rgba(46,36,56,0.15)" stroke-width="0.5"/>`).join('')}
-    ${Array.from({length:9},(_,i)=>`<line x1="0" y1="${i*H/8}" x2="${W}" y2="${i*H/8}" stroke="rgba(46,36,56,0.15)" stroke-width="0.5"/>`).join('')}
+    ${gridLines}
     ${terrainBlobs}
+    ${loreTrails}
     ${pathStr}
     ${nodesSVG}
+    ${loreNodesSVG}
     ${compass}
   </svg>`;
 }
@@ -5697,6 +6007,7 @@ function mapTooltipShow(e, name, topic, done, locked) {
   const sub = locked ? 'Complete previous quest first' : topic;
   tip.innerHTML = prefix + name + `<span class="map-tooltip-sub">${sub}</span>`;
   const wrapEl = document.getElementById('world-map-container');
+  if (!wrapEl) return;
   const wrapRect = wrapEl.getBoundingClientRect();
   tip.style.left = (e.clientX - wrapRect.left) + 'px';
   tip.style.top  = (e.clientY - wrapRect.top - 10) + 'px';
@@ -5707,20 +6018,221 @@ function mapTooltipHide() {
   if (tip) tip.classList.remove('visible');
 }
 
+// ── Map pan state ─────────────────────────────────────
+const _MAP = {
+  // canvas translate
+  tx: 0, ty: 0,
+  // drag tracking
+  dragging: false,
+  startX: 0, startY: 0,
+  startTx: 0, startTy: 0,
+  // momentum
+  vx: 0, vy: 0,
+  lastX: 0, lastY: 0,
+  rafId: null,
+  // dimensions
+  SVG_W: 900, SVG_H: 700,
+  VIEW_W: 0, VIEW_H: 420,
+  // click guard
+  moved: false,
+};
+
+function _mapClamp(tx, ty) {
+  const vw = _MAP.VIEW_W || 500;
+  const minTx = Math.min(0, vw - _MAP.SVG_W);
+  const minTy = Math.min(0, _MAP.VIEW_H - _MAP.SVG_H);
+  return {
+    tx: Math.max(minTx, Math.min(0, tx)),
+    ty: Math.max(minTy, Math.min(0, ty))
+  };
+}
+
+function _mapApplyTransform() {
+  const canvas = document.getElementById('world-map-canvas');
+  if (canvas) canvas.style.transform = `translate(${_MAP.tx}px,${_MAP.ty}px)`;
+  _mapUpdateMinimap();
+}
+
+function _mapUpdateMinimap() {
+  const vp = document.getElementById('map-minimap-vp');
+  const mm = document.getElementById('map-minimap');
+  if (!vp || !mm) return;
+  const mmW = 70, mmH = 55;
+  const scaleX = mmW / _MAP.SVG_W;
+  const scaleY = mmH / _MAP.SVG_H;
+  const vpW = (_MAP.VIEW_W / _MAP.SVG_W) * mmW;
+  const vpH = (_MAP.VIEW_H / _MAP.SVG_H) * mmH;
+  const vpX = (-_MAP.tx / _MAP.SVG_W) * mmW;
+  const vpY = (-_MAP.ty / _MAP.SVG_H) * mmH;
+  vp.style.left   = vpX + 'px';
+  vp.style.top    = vpY + 'px';
+  vp.style.width  = Math.min(vpW, mmW - vpX) + 'px';
+  vp.style.height = Math.min(vpH, mmH - vpY) + 'px';
+}
+
+function _mapMomentum() {
+  if (!_MAP.dragging) {
+    _MAP.vx *= 0.88;
+    _MAP.vy *= 0.88;
+    if (Math.abs(_MAP.vx) > 0.3 || Math.abs(_MAP.vy) > 0.3) {
+      const c = _mapClamp(_MAP.tx + _MAP.vx, _MAP.ty + _MAP.vy);
+      _MAP.tx = c.tx; _MAP.ty = c.ty;
+      _mapApplyTransform();
+      _MAP.rafId = requestAnimationFrame(_mapMomentum);
+    }
+  }
+}
+
 function attachMapEvents() {
   const container = document.getElementById('world-map-container');
   if (!container) return;
-  container.querySelectorAll('.map-region').forEach(g => {
-    const key    = g.dataset.quest;
-    const locked = g.dataset.locked === 'true';
-    const done   = g.dataset.done === 'true';
-    const name   = g.dataset.name;
-    const topic  = g.dataset.topic;
 
-    g.addEventListener('click', () => { if (!locked) startQuest(key); });
-    g.addEventListener('mouseenter', e => mapTooltipShow(e, name, topic, done, locked));
+  // Measure viewport width
+  _MAP.VIEW_W = container.clientWidth || 500;
+
+  // Center the map on main quest cluster initially
+  // Main quests are roughly x:200-510, y:160-490 in the 900x700 canvas
+  // We want that cluster centered in the viewport on load
+  const clusterCx = 355, clusterCy = 325;
+  const startTx = (_MAP.VIEW_W / 2) - clusterCx;
+  const startTy = (_MAP.VIEW_H / 2) - clusterCy;
+  const c = _mapClamp(startTx, startTy);
+  _MAP.tx = c.tx; _MAP.ty = c.ty;
+  _mapApplyTransform();
+
+  // Fade hint after 4s
+  setTimeout(() => {
+    const hint = document.getElementById('map-pan-hint');
+    if (hint) hint.classList.add('hidden');
+  }, 4000);
+
+  // ── Mouse drag ──────────────────────────────────
+  container.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    _MAP.dragging = true;
+    _MAP.moved = false;
+    _MAP.startX = e.clientX; _MAP.startY = e.clientY;
+    _MAP.startTx = _MAP.tx; _MAP.startTy = _MAP.ty;
+    _MAP.lastX = e.clientX; _MAP.lastY = e.clientY;
+    _MAP.vx = 0; _MAP.vy = 0;
+    if (_MAP.rafId) cancelAnimationFrame(_MAP.rafId);
+    container.classList.add('map-panning');
+    mapTooltipHide();
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!_MAP.dragging) return;
+    const dx = e.clientX - _MAP.startX;
+    const dy = e.clientY - _MAP.startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) _MAP.moved = true;
+    _MAP.vx = e.clientX - _MAP.lastX;
+    _MAP.vy = e.clientY - _MAP.lastY;
+    _MAP.lastX = e.clientX; _MAP.lastY = e.clientY;
+    const c = _mapClamp(_MAP.startTx + dx, _MAP.startTy + dy);
+    _MAP.tx = c.tx; _MAP.ty = c.ty;
+    _mapApplyTransform();
+    mapTooltipHide();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!_MAP.dragging) return;
+    _MAP.dragging = false;
+    container.classList.remove('map-panning');
+    _MAP.rafId = requestAnimationFrame(_mapMomentum);
+  });
+
+  // ── Touch drag ──────────────────────────────────
+  container.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    _MAP.dragging = true;
+    _MAP.moved = false;
+    _MAP.startX = t.clientX; _MAP.startY = t.clientY;
+    _MAP.startTx = _MAP.tx; _MAP.startTy = _MAP.ty;
+    _MAP.lastX = t.clientX; _MAP.lastY = t.clientY;
+    _MAP.vx = 0; _MAP.vy = 0;
+    if (_MAP.rafId) cancelAnimationFrame(_MAP.rafId);
+  }, { passive: true });
+
+  container.addEventListener('touchmove', e => {
+    if (!_MAP.dragging || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - _MAP.startX;
+    const dy = t.clientY - _MAP.startY;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) _MAP.moved = true;
+    _MAP.vx = t.clientX - _MAP.lastX;
+    _MAP.vy = t.clientY - _MAP.lastY;
+    _MAP.lastX = t.clientX; _MAP.lastY = t.clientY;
+    const c = _mapClamp(_MAP.startTx + dx, _MAP.startTy + dy);
+    _MAP.tx = c.tx; _MAP.ty = c.ty;
+    _mapApplyTransform();
+    e.preventDefault();
+  }, { passive: false });
+
+  container.addEventListener('touchend', e => {
+    if (!_MAP.dragging) return;
+    _MAP.dragging = false;
+    _MAP.rafId = requestAnimationFrame(_mapMomentum);
+    // handle tap as click if barely moved
+    if (!_MAP.moved && e.changedTouches.length === 1) {
+      const t = e.changedTouches[0];
+      _mapHandleClick(t.clientX, t.clientY, container);
+    }
+  }, { passive: true });
+
+  // ── Click — quest and lore nodes ────────────────
+  container.addEventListener('click', e => {
+    if (_MAP.moved) return; // was a drag
+    _mapHandleClick(e.clientX, e.clientY, container);
+  });
+
+  // ── Hover tooltips ──────────────────────────────
+  container.querySelectorAll('.map-region').forEach(g => {
+    const name  = g.dataset.name;
+    const topic = g.dataset.topic;
+    const done  = g.dataset.done === 'true';
+    const locked= g.dataset.locked === 'true';
+    g.addEventListener('mouseenter', e => { if (!_MAP.moved) mapTooltipShow(e, name, topic, done, locked); });
     g.addEventListener('mouseleave', mapTooltipHide);
   });
+
+  container.querySelectorAll('.map-lore-region').forEach(g => {
+    const idx = parseInt(g.dataset.lore);
+    const room = LORE_ROOMS[idx];
+    if (!room) return;
+    g.addEventListener('mouseenter', e => {
+      if (_MAP.moved) return;
+      const solved = G.loreRoomsDone && G.loreRoomsDone.includes(idx);
+      mapTooltipShow(e, room.icon + ' ' + room.name, solved ? '✓ Completed' : room.tag, solved, false);
+    });
+    g.addEventListener('mouseleave', mapTooltipHide);
+  });
+}
+
+function _mapHandleClick(clientX, clientY, container) {
+  const rect = container.getBoundingClientRect();
+  // Convert screen coords → SVG canvas coords
+  const svgX = (clientX - rect.left - _MAP.tx);
+  const svgY = (clientY - rect.top  - _MAP.ty);
+
+  // Check quest nodes
+  for (const [key, n] of Object.entries(MAP_NODES)) {
+    const dist = Math.hypot(svgX - n.cx, svgY - n.cy);
+    if (dist <= n.r + 4) {
+      const locked = document.querySelector(`.map-region[data-quest="${key}"]`)?.dataset.locked === 'true';
+      if (!locked) startQuest(key);
+      return;
+    }
+  }
+
+  // Check lore room nodes
+  for (const lr of LORE_ROOM_NODES) {
+    const dist = Math.hypot(svgX - lr.cx, svgY - lr.cy);
+    if (dist <= lr.r + 6) {
+      openLoreRoom(lr.idx);
+      return;
+    }
+  }
 }
 
 function showMap() {
@@ -5753,10 +6265,17 @@ function showMap() {
       </p>
       ${G.questsDone.length === 7 ? `<div class="box box-victory" style="margin-bottom:0.8rem"><span class="box-title">🏆 Grand Champion — The Order's Finest Manager</span>All seals earned. Total XP: <strong>${G.xp}</strong>. Level <strong>${G.level}</strong>.</div>` : ''}
 
-      <!-- WORLD MAP -->
+      <!-- WORLD MAP — pannable viewport -->
       <div class="world-map-wrap" id="world-map-container" style="position:relative">
-        ${buildMapSVG()}
+        <div class="world-map-canvas" id="world-map-canvas">
+          ${buildMapSVG()}
+        </div>
         <div class="map-tooltip" id="map-tooltip"></div>
+        <div class="map-minimap" id="map-minimap">
+          <canvas id="map-minimap-canvas" width="70" height="55"></canvas>
+          <div class="map-minimap-viewport" id="map-minimap-vp"></div>
+        </div>
+        <div class="map-pan-hint" id="map-pan-hint">⟵ drag to explore the wilderness ⟶</div>
       </div>
 
       <!-- MINI-GAMES SECTION -->
@@ -5953,7 +6472,7 @@ const SAMPLING_DATA = {
       villagers: [
         { name: '📋 Every 5th guest at reception', correct: true },
         { name: '🎲 Random names from database', correct: false },
-        { name: '📅 Every 3rd booking on Mondays', correct: true },
+        { name: '📅 Every 3rd entry in the full guest database, from a random start', correct: true },
         { name: '🏘️ All guests from one floor', correct: false },
         { name: '📏 Every 10th room in sequence', correct: true },
       ]
@@ -7286,10 +7805,10 @@ function HANDBOOK_ENG() { return `
 <div class="hb-section">
   <div class="hb-section-header">4 · Hypotheses, p, and Distribution</div>
   <div class="hb-section-body">
-    <p class="hb-p">Statistical tests calculate the probability that H₀ is true — the probability you would find your study's observations if H₀ were true.</p>
-    <div class="hb-note"><strong>Critical rule:</strong> If p of H₀ is below the critical value (e.g. 0.05), <strong>reject H₀ and accept H₁</strong>.</div>
-    <p class="hb-p">We normally use a critical p-value of <strong>0.05</strong>: at least 95% of observed data must fall within the 95% confidence interval to assume a significant difference.</p>
-    <div class="hb-alert">⚠ If you test <strong>one-sided</strong>, divide the test's p-value by 2. In Jamovi tick the box; in SPSS read the "one-sided" column.</div>
+    <p class="hb-p">The p-value is <strong>not</strong> the probability that H₀ is true. It is the probability of obtaining your observed results (or more extreme results) <em>if H₀ were true</em>. A small p means your data would be rare under H₀ — giving you grounds to reject it.</p>
+    <div class="hb-note"><strong>Critical rule:</strong> If p is below the significance level α (e.g. 0.05), <strong>reject H₀</strong>. This means: results this extreme would occur less than 5% of the time by chance if H₀ were true.</div>
+    <p class="hb-p">A <strong>95% confidence interval</strong> means: if you repeated the study many times, 95% of the intervals you construct would contain the true population parameter. It does <em>not</em> mean there is a 95% chance the true value lies in this specific interval.</p>
+    <div class="hb-alert">⚠ If you test <strong>one-sided</strong>, the p-value from Jamovi is already one-sided (tick the box); in SPSS read the "one-sided" column. Only valid with a pre-registered directional hypothesis.</div>
   </div>
 </div>
 
@@ -7300,7 +7819,7 @@ function HANDBOOK_ENG() { return `
       <tr><th>Error</th><th>Also called</th><th>What happened</th></tr>
       <tr><td><strong>Type I</strong></td><td>False positive</td><td>Rejected H₀ when it was actually true. Accepted H₁ when you shouldn't have.</td></tr>
       <tr><td><strong>Type II</strong></td><td>False negative</td><td>Did not reject H₀ when it was false. Missed a real effect.</td></tr>
-      <tr><td><strong>Type III</strong></td><td>Wrong reason</td><td>Rejected H₀ by the numbers, but with wrong reasoning. e.g. a directional conclusion from a two-tailed test.</td></tr>
+      <tr><td><strong>Type III</strong></td><td>Wrong conclusion</td><td>Rejected H₀ correctly by the numbers, but drew the wrong conclusion. e.g. reporting a directional result from a two-sided test, or identifying the wrong group as driving a significant ANOVA.</td></tr>
     </table>
   </div>
 </div>
@@ -7493,10 +8012,10 @@ function HANDBOOK_NL() { return `
 <div class="hb-section">
   <div class="hb-section-header">4 · Hypotheses, p en Distributie</div>
   <div class="hb-section-body">
-    <p class="hb-p">Statistische toetsen berekenen de kans dat H₀ waar is — de kans dat je jouw observaties zou vinden als H₀ waar zou zijn.</p>
-    <div class="hb-note"><strong>Kritieke regel:</strong> Als p van H₀ lager is dan de kritieke waarde (bijv. 0.05), <strong>verwerp H₀ en accepteer H₁</strong>.</div>
-    <p class="hb-p">Kritische p-waarde = <strong>0.05</strong>: ten minste 95% van de geobserveerde data moet binnen het 95%-betrouwbaarheidsinterval vallen.</p>
-    <div class="hb-alert">⚠ Bij <strong>éénzijdig</strong> toetsen: p-waarde delen door 2. In Jamovi vakje aanvinken; in SPSS kolom "éénzijdig" aflezen.</div>
+    <p class="hb-p">De p-waarde is <strong>niet</strong> de kans dat H₀ waar is. Het is de kans om jouw waargenomen resultaten te vinden (of extremere resultaten) <em>als H₀ waar zou zijn</em>. Een kleine p betekent dat jouw data zeldzaam zou zijn als H₀ klopte — en dat geeft aanleiding om H₀ te verwerpen.</p>
+    <div class="hb-note"><strong>Kritieke regel:</strong> Als p lager is dan het significantieniveau α (bijv. 0.05), <strong>verwerp H₀</strong>. Dit betekent: resultaten zo extreem als deze zouden minder dan 5% van de tijd optreden door toeval als H₀ waar was.</div>
+    <p class="hb-p">Een <strong>95%-betrouwbaarheidsinterval</strong> betekent: als je het onderzoek vele malen herhaalt, zou 95% van de geconstrueerde intervallen de ware populatieparameter bevatten. Het betekent <em>niet</em> dat er 95% kans is dat de ware waarde in dit specifieke interval ligt.</p>
+    <div class="hb-alert">⚠ Bij <strong>éénzijdig</strong> toetsen: in Jamovi vakje aanvinken voor éénzijdige p; in SPSS kolom "éénzijdig" aflezen. Alleen geldig met een vooraf geregistreerde directionele hypothese.</div>
   </div>
 </div>
 
@@ -7507,7 +8026,7 @@ function HANDBOOK_NL() { return `
       <tr><th>Fout</th><th>Ook wel</th><th>Wat er gebeurde</th></tr>
       <tr><td><strong>Type I</strong></td><td>Vals-positief</td><td>H₀ verworpen terwijl die waar was. H₁ geaccepteerd terwijl dat niet mocht.</td></tr>
       <tr><td><strong>Type II</strong></td><td>Vals-negatief</td><td>H₀ niet verworpen terwijl die onjuist was. Een echt effect gemist.</td></tr>
-      <tr><td><strong>Type III</strong></td><td>Verkeerde reden</td><td>H₀ correct verworpen op basis van cijfers, maar met foute redenering. Bijv. directionele conclusie uit tweezijdige toets.</td></tr>
+      <tr><td><strong>Type III</strong></td><td>Verkeerde conclusie</td><td>H₀ correct verworpen op basis van cijfers, maar verkeerde conclusie getrokken. Bijv. een directionele conclusie rapporteren uit een tweezijdige toets, of de verkeerde groep aanwijzen als oorzaak van een significant ANOVA-resultaat.</td></tr>
     </table>
   </div>
 </div>
@@ -9417,6 +9936,7 @@ function clearProgress() {
   G.class = null; G.hp = 0; G.maxHp = 0; G.xp = 0; G.level = 1; G.questsDone = []; G.journal = [];
   _journalNewIds.clear();
   G.achievements = [];
+  G.loreRoomsDone = [];
   // Hide journal button
   const jBtn = document.getElementById('journal-btn');
   if (jBtn) jBtn.classList.remove('visible');
@@ -9584,6 +10104,430 @@ if (loadProgress()) {
   });
 })();
 
+
+// ══════════════════════════════════════════════════════
+// LORE ROOMS — Hidden Chambers
+// ══════════════════════════════════════════════════════
+
+const LORE_ROOMS = [
+  {
+    id: 'lr_ttest',
+    icon: '🍷',
+    name: 'The Wine Cellar',
+    tag: 'Two groups · One measure',
+    eyebrow: 'Hidden Chamber I · Test Selection',
+    title: 'The Vintage Dispute',
+    flavour: 'Two rival sommeliers stand in the cellar of the Grand Meridian. One claims the new house wine scores higher with guests than the old one. The other says it\'s just noise.',
+    scenario: `The hotel ran a blind tasting with <strong>30 guests</strong>. Each guest rated <em>only one wine</em> (randomly assigned). Results: new wine mean = <strong>7.4</strong>, old wine mean = <strong>6.8</strong>, p = <strong>0.041</strong>, α = 0.05.
+    <br><br>The research question: <em>"Does the new house wine score significantly higher in guest satisfaction than the old one?"</em>`,
+    testQuestion: 'Which statistical test is most appropriate here?',
+    tests: ['Independent samples t-test', 'Paired samples t-test', 'One-way ANOVA', 'Pearson correlation', 'Chi-square test'],
+    correctTest: 'Independent samples t-test',
+    testHint: 'Two different groups of guests, one continuous measure — what does that tell you about independence?',
+    conclusionQuestion: 'Which conclusion is statistically correct?',
+    conclusions: [
+      'The new wine is significantly better — p = 0.041 < 0.05, so we reject H₀.',
+      'The difference is not significant — 0.6 points is too small to matter practically.',
+      'We cannot conclude anything — only 30 guests is not enough for any test.',
+      'The new wine is proven superior — statistical significance at 5% confirms the effect is real.'
+    ],
+    correctConclusion: 'The new wine is significantly better — p = 0.041 < 0.05, so we reject H₀.',
+    conclusionHint: 'Check p vs α. Be careful about the word "proven" — significance is not proof, but what does p < α mean for H₀?',
+    advicePrompt: 'The hotel director asks: "Should we switch to the new wine?" Write 2–3 sentences of evidence-based advice. Think about: what does statistical significance actually tell us here? What else might matter beyond the p-value?',
+    adviceKeywords: ['effect size', 'practical', 'confidence interval', 'cost', 'sample', 'replicate', 'meaningful', 'magnitude', '0.6', 'small'],
+    adviceModelAnswer: 'The difference is statistically significant (p = 0.041), meaning it is unlikely to be due to chance alone. However, the mean difference is only 0.6 points on what is presumably a 10-point scale — this may not be practically meaningful. Before switching, consider: is a 0.6-point gain noticeable to guests? What is the cost difference? Replicating the study with a larger sample would increase confidence.',
+    xp: 15,
+  },
+  {
+    id: 'lr_paired',
+    icon: '🏋️',
+    name: 'The Gym',
+    tag: 'Before & after · Same guests',
+    eyebrow: 'Hidden Chamber II · Test Selection',
+    title: 'The Training Effect',
+    flavour: 'The spa manager is convinced that a new 6-week wellness programme is changing guests\' wellbeing scores. The general manager wants proof before renewing the contract.',
+    scenario: `<strong>20 long-stay guests</strong> completed a wellbeing survey on arrival and again after 6 weeks. The <em>same guests</em> were measured twice. Results: mean improvement = <strong>+4.2 points</strong>, p = <strong>0.018</strong>, α = 0.05.
+    <br><br>Research question: <em>"Does the wellness programme significantly improve guest wellbeing scores over 6 weeks?"</em>`,
+    testQuestion: 'Which statistical test is most appropriate here?',
+    tests: ['Independent samples t-test', 'Paired samples t-test', 'One-way ANOVA', 'Mann-Whitney U', 'Chi-square test'],
+    correctTest: 'Paired samples t-test',
+    testHint: 'The same 20 guests measured at two time points — how does this differ from two separate groups?',
+    conclusionQuestion: 'Which conclusion is statistically correct?',
+    conclusions: [
+      'We reject H₀ — there is a statistically significant improvement in wellbeing scores (p = 0.018 < 0.05).',
+      'We fail to reject H₀ — p = 0.018 is too close to 0.05 to be trustworthy.',
+      'The programme caused an improvement — the result proves causality because the same guests were tested.',
+      'The result is inconclusive — 20 guests is too small a sample for any definitive conclusion.'
+    ],
+    correctConclusion: 'We reject H₀ — there is a statistically significant improvement in wellbeing scores (p = 0.018 < 0.05).',
+    conclusionHint: 'p = 0.018 < 0.05 — what does that mean for H₀? And does "significant improvement" equal "the programme caused it"?',
+    advicePrompt: 'The spa manager wants to use this result in the hotel newsletter as proof the programme works. Write 2–3 sentences advising whether and how they should do this. Think about: causality, confounds, what the test actually tells us.',
+    adviceKeywords: ['causal', 'cause', 'confound', 'control', 'other factors', 'correlation', 'significant', 'not prove', 'alternative explanation', 'design'],
+    adviceModelAnswer: 'The result shows a statistically significant improvement in scores, but this does not prove the programme caused it — guests may have felt better for many reasons (rest, holiday effect, better food). There was no control group, so we cannot rule out confounding factors. The newsletter could honestly say scores improved significantly during the programme period, but should avoid claiming the programme caused it.',
+    xp: 15,
+  },
+  {
+    id: 'lr_chisq',
+    icon: '🗳️',
+    name: 'The Ballot Room',
+    tag: 'Two categories · Frequency data',
+    eyebrow: 'Hidden Chamber III · Test Selection',
+    title: 'The Loyalty Programme Vote',
+    flavour: 'The marketing team wants to know whether guests from different booking channels have different loyalty programme membership rates. The data analyst pulls the records.',
+    scenario: `Records for <strong>400 guests</strong> show: <em>Direct bookers</em> — 110 members, 90 non-members. <em>OTA bookers</em> — 80 members, 120 non-members. p = <strong>0.003</strong>, α = 0.05.
+    <br><br>Research question: <em>"Is there a significant association between booking channel and loyalty programme membership?"</em>`,
+    testQuestion: 'Which statistical test is most appropriate here?',
+    tests: ['Independent samples t-test', 'Paired samples t-test', 'Pearson correlation', 'Chi-square test of independence', 'One-way ANOVA'],
+    correctTest: 'Chi-square test of independence',
+    testHint: 'Both variables are categorical (booking channel: direct/OTA; membership: yes/no) and you have frequency counts — which test handles this?',
+    conclusionQuestion: 'Which conclusion is statistically correct?',
+    conclusions: [
+      'There is a significant association between booking channel and loyalty membership — direct bookers are more likely to be members (p = 0.003).',
+      'Booking channel causes loyalty membership — guests who book direct join the programme more often because they are more engaged.',
+      'The result is not significant — p = 0.003 is below 0.05 so we fail to reject H₀.',
+      'There is no relationship — the difference between 110 and 80 members is not large enough to matter.'
+    ],
+    correctConclusion: 'There is a significant association between booking channel and loyalty membership — direct bookers are more likely to be members (p = 0.003).',
+    conclusionHint: 'p = 0.003 is well below 0.05 — what does that mean for H₀? Also watch for causal language — a chi-square tells you about association, not causation.',
+    advicePrompt: 'The marketing director says: "Direct bookers join the loyalty programme more because they are more loyal by nature — let\'s target OTA bookers with a conversion campaign." Write 2–3 sentences responding to this. Is the interpretation correct? What would you recommend?',
+    adviceKeywords: ['association', 'causation', 'cause', 'why', 'confound', 'significant', 'target', 'investigate', 'reason', 'explain'],
+    adviceModelAnswer: 'The association is statistically significant — direct bookers are indeed more likely to be members. However, we cannot conclude it is because they are "more loyal by nature"; this is an association, not a causal finding. A targeted campaign is a reasonable idea, but before investing in it the team should investigate why OTA bookers join less — it may be that OTA platforms simply do not promote the programme, which would be an easier fix.',
+    xp: 15,
+  },
+  {
+    id: 'lr_anova',
+    icon: '🏨',
+    name: 'The Boardroom',
+    tag: 'Three+ groups · Compare means',
+    eyebrow: 'Hidden Chamber IV · Test Selection',
+    title: 'The Three-Star Problem',
+    flavour: 'The regional director has data from 90 hotels across three tiers. She wants to know if RevPAR differs significantly by star rating — and whether it\'s worth investigating further.',
+    scenario: `<strong>90 hotels</strong> sampled equally across <em>3-star</em>, <em>4-star</em>, and <em>5-star</em> tiers (30 each). Mean RevPAR: 3★ = <strong>€62</strong>, 4★ = <strong>€89</strong>, 5★ = <strong>€134</strong>. p = <strong>0.0001</strong>, α = 0.05.
+    <br><br>Research question: <em>"Is there a significant difference in mean RevPAR across the three hotel tiers?"</em>`,
+    testQuestion: 'Which statistical test is most appropriate here?',
+    tests: ['Independent samples t-test', 'Paired samples t-test', 'One-way ANOVA', 'Chi-square test', 'Pearson correlation'],
+    correctTest: 'One-way ANOVA',
+    testHint: 'One continuous dependent variable (RevPAR) and one categorical independent variable with more than two groups — running three separate t-tests would inflate your error rate.',
+    conclusionQuestion: 'Which conclusion is statistically correct?',
+    conclusions: [
+      'RevPAR differs significantly across hotel tiers (p < 0.001) — at least one tier mean is different from the others.',
+      'All three tiers are significantly different from each other — p < 0.001 confirms pairwise differences throughout.',
+      'RevPAR is not related to hotel tier — ANOVA only shows overall variance, not meaningful group differences.',
+      '5-star hotels earn significantly more than both 3-star and 4-star — the test identifies all pairs.'
+    ],
+    correctConclusion: 'RevPAR differs significantly across hotel tiers (p < 0.001) — at least one tier mean is different from the others.',
+    conclusionHint: 'ANOVA tests whether any group differs — it does not tell you which specific pairs differ. Which conclusion respects that limitation?',
+    advicePrompt: 'A junior analyst writes in the report: "ANOVA confirms that 5-star hotels earn significantly more than both 3-star and 4-star hotels." Write 2–3 sentences explaining whether this is correct and what additional analysis would be needed.',
+    adviceKeywords: ['post hoc', 'post-hoc', 'pairwise', 'Tukey', 'Bonferroni', 'follow-up', 'which group', 'omnibus', 'overall', 'not tell'],
+    adviceModelAnswer: 'The statement is not fully accurate. ANOVA is an omnibus test — it tells us that at least one group mean differs significantly, but it does not specify which pairs are different. To make the claim that 5-star differs significantly from both 3-star and 4-star, a post-hoc test (such as Tukey\'s HSD or Games-Howell if variances are unequal) would need to be run to compare all three pairs while controlling for multiple comparisons. Without that step, the junior analyst is overreaching the ANOVA result.',
+    xp: 15,
+  },
+  {
+    id: 'lr_corr',
+    icon: '🌡️',
+    name: 'The Observatory',
+    tag: 'Two continuous variables',
+    eyebrow: 'Hidden Chamber V · Test Selection',
+    title: 'The Temperature Effect',
+    flavour: 'A revenue analyst at a coastal resort chain has been sitting on two years of daily data. She suspects outdoor temperature is driving something in the booking numbers — but her manager wants a proper test before acting on it.',
+    scenario: `Daily records across <strong>730 days</strong> at a coastal resort: <em>average outdoor temperature (°C)</em> — a continuous physical measurement — and <em>total spa revenue (€)</em> — a continuous financial measurement. Pearson r = <strong>−0.58</strong>, p = <strong>&lt;0.0001</strong>, α = 0.05.
+    <br><br>Research question: <em>"Is there a significant linear relationship between daily outdoor temperature and spa revenue?"</em>`,
+    testQuestion: 'Which statistical test is most appropriate here?',
+    tests: ['Independent samples t-test', 'One-way ANOVA', 'Pearson correlation', 'Chi-square test', 'Paired samples t-test'],
+    correctTest: 'Pearson correlation',
+    testHint: 'Both variables are measured on a continuous scale (degrees, euros) and you want to quantify the strength and direction of their linear relationship — which test was built for exactly this?',
+    conclusionQuestion: 'Which conclusion is statistically correct?',
+    conclusions: [
+      'There is a significant moderate negative correlation — on hotter days, spa revenue tends to be lower (r = −0.58, p < 0.0001).',
+      'Hot weather causes guests to avoid the spa — the significant negative correlation proves that temperature drives spa revenue down.',
+      'There is no meaningful relationship — r = −0.58 does not exceed the minimum threshold of 0.60 needed for a correlation to be considered real.',
+      'Spa revenue significantly predicts outdoor temperature — correlation is symmetrical so the direction of prediction is interchangeable.'
+    ],
+    correctConclusion: 'There is a significant moderate negative correlation — on hotter days, spa revenue tends to be lower (r = −0.58, p < 0.0001).',
+    conclusionHint: 'r = −0.58 is significant and moderate in size — but does Pearson correlation ever establish which variable causes the other, or require a minimum r threshold to be "real"?',
+    advicePrompt: 'The spa manager says: "Hot weather is killing our revenue — we should close the spa in summer and cut staffing costs." Write 2–3 sentences of advice. Address the causal claim, what r = −0.58 actually tells us, and whether closing the spa is the right response.',
+    adviceKeywords: ['causation', 'cause', 'correlation', 'r squared', 'variance', 'confound', 'alternative', 'explain', 'not cause', 'pool', 'season', 'moderate', '34%', '0.34'],
+    adviceModelAnswer: 'The manager is jumping from correlation to causation — a negative correlation between temperature and spa revenue does not mean hot weather causes guests to avoid the spa; guests may simply prefer the pool or beach on hot days, which is a confounding factor. r = −0.58 means temperature explains about 34% of the variance in spa revenue (r² ≈ 0.34) — a moderate relationship, but 66% of variation comes from other factors. Rather than closing the spa, it would be worth investigating whether targeted promotions or indoor spa packages during hot periods could offset the seasonal pattern.',
+    xp: 15,
+  }
+];
+
+// Track completed lore rooms on G
+if (!G.loreRoomsDone) G.loreRoomsDone = [];
+
+function openLoreRoom(idx) {
+  const room = LORE_ROOMS[idx];
+  if (!room) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'lr-overlay';
+  overlay.id = 'lr-overlay';
+  document.body.appendChild(overlay);
+
+  const solved = G.loreRoomsDone && G.loreRoomsDone.includes(idx);
+
+  overlay.innerHTML = `
+    <div class="lr-panel">
+      <button class="lr-close" onclick="closeLoreRoom()">✕</button>
+      <div class="lr-eyebrow">${room.eyebrow}</div>
+      <div class="lr-title">${room.icon} ${room.title}</div>
+      <div class="lr-flavour">${room.flavour}</div>
+      <div class="lr-scenario">${room.scenario}</div>
+
+      <!-- STEP 1: Test selection -->
+      <div class="lr-step-label">Step 1 — Choose the correct statistical test</div>
+      <div style="font-family:'Crimson Pro',serif; font-size:0.88rem; color:var(--text-dim); margin-bottom:0.6rem">${room.testQuestion}</div>
+      <div class="lr-drag-area" id="lr-test-pool">
+        ${room.tests.map(t => `<div class="lr-chip" draggable="true" data-value="${t}" data-pool="test" onmousedown="lrChipMouseDown(event)">${t}</div>`).join('')}
+      </div>
+      <div style="font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.3rem">Drop your answer here ↓</div>
+      <div class="lr-drop-zone" id="lr-test-drop" ondragover="lrDragOver(event)" ondragleave="lrDragLeave(event)" ondrop="lrDrop(event,'test')">
+        <span class="lr-drop-placeholder" id="lr-test-placeholder">Drag the correct test here…</span>
+      </div>
+
+      <!-- STEP 2: Conclusion selection -->
+      <div class="lr-step-label" style="margin-top:0.6rem">Step 2 — Choose the correct conclusion</div>
+      <div style="font-family:'Crimson Pro',serif; font-size:0.88rem; color:var(--text-dim); margin-bottom:0.6rem">${room.conclusionQuestion}</div>
+      <div class="lr-drag-area" id="lr-conc-pool">
+        ${room.conclusions.map((c,i) => `<div class="lr-chip" draggable="true" data-value="${i}" data-pool="conclusion" onmousedown="lrChipMouseDown(event)" style="width:100%; box-sizing:border-box">${c}</div>`).join('')}
+      </div>
+      <div style="font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.3rem">Drop your answer here ↓</div>
+      <div class="lr-drop-zone" id="lr-conc-drop" ondragover="lrDragOver(event)" ondragleave="lrDragLeave(event)" ondrop="lrDrop(event,'conclusion')">
+        <span class="lr-drop-placeholder" id="lr-conc-placeholder">Drag the correct conclusion here…</span>
+      </div>
+
+      <!-- STEP 3: Written advice -->
+      <div class="lr-step-label" style="margin-top:0.6rem">Step 3 — Write your advice</div>
+      <div style="font-family:'Crimson Pro',serif; font-size:0.92rem; color:var(--text-dim); margin-bottom:0.5rem; line-height:1.65">${room.advicePrompt}</div>
+      <textarea class="lr-advice-field" id="lr-advice" placeholder="Write your advice here…" rows="3"></textarea>
+
+      <div class="lr-submit-row">
+        <button class="btn btn-primary" onclick="lrSubmit(${idx})">Submit Answers ›</button>
+        <button class="btn btn-ghost" onclick="lrShowHint(${idx})">💡 Hint</button>
+        ${solved ? `<span class="lr-xp-badge">✦ Already completed — no extra XP</span>` : `<span class="lr-xp-badge">+${room.xp} XP available</span>`}
+      </div>
+
+      <div class="lr-feedback" id="lr-feedback"></div>
+    </div>`;
+
+  // Drag state
+  window._lrDrag = { testChip: null, concChip: null, testValue: null, concIdx: null };
+  lrSetupDrag(overlay, idx);
+}
+
+function closeLoreRoom() {
+  const ov = document.getElementById('lr-overlay');
+  if (ov) ov.remove();
+  // Refresh lore nodes on the map canvas (update solved checkmarks)
+  const canvas = document.getElementById('world-map-canvas');
+  if (canvas) {
+    // Re-render just the lore region groups
+    canvas.querySelectorAll('.map-lore-region').forEach(g => {
+      const idx = parseInt(g.dataset.lore);
+      const lr = LORE_ROOM_NODES[idx];
+      if (!lr) return;
+      const solved = G.loreRoomsDone && G.loreRoomsDone.includes(idx);
+      const ringColor = solved ? '#2dd474' : lr.color;
+      g.innerHTML = `
+        <circle cx="${lr.cx}" cy="${lr.cy}" r="${lr.r+8}" fill="none" stroke="${ringColor}" stroke-width="1" opacity="0.18" stroke-dasharray="3,4"/>
+        <circle cx="${lr.cx}" cy="${lr.cy}" r="${lr.r}" fill="rgba(8,6,8,0.82)" stroke="${ringColor}" stroke-width="2"/>
+        <text x="${lr.cx}" y="${lr.cy+2}" text-anchor="middle" dominant-baseline="middle" font-size="${lr.r*0.85}">${lr.icon}</text>
+        ${solved ? `<text x="${lr.cx+lr.r-2}" y="${lr.cy-lr.r+6}" text-anchor="middle" font-size="10" fill="#2dd474">✓</text>` : ''}
+        <text x="${lr.cx}" y="${lr.cy+lr.r+13}" text-anchor="middle" font-family="Cinzel,serif" font-size="7.5" fill="${solved ? 'rgba(45,212,116,0.7)' : 'rgba(212,168,32,0.7)'}" letter-spacing="0.3">${lr.name}</text>
+        <text x="${lr.cx}" y="${lr.cy+lr.r+23}" text-anchor="middle" font-family="Crimson Pro,serif" font-size="7" fill="rgba(155,143,160,0.55)" font-style="italic">${lr.region}</text>`;
+    });
+  }
+}
+
+function lrSetupDrag(overlay, idx) {
+  // HTML5 drag for desktop
+  overlay.querySelectorAll('.lr-chip[draggable]').forEach(chip => {
+    chip.addEventListener('dragstart', e => {
+      chip.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        pool: chip.dataset.pool,
+        value: chip.dataset.value,
+        text: chip.textContent.trim()
+      }));
+    });
+    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+  });
+}
+
+function lrDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('lr-over');
+}
+function lrDragLeave(e) {
+  e.currentTarget.classList.remove('lr-over');
+}
+
+function lrDrop(e, zone) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('lr-over');
+  let data;
+  try { data = JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return; }
+  if (data.pool !== zone && !(zone === 'conclusion' && data.pool === 'conclusion')) return;
+  if (data.pool === 'test' && zone !== 'test') return;
+  if (data.pool === 'conclusion' && zone !== 'conclusion') return;
+
+  const dropZone = document.getElementById(`lr-${zone === 'test' ? 'test' : 'conc'}-drop`);
+  const placeholder = document.getElementById(`lr-${zone === 'test' ? 'test' : 'conc'}-placeholder`);
+  if (!dropZone) return;
+
+  // Return existing chip to pool if already placed
+  const existing = dropZone.querySelector('.lr-chip');
+  if (existing) {
+    const pool = document.getElementById(`lr-${zone === 'test' ? 'test' : 'conc'}-pool`);
+    if (pool) { existing.classList.remove('lr-placed'); pool.appendChild(existing); }
+  }
+
+  // Move chip to drop zone
+  const allChips = document.querySelectorAll(`.lr-chip[data-pool="${data.pool}"]`);
+  allChips.forEach(c => {
+    if (c.dataset.value === data.value && c.parentElement.id !== `lr-${zone === 'test' ? 'test' : 'conc'}-drop`) {
+      c.classList.add('lr-placed');
+      if (placeholder) placeholder.style.display = 'none';
+      dropZone.appendChild(c);
+    }
+  });
+
+  dropZone.classList.remove('lr-filled-correct','lr-filled-wrong');
+  dropZone.classList.add('lr-filled-pending');
+
+  // Store selection
+  if (zone === 'test') window._lrDrag.testValue = data.value;
+  else window._lrDrag.concIdx = parseInt(data.value);
+}
+
+function lrChipMouseDown(e) {
+  // touch fallback hint — actual drag is handled by HTML5 API
+}
+
+function lrShowHint(idx) {
+  const room = LORE_ROOMS[idx];
+  const fb = document.getElementById('lr-feedback');
+  if (!fb) return;
+  fb.className = 'lr-feedback lr-fb-partial show';
+  fb.innerHTML = `<span class="lr-fb-header">💡 Hints</span>
+    <strong style="color:var(--rune-bright)">Test hint:</strong> ${room.testHint}<br><br>
+    <strong style="color:var(--rune-bright)">Conclusion hint:</strong> ${room.conclusionHint}`;
+  fb.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function lrSubmit(idx) {
+  const room = LORE_ROOMS[idx];
+  const fb = document.getElementById('lr-feedback');
+  const adviceEl = document.getElementById('lr-advice');
+  if (!fb || !adviceEl) return;
+
+  const testDrop = document.getElementById('lr-test-drop');
+  const concDrop = document.getElementById('lr-conc-drop');
+
+  // Read dropped values
+  const testChip = testDrop ? testDrop.querySelector('.lr-chip') : null;
+  const concChip = concDrop ? concDrop.querySelector('.lr-chip') : null;
+  const testValue = testChip ? testChip.dataset.value : null;
+  const concIdx   = concChip ? parseInt(concChip.dataset.value) : null;
+  const adviceText = adviceEl.value.trim().toLowerCase();
+
+  // Validate
+  if (!testValue) { lrFlash(fb, 'You haven\'t dropped a test yet — drag one to the test drop zone.'); return; }
+  if (concIdx === null || isNaN(concIdx)) { lrFlash(fb, 'You haven\'t dropped a conclusion yet — drag one to the conclusion drop zone.'); return; }
+  if (adviceText.length < 20) { lrFlash(fb, 'Your advice is very short — write at least a couple of sentences.'); return; }
+
+  const testCorrect = testValue === room.correctTest;
+  const concCorrect = room.conclusions[concIdx] === room.correctConclusion;
+  const adviceWords = room.adviceKeywords.filter(kw => adviceText.includes(kw));
+  const adviceGood = adviceWords.length >= 2;
+
+  // Visual feedback on chips/zones
+  if (testChip) { testChip.classList.remove('lr-placed','lr-wrong','lr-correct'); testChip.classList.add(testCorrect ? 'lr-correct' : 'lr-wrong'); }
+  if (testDrop) { testDrop.classList.remove('lr-filled-pending'); testDrop.classList.add(testCorrect ? 'lr-filled-correct' : 'lr-filled-wrong'); }
+  if (concChip) { concChip.classList.remove('lr-placed','lr-wrong','lr-correct'); concChip.classList.add(concCorrect ? 'lr-correct' : 'lr-wrong'); }
+  if (concDrop) { concDrop.classList.remove('lr-filled-pending'); concDrop.classList.add(concCorrect ? 'lr-filled-correct' : 'lr-filled-wrong'); }
+  if (adviceEl) { adviceEl.classList.remove('lr-correct','lr-wrong'); adviceEl.classList.add(adviceGood ? 'lr-correct' : 'lr-wrong'); }
+
+  const score = [testCorrect, concCorrect, adviceGood].filter(Boolean).length;
+  const alreadySolved = G.loreRoomsDone && G.loreRoomsDone.includes(idx);
+
+  let fbClass, header, body;
+
+  if (score === 3) {
+    fbClass = 'lr-fb-good';
+    header = '✦ Chamber Unsealed — Excellent Work';
+    body = `You selected the correct test (<em>${room.correctTest}</em>), drew the right conclusion, and your advice addressed the key issues (${adviceWords.map(w=>`<em>${w}</em>`).join(', ')}).`;
+    if (!alreadySolved) {
+      G.loreRoomsDone.push(idx);
+      gainXP(room.xp);
+      saveProgress();
+    }
+  } else if (score === 2) {
+    fbClass = 'lr-fb-partial';
+    header = '◆ Partial Credit — Almost There';
+    body = `You got ${score}/3 correct. `;
+    if (!testCorrect) body += `The correct test was <em>${room.correctTest}</em>. ${room.testHint} `;
+    if (!concCorrect) body += `The correct conclusion was: "<em>${room.correctConclusion}</em>". ${room.conclusionHint} `;
+    if (!adviceGood) body += `Your advice could go deeper — consider mentioning: ${room.adviceKeywords.slice(0,4).join(', ')}.`;
+  } else {
+    fbClass = 'lr-fb-bad';
+    header = '✗ The Chamber Remains Sealed';
+    body = `Score: ${score}/3. `;
+    if (!testCorrect) body += `<strong>Test:</strong> The correct choice was <em>${room.correctTest}</em>. ${room.testHint} `;
+    if (!concCorrect) body += `<strong>Conclusion:</strong> "${room.correctConclusion}". ${room.conclusionHint} `;
+    if (!adviceGood) body += `<strong>Advice:</strong> Key ideas to include: ${room.adviceKeywords.slice(0,5).join(', ')}.`;
+  }
+
+  fb.className = `lr-feedback ${fbClass} show`;
+  fb.innerHTML = `
+    <span class="lr-fb-header">${header}</span>
+    <p style="margin-bottom:0.6rem">${body}</p>
+    <div class="lr-model-answer"><strong>Model answer for advice:</strong><br>${room.adviceModelAnswer}</div>
+    ${score === 3 && !alreadySolved ? `<p style="color:var(--sage-bright); font-family:'Cinzel',serif; font-size:0.75rem; margin-top:0.8rem; letter-spacing:0.08em">+${room.xp} XP earned ✦</p>` : ''}
+    <div style="text-align:center; margin-top:1rem">
+      <button class="btn btn-ghost" onclick="closeLoreRoom()">← Back to Map</button>
+      ${score < 3 ? `<button class="btn btn-primary" style="margin-left:8px" onclick="lrReset(${idx})">↺ Try Again</button>` : ''}
+    </div>`;
+  fb.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function lrReset(idx) {
+  closeLoreRoom();
+  setTimeout(() => openLoreRoom(idx), 120);
+}
+
+function lrFlash(fb, msg) {
+  fb.className = 'lr-feedback lr-fb-partial show';
+  fb.innerHTML = `<span class="lr-fb-header">⚠ Not quite ready</span>${msg}`;
+  fb.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// Patch loadProgress to restore loreRoomsDone
+const _origLoadProgress = loadProgress;
+loadProgress = function() {
+  const result = _origLoadProgress();
+  try {
+    const raw = localStorage.getItem('otsp_save');
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.loreRoomsDone) G.loreRoomsDone = s.loreRoomsDone;
+    }
+  } catch(e) {}
+  return result;
+};
+
+// Patch saveProgress to include loreRoomsDone
+const _origSaveProgress2 = saveProgress;
+saveProgress = function() {
+  _origSaveProgress2();
+  try {
+    const raw = localStorage.getItem('otsp_save');
+    if (raw) {
+      const s = JSON.parse(raw);
+      s.loreRoomsDone = G.loreRoomsDone || [];
+      localStorage.setItem('otsp_save', JSON.stringify(s));
+    }
+  } catch(e) {}
+};
+
 </script>
-</body>
-</html>
